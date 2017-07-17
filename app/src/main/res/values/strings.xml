@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Ihome</string>
+    <string name="left_second">( %ds )</string>
+    <string name="lock_prefix">CrAM</string>
+
+    <string name="device_connected">Connection succeed</string>
+    <string name="device_connecting">Connecting</string>
+    <string name="device_disconnected">Disconnected</string>
+</resources>
