@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.baidu.mapapi.SDKInitializer;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.fragment.EditFragment;
 import com.qhiehome.ihome.fragment.MeFragment;
@@ -42,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SDKInitializer.initialize(getApplicationContext());
         setContentView(R.layout.activity_main);
         initView();
         initFragments();
@@ -190,4 +192,5 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         super.onDestroy();
         ActivityManager.remove(this);
     }
+
 }
