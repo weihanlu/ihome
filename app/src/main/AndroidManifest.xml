@@ -18,6 +18,12 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.BROADCAST_STICKY" />
 
+    <!--BaiduMap permission-->
+    <uses-permission android:name="com.android.launcher.permission.READ_SETTINGS" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+
     <application
         android:name=".IhomeApplication"
         android:allowBackup="true"
@@ -46,6 +52,14 @@
         <meta-data
             android:name="Mob-AppSecret"
             android:value="f7ca350d7aaec881298abe6879be6417" />
+        <meta-data
+            android:name="com.baidu.lbsapi.API_KEY"
+            android:value="IhW0Py1ZmLGsMdLsu3stfFfAmMR8r8DG" />
+        <service
+            android:name="com.baidu.location.f"
+            android:enabled="true"
+            android:process=":remote" >
+        </service>
 
         <activity android:name=".activity.BindLockActivity"></activity>
         <activity
