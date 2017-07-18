@@ -17,6 +17,7 @@ import com.qhiehome.ihome.util.ToastUtil;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import cn.smssdk.EventHandler;
 import cn.smssdk.SMSSDK;
 
@@ -90,24 +91,24 @@ public class LoginActivity extends AppCompatActivity {
 //        mBtVerify = (Button) findViewById(R.id.bt_verify);
     }
 
-    public void login(View view) {
-        String phoneNum = mEtPhone.getText().toString();
-        String verifyCode = mEtVerify.getText().toString();
-        if (TextUtils.isEmpty(verifyCode)) {
-            ToastUtil.showToast(this, "请输入验证码");
-        } else {
-            SMSSDK.submitVerificationCode(DEFAULT_COUNTRY_CODE, phoneNum, verifyCode);
-        }
-    }
-
-    public void verify(View view) {
-        String phoneNum = mEtPhone.getText().toString();
-        if (!TextUtils.isEmpty(phoneNum) && phoneNum.length() == DEFAULT_PHONE_LEN) {
-            SMSSDK.getVerificationCode(DEFAULT_COUNTRY_CODE, phoneNum, null);
-        } else {
-            ToastUtil.showToast(this, "手机号码不符合要求，请重新输入");
-        }
-    }
+//    public void login(View view) {
+//        String phoneNum = mEtPhone.getText().toString();
+//        String verifyCode = mEtVerify.getText().toString();
+//        if (TextUtils.isEmpty(verifyCode)) {
+//            ToastUtil.showToast(this, "请输入验证码");
+//        } else {
+//            SMSSDK.submitVerificationCode(DEFAULT_COUNTRY_CODE, phoneNum, verifyCode);
+//        }
+//    }
+//
+//    public void verify(View view) {
+//        String phoneNum = mEtPhone.getText().toString();
+//        if (!TextUtils.isEmpty(phoneNum) && phoneNum.length() == DEFAULT_PHONE_LEN) {
+//            SMSSDK.getVerificationCode(DEFAULT_COUNTRY_CODE, phoneNum, null);
+//        } else {
+//            ToastUtil.showToast(this, "手机号码不符合要求，请重新输入");
+//        }
+//    }
 
     public static void start(Context context) {
         Intent intent = new Intent(context, LoginActivity.class);
@@ -120,6 +121,27 @@ public class LoginActivity extends AppCompatActivity {
         ActivityManager.remove(this);
         SMSSDK.unregisterEventHandler(mEventHandler);
         mHandler.removeCallbacksAndMessages(null);
+    }
+
+    @OnClick(R.id.bt_verify)
+    public void verify() {
+        String phoneNum = mEtPhone.getText().toString();
+        if (!TextUtils.isEmpty(phoneNum) && phoneNum.length() == DEFAULT_PHONE_LEN) {
+            SMSSDK.getVerificationCode(DEFAULT_COUNTRY_CODE, phoneNum, null);
+        } else {
+            ToastUtil.showToast(this, "手机号码不符合要求，请重新输入");
+        }
+    }
+
+    @OnClick(R.id.bt_login)
+    public void login() {
+        String phoneNum = mEtPhone.getText().toString();
+        String verifyCode = mEtVerify.getText().toString();
+        if (TextUtils.isEmpty(verifyCode)) {
+            ToastUtil.showToast(this, "请输入验证码");
+        } else {
+            SMSSDK.submitVerificationCode(DEFAULT_COUNTRY_CODE, phoneNum, verifyCode);
+        }
     }
 
     private class CountDownTask implements Runnable {

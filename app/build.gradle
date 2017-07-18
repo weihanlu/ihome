@@ -7,7 +7,7 @@ android {
             keyAlias 'key0'
             keyPassword 'kihome'
             storeFile file('/Users/YueMa/AndroidStudioProjects/ihome/keystore.jks')
-            storePassword 'ksihome'
+            storePassword 'skihome'
         }
     }
     compileSdkVersion 25

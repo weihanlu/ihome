@@ -190,11 +190,12 @@ public class ParkFragment extends Fragment {
                 // 设置定位数据
                 mBaiduMap.setMyLocationData(locData);
                 if (mFirstLocation) {
-                    mFirstLocation = false;
                     LatLng xy = new LatLng(bdLocation.getLatitude(),
                             bdLocation.getLongitude());
+                    mCurrentPt = xy;
                     MapStatusUpdate status = MapStatusUpdateFactory.newLatLng(xy);
                     mBaiduMap.animateMapStatus(status);
+                    updateMapState();
                 }
             }
             @Override
@@ -250,58 +251,57 @@ public class ParkFragment extends Fragment {
 
     private void updateMapState(){
         //BitmapDescriptor bitmap = BitmapDescriptorFactory.fromResource(R.drawable.flag);
-
-/********************缩放图片********************/
-        Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.img_target);
-        // 获得图片的宽高
-        int width = bm.getWidth();
-        int height = bm.getHeight();
-        // 设置想要的大小
-        int newWidth = 60;
-        int newHeight = 60;
-        // 计算缩放比例
-        float scaleWidth = ((float) newWidth) / width;
-        float scaleHeight = ((float) newHeight) / height;
-        // 取得想要缩放的matrix参数
-        Matrix matrix = new Matrix();
-        matrix.postScale(scaleWidth, scaleHeight);
-        // 得到新的图片
-        Bitmap newbm = Bitmap.createBitmap(bm, 0, 0, width, height, matrix,
-                true);
-        BitmapDescriptor newbmd = BitmapDescriptorFactory.fromBitmap(newbm);
+        if (!mFirstLocation){
+            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.img_target);
+            // 获得图片的宽高
+            int width = bm.getWidth();
+            int height = bm.getHeight();
+            // 设置想要的大小
+            int newWidth = 60;
+            int newHeight = 60;
+            // 计算缩放比例
+            float scaleWidth = ((float) newWidth) / width;
+            float scaleHeight = ((float) newHeight) / height;
+            // 取得想要缩放的matrix参数
+            Matrix matrix = new Matrix();
+            matrix.postScale(scaleWidth, scaleHeight);
+            // 得到新的图片
+            Bitmap newbm = Bitmap.createBitmap(bm, 0, 0, width, height, matrix,
+                    true);
+            BitmapDescriptor newbmd = BitmapDescriptorFactory.fromBitmap(newbm);
 
 /********************设置覆盖物********************/
-        final Marker marker;
-        OverlayOptions options;
-        options = new MarkerOptions()
-                .position(mCurrentPt)//设置位置
-                .icon(newbmd)//设置图标样式
-                .zIndex(9) // 设置marker所在层级
-                .draggable(true); // 设置手势拖拽;
-        marker = (Marker) mBaiduMap.addOverlay(options);
+            final Marker marker;
+            OverlayOptions options;
+            options = new MarkerOptions()
+                    .position(mCurrentPt)//设置位置
+                    .icon(newbmd)//设置图标样式
+                    .zIndex(9) // 设置marker所在层级
+                    .draggable(true); // 设置手势拖拽;
+            marker = (Marker) mBaiduMap.addOverlay(options);
 
-        mBaiduMap.setOnMarkerDragListener(new BaiduMap.OnMarkerDragListener() {
-            @Override
-            public void onMarkerDrag(Marker marker) {
+            mBaiduMap.setOnMarkerDragListener(new BaiduMap.OnMarkerDragListener() {
+                @Override
+                public void onMarkerDrag(Marker marker) {
 
-            }
+                }
 
-            @Override
-            public void onMarkerDragEnd(Marker marker) {
-                mCurrentPt = marker.getPosition();
-                mBaiduMap.clear();
-                updateMapState();
-            }
+                @Override
+                public void onMarkerDragEnd(Marker marker) {
+                    mCurrentPt = marker.getPosition();
+                    mBaiduMap.clear();
+                    updateMapState();
+                }
 
-            @Override
-            public void onMarkerDragStart(Marker marker) {
+                @Override
+                public void onMarkerDragStart(Marker marker) {}
+            });
 
-            }
-        });
-
+        }else{
+            mFirstLocation = false;
+        }
 /********************搜索POI********************/
         PoiSearch ps = PoiSearch.newInstance();
-        //ps.setOnGetPoiSearchResultListener(getPoiSearchListener);
         ps.setOnGetPoiSearchResultListener(new OnGetPoiSearchResultListener() {
             @Override
             public void onGetPoiResult(PoiResult poiResult) {
@@ -331,10 +331,8 @@ public class ParkFragment extends Fragment {
                 BitmapDescriptor arrow = BitmapDescriptorFactory.fromBitmap(newbm);
 
 
-/********************加底部列表********************/
-                //BottomView bottomView = new BottomView(this,R.style.BottomViewTheme_Defalut,R.layout.bottom_view);
-
                 while (count<10 && count < resultNum){   //选择附近最多10个停车场
+                //while (count < resultNum){      //选择附近所有停车场
                     final PoiInfo pif =  poiResult.getAllPoi().get(count);
                     LatLng newPT = pif.location;
 
@@ -384,9 +382,8 @@ public class ParkFragment extends Fragment {
         nearbySearchOption.pageNum(10);
         ps.searchNearby(nearbySearchOption);// 发起附近检索请求
 
-
-
     }
+
 
 
 
