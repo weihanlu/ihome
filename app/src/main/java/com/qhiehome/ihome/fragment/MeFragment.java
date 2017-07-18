@@ -15,6 +15,7 @@ import com.google.gson.Gson;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.activity.BindLockActivity;
 import com.qhiehome.ihome.activity.LoginActivity;
+import com.qhiehome.ihome.activity.UserInfoActivity;
 import com.qhiehome.ihome.adapter.MeAdapter;
 import com.qhiehome.ihome.manager.ActivityManager;
 import com.qhiehome.ihome.network.ServiceGenerator;
@@ -92,6 +93,7 @@ public class MeFragment extends Fragment {
             public void onClick(int i) {
                 switch (i) {
                     case 0:
+                        UserInfoActivity.start(mContext);
                         break;
                     case 1:
                         BindLockActivity.start(mContext);
