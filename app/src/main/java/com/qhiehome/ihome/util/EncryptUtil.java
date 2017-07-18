@@ -1,5 +1,8 @@
 package com.qhiehome.ihome.util;
 
+import android.text.TextUtils;
+
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.security.NoSuchAlgorithmException;
@@ -21,23 +24,21 @@ public class EncryptUtil {
      * @param text 需要加密的原始明文
      * @param algo 加密算法类型
      * @return 加密后的密文
-     * @throws NoSuchAlgorithmException 当加密算法不可用时抛出此异常
      */
-    public static String encrypt(String text, ALGO algo) throws NoSuchAlgorithmException {
+    public static String encrypt(String text, ALGO algo) {
         String encrypted = null;
-        if (text == null || text.isEmpty()) {
+        if (TextUtils.isEmpty(text)) {
             return "";
-        } else {
-            switch (algo) {
-                case SHA_256:
-                    encrypted = DigestUtils.sha256Hex(text);
-                    break;
-                case SHA_512:
-                    encrypted = DigestUtils.sha512Hex(text);
-                    break;
-                default:
-                    break;
-            }
+        }
+        switch (algo) {
+            case SHA_256:
+                encrypted = new String(Hex.encodeHex(DigestUtils.sha256(text)));
+                break;
+            case SHA_512:
+                encrypted = new String(Hex.encodeHex(DigestUtils.sha256(text)));
+                break;
+            default:
+                break;
         }
         return encrypted;
     }

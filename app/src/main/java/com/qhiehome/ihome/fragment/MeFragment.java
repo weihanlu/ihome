@@ -11,11 +11,22 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.gson.Gson;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.activity.BindLockActivity;
 import com.qhiehome.ihome.activity.LoginActivity;
 import com.qhiehome.ihome.adapter.MeAdapter;
 import com.qhiehome.ihome.manager.ActivityManager;
+import com.qhiehome.ihome.network.ServiceGenerator;
+import com.qhiehome.ihome.network.model.signin.SigninRequest;
+import com.qhiehome.ihome.network.model.signin.SigninResponse;
+import com.qhiehome.ihome.network.service.SigninService;
+import com.qhiehome.ihome.util.EncryptUtil;
+import com.qhiehome.ihome.util.LogUtil;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -23,6 +34,8 @@ import com.qhiehome.ihome.manager.ActivityManager;
  * create an instance of this fragment.
  */
 public class MeFragment extends Fragment {
+
+    private static final String TAG = "MeFragment";
 
     private Context mContext;
     private String[] mTitles;
@@ -84,6 +97,23 @@ public class MeFragment extends Fragment {
                         BindLockActivity.start(mContext);
                         break;
                     case 2:
+                        SigninService signinService = ServiceGenerator.createService(SigninService.class);
+                        SigninRequest signinRequest = new SigninRequest(EncryptUtil.encrypt("123123", EncryptUtil.ALGO.SHA_256));
+                        Call<SigninResponse> call = signinService.signin(signinRequest);
+                        call.enqueue(new Callback<SigninResponse>() {
+                            @Override
+                            public void onResponse(Call<SigninResponse> call, Response<SigninResponse> response) {
+                                LogUtil.d(TAG, "response code is " + response.code());
+                                if (response.code() == 200) {
+                                    LogUtil.d(TAG, "response errmsg is " + response.body().getErrmsg());
+                                }
+                            }
+                            @Override
+                            public void onFailure(Call<SigninResponse> call, Throwable t) {
+
+                            }
+                        });
+
                         break;
                     case 3:
                         break;
