@@ -1,6 +1,15 @@
 apply plugin: 'com.android.application'
+apply plugin: 'android-apt'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'key0'
+            keyPassword 'kihome'
+            storeFile file('/Users/YueMa/AndroidStudioProjects/ihome/keystore.jks')
+            storePassword 'ksihome'
+        }
+    }
     compileSdkVersion 25
     buildToolsVersion "25.0.2"
     defaultConfig {
@@ -38,4 +47,6 @@ dependencies {
     compile 'com.android.support:design:25.3.1'
     testCompile 'junit:junit:4.12'
     compile files('libs/BaiduLBS_Android.jar')
+    compile 'com.jakewharton:butterknife:8.7.0'
+    apt 'com.jakewharton:butterknife-compiler:8.7.0'
 }

@@ -23,6 +23,8 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
     <application
         android:name=".IhomeApplication"
@@ -33,8 +35,11 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".activity.SplashActivity"
-            android:theme="@style/SplashTheme" />
-        <activity android:name=".activity.LoginActivity" />
+            android:theme="@style/SplashTheme"/>
+
+        <activity android:name=".activity.LoginActivity" >
+
+        </activity>
         <activity
             android:name=".activity.MainActivity"
             android:launchMode="singleTask">
@@ -43,6 +48,7 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
 
         <!-- 通过AndroidManifest配置AppKey和AppSecret，如果你选择通过代码配置，则不需要配置以下meta-data -->
@@ -54,7 +60,7 @@
             android:value="f7ca350d7aaec881298abe6879be6417" />
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
-            android:value="IhW0Py1ZmLGsMdLsu3stfFfAmMR8r8DG" />
+            android:value="R6nE16pZMKymjr58SMBAPsU3wC8BD9RY" />
         <service
             android:name="com.baidu.location.f"
             android:enabled="true"

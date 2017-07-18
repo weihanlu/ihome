@@ -15,16 +15,24 @@ import com.qhiehome.ihome.manager.ActivityManager;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import cn.smssdk.EventHandler;
 import cn.smssdk.SMSSDK;
 
 public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = LoginActivity.class.getSimpleName();
+    @BindView(R.id.et_phone)
+    EditText mEtPhone;
+    @BindView(R.id.et_vertify)
+    EditText mEtVerify;
+    @BindView(R.id.bt_verify)
+    Button mBtVerify;
 
-    private EditText mEtPhone;
-    private EditText mEtVerify;
-    private Button mBtVerify;
+//    private EditText mEtPhone;
+//    private EditText mEtVerify;
+//    private Button mBtVerify;
 
     private EventHandler mEventHandler;
 
@@ -40,11 +48,12 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        ButterKnife.bind(this);
         initView();
         ActivityManager.add(this);
         mEventHandler = new EventHandler() {
             public void afterEvent(int event, int result, Object data) {
-               if (result == SMSSDK.RESULT_COMPLETE){
+                if (result == SMSSDK.RESULT_COMPLETE) {
                     if (event == SMSSDK.EVENT_GET_VERIFICATION_CODE) {
                         // 获取验证码成功
                         // count down
@@ -60,14 +69,14 @@ public class LoginActivity extends AppCompatActivity {
                         MainActivity.start(LoginActivity.this);
                     }
                 } else {
-                   LogUtil.d(TAG, ((Throwable)data).getMessage());
-                   runOnUiThread(new Runnable() {
-                       @Override
-                       public void run() {
-                           ToastUtil.showToast(LoginActivity.this, "请重新输入验证码");
-                       }
-                   });
-               }
+                    LogUtil.d(TAG, ((Throwable) data).getMessage());
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            ToastUtil.showToast(LoginActivity.this, "请重新输入验证码");
+                        }
+                    });
+                }
             }
         };
         // 注册监听器
@@ -76,9 +85,9 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void initView() {
-        mEtPhone = (EditText) findViewById(R.id.et_phone);
-        mEtVerify = (EditText) findViewById(R.id.et_vertify);
-        mBtVerify = (Button) findViewById(R.id.bt_verify);
+//        mEtPhone = (EditText) findViewById(R.id.et_phone);
+//        mEtVerify = (EditText) findViewById(R.id.et_vertify);
+//        mBtVerify = (Button) findViewById(R.id.bt_verify);
     }
 
     public void login(View view) {

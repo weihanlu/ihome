@@ -159,7 +159,7 @@ public class ParkFragment extends Fragment {
 //        MyLocationConfigeration config = new MyLocationConfigeration(
 //                MyLocationConfigeration.LocationMode.FOLLOWING, true, myMarker);
 
-        mLocationClient.registerLocationListener(new BDLocationListener() {
+        mLocationClient.registerLocationListener(mBDLocationListener = new BDLocationListener() {
             @Override
             public void onReceiveLocation(BDLocation bdLocation) {
                 if (bdLocation == null || mMapView == null){
