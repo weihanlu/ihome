@@ -10,6 +10,4 @@ public class Constant {
 
     public static final String DEFAULT_PASSWORD = "123456";
 
-    public static final String BAIDU_DEVELOPER_KEY = "IhW0Py1ZmLGsMdLsu3stfFfAmMR8r8DG";
-
 }

@@ -22,7 +22,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:background="@drawable/up_lock"
-        android:clickable="true"
         android:layout_marginTop="96dp"/>
 
     <ImageView
@@ -30,8 +29,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
+        android:layout_marginTop="36dp"
         android:background="@drawable/down_lock"
-        android:clickable="true"
-        android:layout_marginTop="36dp"/>
+        />
+
+    <ImageView
+        android:id="@+id/img_conn_state"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/icon_device_disconnect"
+        android:layout_gravity="center"
+        android:layout_marginTop="48dp"
+        />
 
 </LinearLayout>

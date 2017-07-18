@@ -76,7 +76,7 @@ public class BLECommandIntent {
 	public static final String EXTRA_LOCK_RESULT = "extra.lock_result";
 
     //lock motion beacuse of auto park
-	public static final String RX_LCOK_AUTO_PARK = "action.RX_LCOK_AUTO_PARK";
+	public static final String RX_LOCK_AUTO_PARK = "action.RX_LCOK_AUTO_PARK";
 	public static final String EXTRA_LCOK_AUTO_PARK_STATUS = "extra.lock_auto_park_result";
 	public static final String EXTRA_LCOK_AUTO_PARK_ACTION = "extra.lock_auto_park_action";
 	

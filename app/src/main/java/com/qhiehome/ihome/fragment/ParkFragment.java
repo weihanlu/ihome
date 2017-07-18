@@ -1,7 +1,6 @@
 package com.qhiehome.ihome.fragment;
 
-
-import android.content.Intent;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -15,7 +14,6 @@ import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
-import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
@@ -36,16 +34,17 @@ import com.baidu.mapapi.search.poi.PoiNearbySearchOption;
 import com.baidu.mapapi.search.poi.PoiResult;
 import com.baidu.mapapi.search.poi.PoiSearch;
 import com.qhiehome.ihome.R;
-
+import com.qhiehome.ihome.util.LogUtil;
 
 /**
- * A simple {@link Fragment} subclass.
- * Use the {@link ParkFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * This fragment show the nearest districts around the user
+ * according to the current location info.
  */
 public class ParkFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+
+    private static final String TAG = "ParkFragment";
+
+    private Context mContext;
 
     private MapView mMapView;
     private BaiduMap mBaiduMap;
@@ -56,12 +55,59 @@ public class ParkFragment extends Fragment {
     private LocationClient mLocationClient;
     private BDLocationListener mBDLocationListener;
 
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private static final float MAP_ZOOM_LEVEL = 15f;
+    private static final String LOCATE_RESULT_TYPE = "bd09ll";
+    private static final int LOCATE_INTERVAL = 5000;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mContext = context;
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_park, container, false);
+        initView(view);
+        initMap();
+        initLocate();
+        return view;
+    }
+
+    @Override
+    public void onStart(){
+        // 如果要显示位置图标,必须先开启图层定位
+        super.onStart();
+        if (!mLocationClient.isStarted()) {
+            mLocationClient.start();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        mMapView.onResume();
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        mMapView.onPause();
+        super.onPause();
+        if (mLocationClient.isStarted()) {
+            mLocationClient.stop();
+        }
+
+    }
+
+    @Override
+    public void onDestroy() {
+        if (mLocationClient != null) {
+            mLocationClient.unRegisterLocationListener(mBDLocationListener);
+        }
+        mMapView.onDestroy();
+        super.onDestroy();
+    }
 
     public ParkFragment() {
         // Required empty public constructor
@@ -71,57 +117,25 @@ public class ParkFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
      * @return A new instance of fragment ParkFragment.
      */
-    // TODO: Rename and change types and number of parameters
-    public static ParkFragment newInstance(String param1, String param2) {
-        ParkFragment fragment = new ParkFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
+    public static ParkFragment newInstance() {
+        return new ParkFragment();
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-
-        View view = inflater.inflate(R.layout.fragment_park, container, false);
-
+    private void initView(View view) {
         mMapView = (MapView) view.findViewById(R.id.mv_park);
-        mBaiduMap = mMapView.getMap();
-        MapStatusUpdate msu = MapStatusUpdateFactory.zoomTo(15f);
-        mBaiduMap.setMapStatus(msu);
+    }
 
+    /**
+     * 设置百度地图的缩放级别和点击事件
+     */
+    private void initMap() {
+        mBaiduMap = mMapView.getMap();
+        MapStatusUpdate msu = MapStatusUpdateFactory.zoomTo(MAP_ZOOM_LEVEL);
+        mBaiduMap.setMapStatus(msu);
         mBaiduMap.setMyLocationEnabled(true);
         initListener();
-        locate();
-        mLocationClient.start();
-        /**
-         * 在请求定位之前应该确定mCLient已经启动
-         */
-        if (mLocationClient != null && mLocationClient.isStarted())
-            mLocationClient.requestLocation();
-            //onReceiveLocation();将得到定位数据
-        else{
-
-        }
-
-
-        return view;
     }
 
     private void initListener(){
@@ -139,16 +153,19 @@ public class ParkFragment extends Fragment {
         });
     }
 
-    private void locate(){
+    /**
+     * 定位相关配置
+     */
+    private void initLocate(){
         // 定位初始化
-        mLocationClient = new LocationClient(getActivity().getApplicationContext());
+        mLocationClient = new LocationClient(mContext.getApplicationContext());
         mFirstLocation = true;
         // 设置定位的相关配置
         LocationClientOption locOption = new LocationClientOption();
         locOption.setOpenGps(true);
         locOption.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy);// 设置定位模式
-        locOption.setCoorType("bd09ll");// 设置定位结果类型
-        locOption.setScanSpan(5000);// 设置发起定位请求的间隔时间,ms
+        locOption.setCoorType(LOCATE_RESULT_TYPE);// 设置定位结果类型
+        locOption.setScanSpan(LOCATE_INTERVAL);// 设置发起定位请求的间隔时间,ms
         locOption.setIsNeedAddress(true);// 返回的定位结果包含地址信息
         locOption.setNeedDeviceDirect(true);// 设置返回结果包含手机的方向
         mLocationClient.setLocOption(locOption);
@@ -159,7 +176,7 @@ public class ParkFragment extends Fragment {
 //        MyLocationConfigeration config = new MyLocationConfigeration(
 //                MyLocationConfigeration.LocationMode.FOLLOWING, true, myMarker);
 
-        mLocationClient.registerLocationListener(new BDLocationListener() {
+        mBDLocationListener = new BDLocationListener() {
             @Override
             public void onReceiveLocation(BDLocation bdLocation) {
                 if (bdLocation == null || mMapView == null){
@@ -172,8 +189,7 @@ public class ParkFragment extends Fragment {
                         .longitude(bdLocation.getLongitude()).build();
                 // 设置定位数据
                 mBaiduMap.setMyLocationData(locData);
-                if (mFirstLocation)
-                {
+                if (mFirstLocation) {
                     mFirstLocation = false;
                     LatLng xy = new LatLng(bdLocation.getLatitude(),
                             bdLocation.getLongitude());
@@ -185,30 +201,37 @@ public class ParkFragment extends Fragment {
             public void onConnectHotSpotMessage(String s, int i) {
 
             }
-        });
-    }
-
-    @Override
-    public void onStart(){
-        // 如果要显示位置图标,必须先开启图层定位
-        super.onStart();
-        mBaiduMap.setMyLocationEnabled(true);
-        if (!mLocationClient.isStarted())
-        {
-            mLocationClient.start();
+        };
+        mLocationClient.registerLocationListener(mBDLocationListener);
+        mLocationClient.start();
+        /*
+         * 在请求定位之前应该确定mCLient已经启动
+         */
+        if (mLocationClient != null && mLocationClient.isStarted()) {
+            mLocationClient.requestLocation();
+            //onReceiveLocation();将得到定位数据
         }
     }
 
+    // if this view is visible to user, start to request user location
+    // if this view is not visible to user, stop to request user
+    // location
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {        //核心方法，避免因Fragment跳转导致地图崩溃
         super.setUserVisibleHint(isVisibleToUser);
-        if (isVisibleToUser == true) {
-            // if this view is visible to user, start to request user location
+        LogUtil.i(TAG, "isVisibleToUser value is " + isVisibleToUser);
+        if (isVisibleToUser) {
             startRequestLocation();
-        } else if (isVisibleToUser == false) {
-            // if this view is not visible to user, stop to request user
-            // location
+        } else {
             stopRequestLocation();
+        }
+    }
+
+    private void startRequestLocation() {
+        if (mLocationClient != null) {
+            mLocationClient.registerLocationListener(mBDLocationListener);
+            mLocationClient.start();
+            mLocationClient.requestLocation();
         }
     }
 
@@ -219,47 +242,11 @@ public class ParkFragment extends Fragment {
         }
     }
 
-    long startTime;
-    long costTime;
-
-    private void startRequestLocation() {
-        // this nullpoint check is necessary
-        if (mLocationClient != null) {
-            mLocationClient.registerLocationListener(mBDLocationListener);
-            mLocationClient.start();
-            mLocationClient.requestLocation();
-            startTime = System.currentTimeMillis();
-        }
-    }
-
-    @Override
-    public void onPause() {
-        mMapView.onPause();
-        super.onPause();
-    }
-
-    @Override
-    public void onResume() {
-        mMapView.onResume();
-        super.onResume();
-    }
-
-    @Override
-    public void onDestroy() {
-        if (mLocationClient != null)
-            mLocationClient.stop();
-        mMapView.onDestroy();
-        super.onDestroy();
-    }
-
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         mMapView.onSaveInstanceState(outState);
-
     }
-
-
 
     private void updateMapState(){
         //BitmapDescriptor bitmap = BitmapDescriptorFactory.fromResource(R.drawable.flag);

@@ -30,3 +30,8 @@
 
 -dontwarn cn.smssdk.**
 -keep class cn.smssdk.**{*;}
+
+# BaiduMap
+-keep class com.baidu.** {*;}
+-keep class vi.com.** {*;}
+-dontwarn com.baidu.**
