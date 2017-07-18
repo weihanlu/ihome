@@ -29,6 +29,8 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
+    private static final int VIEWPAGER_OFF_LIMIT = 2;
+
     private ViewPager mViewPager;
     private List<Fragment> mTabs = new ArrayList<>();
 
@@ -114,6 +116,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
             }
         };
 
+        mViewPager.setOffscreenPageLimit(VIEWPAGER_OFF_LIMIT);
         mViewPager.setAdapter(mAdapter);
         mViewPager.addOnPageChangeListener(this);
     }

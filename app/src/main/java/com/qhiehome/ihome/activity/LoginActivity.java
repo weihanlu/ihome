@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -31,10 +30,6 @@ public class LoginActivity extends AppCompatActivity {
     @BindView(R.id.bt_verify)
     Button mBtVerify;
 
-//    private EditText mEtPhone;
-//    private EditText mEtVerify;
-//    private Button mBtVerify;
-
     private EventHandler mEventHandler;
 
     private static final int DEFAULT_PHONE_LEN = 11;
@@ -50,7 +45,6 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
-        initView();
         ActivityManager.add(this);
         mEventHandler = new EventHandler() {
             public void afterEvent(int event, int result, Object data) {
@@ -84,31 +78,6 @@ public class LoginActivity extends AppCompatActivity {
         SMSSDK.registerEventHandler(mEventHandler);
         mHandler = new Handler();
     }
-
-    private void initView() {
-//        mEtPhone = (EditText) findViewById(R.id.et_phone);
-//        mEtVerify = (EditText) findViewById(R.id.et_vertify);
-//        mBtVerify = (Button) findViewById(R.id.bt_verify);
-    }
-
-//    public void login(View view) {
-//        String phoneNum = mEtPhone.getText().toString();
-//        String verifyCode = mEtVerify.getText().toString();
-//        if (TextUtils.isEmpty(verifyCode)) {
-//            ToastUtil.showToast(this, "请输入验证码");
-//        } else {
-//            SMSSDK.submitVerificationCode(DEFAULT_COUNTRY_CODE, phoneNum, verifyCode);
-//        }
-//    }
-//
-//    public void verify(View view) {
-//        String phoneNum = mEtPhone.getText().toString();
-//        if (!TextUtils.isEmpty(phoneNum) && phoneNum.length() == DEFAULT_PHONE_LEN) {
-//            SMSSDK.getVerificationCode(DEFAULT_COUNTRY_CODE, phoneNum, null);
-//        } else {
-//            ToastUtil.showToast(this, "手机号码不符合要求，请重新输入");
-//        }
-//    }
 
     public static void start(Context context) {
         Intent intent = new Intent(context, LoginActivity.class);

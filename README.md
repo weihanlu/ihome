@@ -2,9 +2,9 @@
 a developing app
 
 ****
-###### Thanking for following plugins
+###### Thanks for following plugins
 - android-butterknife-zelezny
-- Gsonformat --->
+- Gsonformat
 - Android Postfix Completion
 - AndroidAccessors
 - Lifecycle Sorter
