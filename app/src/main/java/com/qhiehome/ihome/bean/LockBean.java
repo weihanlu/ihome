@@ -11,6 +11,12 @@ public class LockBean {
     private int isDefault;
     private int curState;
     private int autopark;
+
+    public LockBean(String address, String name) {
+        this.address = address;
+        this.name = name;
+    }
+
     public LockBean(String address,String name,  int role, int isDefault, String realName){
         this.address = address;
         this.realName = realName;

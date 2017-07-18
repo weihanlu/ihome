@@ -25,7 +25,6 @@ import com.qhiehome.ihome.ble.profile.BLECommandIntent;
 import com.qhiehome.ihome.ble.profile.IhomeService;
 import com.qhiehome.ihome.manager.ActivityManager;
 import com.qhiehome.ihome.manager.CommunicationManager;
-import com.qhiehome.ihome.util.APPUtils;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 import com.qhiehome.ihome.view.RecyclerViewEmptySupport;
@@ -232,7 +231,7 @@ public class BindLockActivity extends AppCompatActivity {
                 case BLECommandIntent.RX_PASSWORD_RESULT:
                     int actionId = intent.getIntExtra(BLECommandIntent.EXTRA_PSW_ACTION, -1);
                     int result = intent.getIntExtra(BLECommandIntent.EXTRA_PSW_RESULT, -1);
-                    String password = null;
+                    String password;
                     if (actionId == 0x01 && !setAlready) { // setting
                         if (result == 0x10) {
                             // add to database
@@ -262,6 +261,7 @@ public class BindLockActivity extends AppCompatActivity {
                                     cv.put(DatabaseHelper.FIELD_LOCK_NAME, mDeviceName);
                                 }
                                 if (isOwner) {
+                                    password = DEFAULT_PASSWORD;
                                     if (lock.getPassword().equals(password)) {
                                         change = true;
                                         cv.put(DatabaseHelper.FIELD_LOCK_PASSWORD, password);

@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     }
 
     private void initFragments() {
-        mTabs.add(ParkFragment.newInstance("", ""));
+        mTabs.add(ParkFragment.newInstance());
         mTabs.add(EditFragment.newInstance("", ""));
         mTabs.add(MeFragment.newInstance());
 
