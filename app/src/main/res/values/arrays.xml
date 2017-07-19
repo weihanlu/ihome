@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="titles">
-        <item>用户</item>
-        <item>绑定车位锁</item>
-        <item>历史订单</item>
-        <item>关于App</item>
-        <item>退出登录</item>
+        <item>Account</item>
+        <item>Binding Lock</item>
+        <item>My Orders</item>
+        <item>About</item>
+        <item>Logout</item>
     </string-array>
 </resources>

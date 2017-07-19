@@ -25,6 +25,10 @@ import com.qhiehome.ihome.network.service.SigninService;
 import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.LogUtil;
 
+import java.lang.reflect.Array;
+
+import butterknife.ButterKnife;
+import butterknife.BindArray;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -36,10 +40,12 @@ import retrofit2.Response;
  */
 public class MeFragment extends Fragment {
 
+    @BindArray(R.array.titles)
+    String[] mTitles;
+
     private static final String TAG = "MeFragment";
 
     private Context mContext;
-    private String[] mTitles;
 
     public MeFragment() {
         // Required empty public constructor
@@ -73,6 +79,7 @@ public class MeFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view =  inflater.inflate(R.layout.fragment_me, container, false);
+        ButterKnife.bind(this, view);
         initRecyclerView(view);
         return view;
     }
