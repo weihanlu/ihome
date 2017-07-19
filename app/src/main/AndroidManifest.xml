@@ -36,7 +36,8 @@
         <activity
             android:name=".activity.SplashActivity"
             android:theme="@style/SplashTheme" />
-        <activity android:name=".activity.LoginActivity"></activity>
+        <activity android:name=".activity.LoginActivity">
+        </activity>
         <activity
             android:name=".activity.MainActivity"
             android:launchMode="singleTask">

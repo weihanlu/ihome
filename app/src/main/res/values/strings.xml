@@ -6,4 +6,17 @@
     <string name="device_connected">Connection succeed</string>
     <string name="device_connecting">Connecting</string>
     <string name="device_disconnected">Disconnected</string>
+
+<!--LoginActivity-->
+    <string name="login_mobile">Mobile</string>
+    <string name="login_verification">Verification Code</string>
+    <string name="login">Login</string>
+    <string name="login_wrongMobile">Please re-enter your phone number</string>
+    <string name="login_emptyVerification">Please enter the verification code</string>
+    <string name="login_wrongVerification">Please re-enter the verification code</string>
+    <string name="login_getVerification">Get</string>
+    <string name="login_successGetVerification">Successful</string>
+
+
+
 </resources>

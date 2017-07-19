@@ -17,6 +17,7 @@ import com.qhiehome.ihome.util.ToastUtil;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.BindString;
 import cn.smssdk.EventHandler;
 import cn.smssdk.SMSSDK;
 
@@ -29,6 +30,16 @@ public class LoginActivity extends AppCompatActivity {
     EditText mEtVerify;
     @BindView(R.id.bt_verify)
     Button mBtVerify;
+    @BindString(R.string.login_emptyVerification)
+    String login_emptyVerification;
+    @BindString(R.string.login_wrongMobile)
+    String login_wrongMobile;
+    @BindString(R.string.login_wrongVerification)
+    String login_wrongVerification;
+    @BindString(R.string.login_getVerification)
+    String login_getVerification;
+    @BindString(R.string.login_successGetVerification)
+    String login_successGetVerification;
 
     private EventHandler mEventHandler;
 
@@ -68,7 +79,7 @@ public class LoginActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            ToastUtil.showToast(LoginActivity.this, "请重新输入验证码");
+                            ToastUtil.showToast(LoginActivity.this, login_wrongVerification);
                         }
                     });
                 }
@@ -98,7 +109,7 @@ public class LoginActivity extends AppCompatActivity {
         if (!TextUtils.isEmpty(phoneNum) && phoneNum.length() == DEFAULT_PHONE_LEN) {
             SMSSDK.getVerificationCode(DEFAULT_COUNTRY_CODE, phoneNum, null);
         } else {
-            ToastUtil.showToast(this, "手机号码不符合要求，请重新输入");
+            ToastUtil.showToast(this, login_wrongMobile);
         }
     }
 
@@ -107,7 +118,7 @@ public class LoginActivity extends AppCompatActivity {
         String phoneNum = mEtPhone.getText().toString();
         String verifyCode = mEtVerify.getText().toString();
         if (TextUtils.isEmpty(verifyCode)) {
-            ToastUtil.showToast(this, "请输入验证码");
+            ToastUtil.showToast(this, login_emptyVerification);
         } else {
             SMSSDK.submitVerificationCode(DEFAULT_COUNTRY_CODE, phoneNum, verifyCode);
         }
@@ -123,7 +134,7 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         public void run() {
-            ToastUtil.showToast(LoginActivity.this, "获取成功");
+            ToastUtil.showToast(LoginActivity.this, login_successGetVerification);
             mBtVerify.setClickable(false);
             String leftSeconds = String.format(getResources().getString(R.string.left_second), seconds);
             mBtVerify.setText(leftSeconds);
@@ -133,7 +144,7 @@ public class LoginActivity extends AppCompatActivity {
                 mHandler.postDelayed(this, 1000);
             } else if (seconds == 0) {
                 mBtVerify.setClickable(true);
-                mBtVerify.setText("获取");
+                mBtVerify.setText(login_getVerification);
                 mBtVerify.setTextColor(getResources().getColor(R.color.black));
             }
         }
