@@ -11,6 +11,5 @@ a developing app
 - JsonOnlineViewer
 - CodeGlance
 - findBugs-IDEA
-- ADB WIFI
 
 

@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     private void initFragments() {
         mTabs.add(ParkFragment.newInstance());
-        mTabs.add(MeFragment.newInstance("18813162186"));
+        mTabs.add(MeFragment.newInstance(mPhoneNum));
 
         FragmentPagerAdapter mAdapter = new FragmentPagerAdapter(getSupportFragmentManager()) {
             @Override
