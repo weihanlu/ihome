@@ -16,10 +16,10 @@ import android.widget.TextView;
 
 import com.baidu.mapapi.SDKInitializer;
 import com.qhiehome.ihome.R;
-import com.qhiehome.ihome.fragment.EditFragment;
 import com.qhiehome.ihome.fragment.MeFragment;
 import com.qhiehome.ihome.fragment.ParkFragment;
 import com.qhiehome.ihome.manager.ActivityManager;
+import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.ToastUtil;
 
 import java.util.ArrayList;
@@ -31,11 +31,12 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     private static final int VIEWPAGER_OFF_LIMIT = 2;
 
+    private String mPhoneNum;
+
     private ViewPager mViewPager;
     private List<Fragment> mTabs = new ArrayList<>();
 
     private TextView mTvPark;
-    private TextView mTvEdit;
     private TextView mTvMe;
 
     private List<TextView> mTabTextIndicators = new ArrayList<>();
@@ -50,6 +51,8 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         initView();
         initFragments();
         ActivityManager.add(this);
+
+        mPhoneNum = getIntent().getStringExtra(Constant.PHONE_PARAM);
     }
 
     @Override
@@ -64,18 +67,14 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         initToolbar();
 
         mTvPark = (TextView) findViewById(R.id.tv_park);
-        mTvEdit = (TextView) findViewById(R.id.tv_edit);
         mTvMe = (TextView) findViewById(R.id.tv_me);
         mTabTextIndicators.add(mTvPark);
-        mTabTextIndicators.add(mTvEdit);
         mTabTextIndicators.add(mTvMe);
 
         RelativeLayout mRlPark = (RelativeLayout) findViewById(R.id.rl_park);
-        RelativeLayout mRlEdit = (RelativeLayout) findViewById(R.id.rl_edit);
         RelativeLayout mRlMe = (RelativeLayout) findViewById(R.id.rl_me);
 
         mRlPark.setOnClickListener(this);
-        mRlEdit.setOnClickListener(this);
         mRlMe.setOnClickListener(this);
     }
 
@@ -101,8 +100,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     private void initFragments() {
         mTabs.add(ParkFragment.newInstance());
-        mTabs.add(EditFragment.newInstance("", ""));
-        mTabs.add(MeFragment.newInstance());
+        mTabs.add(MeFragment.newInstance("18813162186"));
 
         FragmentPagerAdapter mAdapter = new FragmentPagerAdapter(getSupportFragmentManager()) {
             @Override
@@ -135,12 +133,10 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
                 mTvPark.setTextColor(getResources().getColor(R.color.colorAccent));
                 break;
             case 1:
-                mToolbar.setTitle("发布");
-                mTvEdit.setTextColor(getResources().getColor(R.color.colorAccent));
-                break;
-            case 2:
                 mToolbar.setTitle("个人");
                 mTvMe.setTextColor(getResources().getColor(R.color.colorAccent));
+                break;
+            default:
                 break;
         }
     }
@@ -158,12 +154,8 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
                 mViewPager.setCurrentItem(0, false);
                 mTvPark.setTextColor(getResources().getColor(R.color.colorAccent));
                 break;
-            case R.id.rl_edit:
-                mViewPager.setCurrentItem(1, false);
-                mTvEdit.setTextColor(getResources().getColor(R.color.colorAccent));
-                break;
             case R.id.rl_me:
-                mViewPager.setCurrentItem(2, false);
+                mViewPager.setCurrentItem(1, false);
                 mTvMe.setTextColor(getResources().getColor(R.color.colorAccent));
                 break;
             default:
@@ -185,8 +177,9 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         startActivity(intent);
     }
 
-    public static void start(Context context) {
+    public static void start(Context context, String phoneNum) {
         Intent intent = new Intent(context, MainActivity.class);
+        intent.putExtra(Constant.PHONE_PARAM, phoneNum);
         context.startActivity(intent);
     }
 

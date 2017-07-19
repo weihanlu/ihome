@@ -23,6 +23,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.util.Constant;
+import com.qhiehome.ihome.util.LogUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +33,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class UserInfoActivity extends AppCompatActivity {
+
+    private static final String TAG = UserInfoActivity.class.getSimpleName();
 
     @BindView(R.id.tb_userinfo)
     Toolbar mTbUserinfo;
@@ -41,18 +45,26 @@ public class UserInfoActivity extends AppCompatActivity {
     private static final String[] LIST_CONTENT = {"头像","手机号","昵称"};
     private List<String> userInfo;
 
+    private String mPhoneNum;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_info);
         ButterKnife.bind(this);
+        initData();
         initView();
         initUserInfo();
     }
 
-    public static void start(Context context) {
+    private void initData() {
+        mPhoneNum = getIntent().getStringExtra(Constant.PHONE_PARAM);
+    }
+
+    public static void start(Context context, String phoneNum) {
         Intent intent = new Intent(context, UserInfoActivity.class);
+        intent.putExtra(Constant.PHONE_PARAM, phoneNum);
         context.startActivity(intent);
     }
 
@@ -62,7 +74,6 @@ public class UserInfoActivity extends AppCompatActivity {
     }
 
     private void initToolbar() {
-
         setSupportActionBar(mTbUserinfo);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -80,7 +91,8 @@ public class UserInfoActivity extends AppCompatActivity {
 
     private void initRecyclerView(){
         mRvUserinfo.setLayoutManager(new LinearLayoutManager(this));
-        mRvUserinfo.setAdapter(mAdapter = new UserInfoAdapter());
+        mAdapter = new UserInfoAdapter();
+        mRvUserinfo.setAdapter(mAdapter);
         Context context = UserInfoActivity.this;
         DividerItemDecoration did = new DividerItemDecoration(context,LinearLayoutManager.VERTICAL);
         mRvUserinfo.addItemDecoration(did);
@@ -89,7 +101,7 @@ public class UserInfoActivity extends AppCompatActivity {
     private void initUserInfo(){
         userInfo = new ArrayList<String>();
         userInfo.add("img_profile.jpg");
-        userInfo.add("13888888888");
+        userInfo.add(mPhoneNum);
         userInfo.add("铁锤");
     }
 

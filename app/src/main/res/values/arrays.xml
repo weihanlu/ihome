@@ -3,6 +3,7 @@
     <string-array name="titles">
         <item>Account</item>
         <item>Binding Lock</item>
+        <item>Release</item>
         <item>My Orders</item>
         <item>About</item>
         <item>Logout</item>

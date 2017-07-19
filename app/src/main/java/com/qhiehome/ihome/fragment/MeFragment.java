@@ -22,8 +22,10 @@ import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.signin.SigninRequest;
 import com.qhiehome.ihome.network.model.signin.SigninResponse;
 import com.qhiehome.ihome.network.service.SigninService;
+import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.LogUtil;
+import com.qhiehome.ihome.util.ToastUtil;
 
 import java.lang.reflect.Array;
 
@@ -45,6 +47,8 @@ public class MeFragment extends Fragment {
 
     private static final String TAG = "MeFragment";
 
+    private String mPhoneNum;
+
     private Context mContext;
 
     public MeFragment() {
@@ -57,9 +61,12 @@ public class MeFragment extends Fragment {
      *
      * @return A new instance of fragment ParkFragment.
      */
-    public static MeFragment newInstance() {
-        MeFragment fragment = new MeFragment();
-        return fragment;
+    public static MeFragment newInstance(String phoneNum) {
+        MeFragment meFragment = new MeFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString(Constant.PHONE_PARAM, phoneNum);
+        meFragment.setArguments(bundle);
+        return meFragment;
     }
 
     @Override
@@ -72,6 +79,9 @@ public class MeFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mTitles = mContext.getResources().getStringArray(R.array.titles);
+        if (getArguments() != null) {
+            mPhoneNum = getArguments().getString(Constant.PHONE_PARAM);
+        }
     }
 
     @Override
@@ -100,33 +110,19 @@ public class MeFragment extends Fragment {
             public void onClick(int i) {
                 switch (i) {
                     case 0:
-                        UserInfoActivity.start(mContext);
+                        UserInfoActivity.start(mContext, mPhoneNum);
                         break;
                     case 1:
                         BindLockActivity.start(mContext);
                         break;
                     case 2:
-                        SigninService signinService = ServiceGenerator.createService(SigninService.class);
-                        SigninRequest signinRequest = new SigninRequest(EncryptUtil.encrypt("123123", EncryptUtil.ALGO.SHA_256));
-                        Call<SigninResponse> call = signinService.signin(signinRequest);
-                        call.enqueue(new Callback<SigninResponse>() {
-                            @Override
-                            public void onResponse(Call<SigninResponse> call, Response<SigninResponse> response) {
-                                LogUtil.d(TAG, "response code is " + response.code());
-                                if (response.code() == 200) {
-                                    LogUtil.d(TAG, "response errmsg is " + response.body().getErrmsg());
-                                }
-                            }
-                            @Override
-                            public void onFailure(Call<SigninResponse> call, Throwable t) {
-
-                            }
-                        });
-
+                        ToastUtil.showToast(mContext, "发布");
                         break;
                     case 3:
                         break;
                     case 4:
+
+                    case 5:
                         ActivityManager.finishAll();
                         LoginActivity.start(mContext);
                         break;

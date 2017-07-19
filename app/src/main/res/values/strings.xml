@@ -7,7 +7,7 @@
     <string name="device_connecting">Connecting</string>
     <string name="device_disconnected">Disconnected</string>
 
-<!--LoginActivity-->
+    <!--LoginActivity-->
     <string name="login_mobile">Mobile</string>
     <string name="login_verification">Verification Code</string>
     <string name="login">Login</string>
@@ -17,6 +17,8 @@
     <string name="login_getVerification">Get</string>
     <string name="login_successGetVerification">Successful</string>
 
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 
 </resources>

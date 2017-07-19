@@ -11,6 +11,11 @@ import android.widget.EditText;
 
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.manager.ActivityManager;
+import com.qhiehome.ihome.network.ServiceGenerator;
+import com.qhiehome.ihome.network.model.signin.SigninRequest;
+import com.qhiehome.ihome.network.model.signin.SigninResponse;
+import com.qhiehome.ihome.network.service.SigninService;
+import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
@@ -20,6 +25,9 @@ import butterknife.OnClick;
 import butterknife.BindString;
 import cn.smssdk.EventHandler;
 import cn.smssdk.SMSSDK;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -49,7 +57,13 @@ public class LoginActivity extends AppCompatActivity {
 
     private static final int UPPER_SECOND = 60;
 
+    private static final int SUCCESS_MSG_CODE = 0;
+
+    private static final int REQUEST_SUCCESS_CODE = 200;
+
     private Handler mHandler;
+
+    private String mPhoneNum;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,8 +85,8 @@ public class LoginActivity extends AppCompatActivity {
                             }
                         });
                     } else if (event == SMSSDK.EVENT_SUBMIT_VERIFICATION_CODE) {
-                        // 提交验证码成功
-                        MainActivity.start(LoginActivity.this);
+                        // 验证码验证成功 + 同时向线上发送请求说明用户已登录后台
+                        webLogin();
                     }
                 } else {
                     LogUtil.d(TAG, ((Throwable) data).getMessage());
@@ -90,9 +104,22 @@ public class LoginActivity extends AppCompatActivity {
         mHandler = new Handler();
     }
 
-    public static void start(Context context) {
-        Intent intent = new Intent(context, LoginActivity.class);
-        context.startActivity(intent);
+    private void webLogin() {
+        SigninService signinService = ServiceGenerator.createService(SigninService.class);
+        SigninRequest signinRequest = new SigninRequest(EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.SHA_256));
+        Call<SigninResponse> call = signinService.signin(signinRequest);
+        call.enqueue(new Callback<SigninResponse>() {
+            @Override
+            public void onResponse(Call<SigninResponse> call, Response<SigninResponse> response) {
+                if (response.code() == REQUEST_SUCCESS_CODE && response.body().getErrcode() == SUCCESS_MSG_CODE) {
+                    MainActivity.start(LoginActivity.this, mPhoneNum);
+                }
+            }
+            @Override
+            public void onFailure(Call<SigninResponse> call, Throwable t) {
+                LogUtil.e(TAG, "retrofit login error: " + t.getMessage());
+            }
+        });
     }
 
     @Override
@@ -103,11 +130,16 @@ public class LoginActivity extends AppCompatActivity {
         mHandler.removeCallbacksAndMessages(null);
     }
 
+    public static void start(Context context) {
+        Intent intent = new Intent(context, LoginActivity.class);
+        context.startActivity(intent);
+    }
+
     @OnClick(R.id.bt_verify)
     public void verify() {
-        String phoneNum = mEtPhone.getText().toString();
-        if (!TextUtils.isEmpty(phoneNum) && phoneNum.length() == DEFAULT_PHONE_LEN) {
-            SMSSDK.getVerificationCode(DEFAULT_COUNTRY_CODE, phoneNum, null);
+        mPhoneNum = mEtPhone.getText().toString();
+        if (!TextUtils.isEmpty(mPhoneNum) && mPhoneNum.length() == DEFAULT_PHONE_LEN) {
+            SMSSDK.getVerificationCode(DEFAULT_COUNTRY_CODE, mPhoneNum, null);
         } else {
             ToastUtil.showToast(this, login_wrongMobile);
         }
@@ -115,12 +147,12 @@ public class LoginActivity extends AppCompatActivity {
 
     @OnClick(R.id.bt_login)
     public void login() {
-        String phoneNum = mEtPhone.getText().toString();
+        mPhoneNum = mEtPhone.getText().toString();
         String verifyCode = mEtVerify.getText().toString();
         if (TextUtils.isEmpty(verifyCode)) {
             ToastUtil.showToast(this, login_emptyVerification);
         } else {
-            SMSSDK.submitVerificationCode(DEFAULT_COUNTRY_CODE, phoneNum, verifyCode);
+            SMSSDK.submitVerificationCode(DEFAULT_COUNTRY_CODE, mPhoneNum, verifyCode);
         }
     }
 
@@ -134,7 +166,6 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         public void run() {
-            ToastUtil.showToast(LoginActivity.this, login_successGetVerification);
             mBtVerify.setClickable(false);
             String leftSeconds = String.format(getResources().getString(R.string.left_second), seconds);
             mBtVerify.setText(leftSeconds);

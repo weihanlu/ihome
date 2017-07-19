@@ -10,4 +10,6 @@ public class Constant {
 
     public static final String DEFAULT_PASSWORD = "123456";
 
+    public static final String PHONE_PARAM = "phoneNum";
+
 }
