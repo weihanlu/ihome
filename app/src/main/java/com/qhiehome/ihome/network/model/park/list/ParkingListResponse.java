@@ -1,6 +1,8 @@
 package com.qhiehome.ihome.network.model.park.list;
 
-public class ParkingListResponse {
+import com.qhiehome.ihome.network.model.base.Response;
+
+public class ParkingListResponse extends Response{
 
     /**
      * data : {"parking":{"id":123456789,"estate_id":123456789,"owner_id":123456789,"name":"xxxxxx","state":9}}
@@ -9,8 +11,6 @@ public class ParkingListResponse {
      */
 
     private DataBean data;
-    private int errcode;
-    private String errmsg;
 
     public DataBean getData() {
         return data;
@@ -18,22 +18,6 @@ public class ParkingListResponse {
 
     public void setData(DataBean data) {
         this.data = data;
-    }
-
-    public int getErrcode() {
-        return errcode;
-    }
-
-    public void setErrcode(int errcode) {
-        this.errcode = errcode;
-    }
-
-    public String getErrmsg() {
-        return errmsg;
-    }
-
-    public void setErrmsg(String errmsg) {
-        this.errmsg = errmsg;
     }
 
     public static class DataBean {

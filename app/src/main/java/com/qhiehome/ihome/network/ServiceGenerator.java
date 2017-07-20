@@ -2,6 +2,8 @@ package com.qhiehome.ihome.network;
 
 import android.app.Service;
 
+import com.qhiehome.ihome.network.service.signin.SigninService;
+
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;

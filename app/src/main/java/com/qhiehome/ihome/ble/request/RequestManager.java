@@ -5,7 +5,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 
-import com.qhiehome.ihome.IhomeApplication;
+import com.qhiehome.ihome.application.IhomeApplication;
 import com.qhiehome.ihome.util.APPUtils;
 import com.qhiehome.ihome.util.LogUtil;
 

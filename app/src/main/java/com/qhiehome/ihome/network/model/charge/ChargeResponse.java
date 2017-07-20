@@ -1,10 +1,8 @@
 package com.qhiehome.ihome.network.model.charge;
 
-/**
- * Created by YueMa on 2017/7/20.
- */
+import com.qhiehome.ihome.network.model.base.Response;
 
-public class ChargeResponse {
+public class ChargeResponse extends Response {
 
     /**
      * data : {"phone":"xxx...xxx","order":{"id":123456789,"fee":12.34}}
@@ -13,8 +11,6 @@ public class ChargeResponse {
      */
 
     private DataBean data;
-    private int errcode;
-    private String errmsg;
 
     public DataBean getData() {
         return data;
@@ -22,22 +18,6 @@ public class ChargeResponse {
 
     public void setData(DataBean data) {
         this.data = data;
-    }
-
-    public int getErrcode() {
-        return errcode;
-    }
-
-    public void setErrcode(int errcode) {
-        this.errcode = errcode;
-    }
-
-    public String getErrmsg() {
-        return errmsg;
-    }
-
-    public void setErrmsg(String errmsg) {
-        this.errmsg = errmsg;
     }
 
     public static class DataBean {

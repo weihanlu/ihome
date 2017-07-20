@@ -1,6 +1,8 @@
 package com.qhiehome.ihome.network.model.lock.list;
 
-public class LockListResponse {
+import com.qhiehome.ihome.network.model.base.Response;
+
+public class LockListResponse extends Response{
 
     /**
      * data : {"lock":{"id":123456789,"owner_id":123456789,"parking_id":123456789,"gateway_id":"xxxxxx","state":9}}
@@ -9,8 +11,6 @@ public class LockListResponse {
      */
 
     private DataBean data;
-    private int errcode;
-    private String errmsg;
 
     public DataBean getData() {
         return data;
@@ -18,22 +18,6 @@ public class LockListResponse {
 
     public void setData(DataBean data) {
         this.data = data;
-    }
-
-    public int getErrcode() {
-        return errcode;
-    }
-
-    public void setErrcode(int errcode) {
-        this.errcode = errcode;
-    }
-
-    public String getErrmsg() {
-        return errmsg;
-    }
-
-    public void setErrmsg(String errmsg) {
-        this.errmsg = errmsg;
     }
 
     public static class DataBean {

@@ -1,6 +1,4 @@
-package com.qhiehome.ihome;
-
-import android.app.Application;
+package com.qhiehome.ihome.application;
 
 import com.mob.MobApplication;
 

@@ -8,11 +8,8 @@ import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
-import com.qhiehome.ihome.IhomeApplication;
+import com.qhiehome.ihome.application.IhomeApplication;
 import com.qhiehome.ihome.R;
 
 import java.io.FileInputStream;

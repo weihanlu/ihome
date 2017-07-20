@@ -1,6 +1,8 @@
 package com.qhiehome.ihome.network.model.orderlist;
 
-public class OrderListResponse {
+import com.qhiehome.ihome.network.model.base.Response;
+
+public class OrderListResponse extends Response{
 
     /**
      * data : {"order":{"id":123456789,"lock_id":123456789,"user_id":123456789,"enter_time":1499826992574,"leave_time":1499826992574,"payment_time":1499826992574,"close_time":1499826992574,"pay_fee":100,"owner_fee":80,"estate_fee":10,"platform_fee":10,"state":9}}
@@ -9,8 +11,6 @@ public class OrderListResponse {
      */
 
     private DataBean data;
-    private int errcode;
-    private String errmsg;
 
     public DataBean getData() {
         return data;
@@ -18,22 +18,6 @@ public class OrderListResponse {
 
     public void setData(DataBean data) {
         this.data = data;
-    }
-
-    public int getErrcode() {
-        return errcode;
-    }
-
-    public void setErrcode(int errcode) {
-        this.errcode = errcode;
-    }
-
-    public String getErrmsg() {
-        return errmsg;
-    }
-
-    public void setErrmsg(String errmsg) {
-        this.errmsg = errmsg;
     }
 
     public static class DataBean {

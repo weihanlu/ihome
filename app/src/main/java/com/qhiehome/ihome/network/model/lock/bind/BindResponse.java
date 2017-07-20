@@ -1,28 +1,7 @@
 package com.qhiehome.ihome.network.model.lock.bind;
 
-public class BindResponse {
+import com.qhiehome.ihome.network.model.base.Response;
 
-    /**
-     * errcode : 0
-     * errmsg : success
-     */
+public class BindResponse extends Response{
 
-    private int errcode;
-    private String errmsg;
-
-    public int getErrcode() {
-        return errcode;
-    }
-
-    public void setErrcode(int errcode) {
-        this.errcode = errcode;
-    }
-
-    public String getErrmsg() {
-        return errmsg;
-    }
-
-    public void setErrmsg(String errmsg) {
-        this.errmsg = errmsg;
-    }
 }

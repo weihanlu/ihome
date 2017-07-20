@@ -1,10 +1,8 @@
 package com.qhiehome.ihome.network.model.estatelist;
 
-/**
- * Created by YueMa on 2017/7/20.
- */
+import com.qhiehome.ihome.network.model.base.Response;
 
-public class EstateListResponse {
+public class EstateListResponse extends Response{
 
     /**
      * data : {"estate":{"id":123456789,"city":"北京","district":"朝阳","name":"东山墅","alias_name":"value","addresss":"东四环北路7号","x":116.499428,"y":39.956695,"introduction":"别墅","owner_settle":80,"estate_settle":10,"platform_settle":10,"state":9}}
@@ -13,8 +11,6 @@ public class EstateListResponse {
      */
 
     private DataBean data;
-    private int errcode;
-    private String errmsg;
 
     public DataBean getData() {
         return data;
@@ -22,22 +18,6 @@ public class EstateListResponse {
 
     public void setData(DataBean data) {
         this.data = data;
-    }
-
-    public int getErrcode() {
-        return errcode;
-    }
-
-    public void setErrcode(int errcode) {
-        this.errcode = errcode;
-    }
-
-    public String getErrmsg() {
-        return errmsg;
-    }
-
-    public void setErrmsg(String errmsg) {
-        this.errmsg = errmsg;
     }
 
     public static class DataBean {

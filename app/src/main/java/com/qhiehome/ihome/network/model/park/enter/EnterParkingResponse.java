@@ -1,10 +1,8 @@
 package com.qhiehome.ihome.network.model.park.enter;
 
-/**
- * Created by YueMa on 2017/7/20.
- */
+import com.qhiehome.ihome.network.model.base.Response;
 
-public class EnterParkingResponse {
+public class EnterParkingResponse extends Response {
 
     /**
      * data : {"order":{"id":123456789,"lock_id":123456789,"user_id":123456789,"enter_time":1499826992574,"pay_fee":0,"state":9}}
@@ -13,8 +11,6 @@ public class EnterParkingResponse {
      */
 
     private DataBean data;
-    private int errcode;
-    private String errmsg;
 
     public DataBean getData() {
         return data;
@@ -22,22 +18,6 @@ public class EnterParkingResponse {
 
     public void setData(DataBean data) {
         this.data = data;
-    }
-
-    public int getErrcode() {
-        return errcode;
-    }
-
-    public void setErrcode(int errcode) {
-        this.errcode = errcode;
-    }
-
-    public String getErrmsg() {
-        return errmsg;
-    }
-
-    public void setErrmsg(String errmsg) {
-        this.errmsg = errmsg;
     }
 
     public static class DataBean {

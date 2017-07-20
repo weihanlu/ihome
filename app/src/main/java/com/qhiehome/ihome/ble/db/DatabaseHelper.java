@@ -6,7 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.qhiehome.ihome.IhomeApplication;
+import com.qhiehome.ihome.application.IhomeApplication;
 import com.qhiehome.ihome.bean.LockBean;
 import com.qhiehome.ihome.util.LogUtil;
 
