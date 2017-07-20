@@ -77,7 +77,7 @@
             android:name=".activity.LockDetailActivity"
             android:launchMode="singleTop" />
         <activity android:name=".activity.UserInfoActivity" />
-
+        <activity android:name=".activity.ParkingListActivity"></activity>
     </application>
 
 </manifest>
