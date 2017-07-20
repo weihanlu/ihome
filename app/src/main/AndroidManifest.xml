@@ -36,7 +36,7 @@
         <activity
             android:name=".activity.SplashActivity"
             android:theme="@style/SplashTheme" />
-        <activity android:name=".activity.LoginActivity"></activity>
+        <activity android:name=".activity.LoginActivity" />
         <activity
             android:name=".activity.MainActivity"
             android:launchMode="singleTask">
@@ -61,7 +61,7 @@
         <service
             android:name="com.baidu.location.f"
             android:enabled="true"
-            android:process=":remote"></service>
+            android:process=":remote" />
 
         <activity android:name=".activity.BindLockActivity" />
         <activity
@@ -76,7 +76,8 @@
         <activity
             android:name=".activity.LockDetailActivity"
             android:launchMode="singleTop" />
-        <activity android:name=".activity.UserInfoActivity"></activity>
+        <activity android:name=".activity.UserInfoActivity" />
+
     </application>
 
 </manifest>
