@@ -1,4 +1,4 @@
-package com.qhiehome.ihome.network.model.enterparking;
+package com.qhiehome.ihome.network.model.park.enter;
 
 /**
  * Created by YueMa on 2017/7/20.

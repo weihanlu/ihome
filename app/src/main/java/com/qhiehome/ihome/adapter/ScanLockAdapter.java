@@ -13,7 +13,7 @@ import com.qhiehome.ihome.bean.BLEDevice;
 import java.util.ArrayList;
 
 /**
- * the adapter used in {@link com.qhiehome.ihome.activity.BluetoothScanActivity}
+ * the adapter used in {@see com.qhiehome.ihome.activity.BluetoothScanActivity}
  */
 
 public class ScanLockAdapter extends RecyclerView.Adapter<ScanLockAdapter.ScanLockHolder> {

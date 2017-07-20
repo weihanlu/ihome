@@ -11,29 +11,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.gson.Gson;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.activity.BindLockActivity;
 import com.qhiehome.ihome.activity.LoginActivity;
 import com.qhiehome.ihome.activity.UserInfoActivity;
 import com.qhiehome.ihome.adapter.MeAdapter;
 import com.qhiehome.ihome.manager.ActivityManager;
-import com.qhiehome.ihome.network.ServiceGenerator;
-import com.qhiehome.ihome.network.model.signin.SigninRequest;
-import com.qhiehome.ihome.network.model.signin.SigninResponse;
-import com.qhiehome.ihome.network.service.SigninService;
 import com.qhiehome.ihome.util.Constant;
-import com.qhiehome.ihome.util.EncryptUtil;
-import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.ToastUtil;
-
-import java.lang.reflect.Array;
 
 import butterknife.ButterKnife;
 import butterknife.BindArray;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 /**
  * A simple {@link Fragment} subclass.

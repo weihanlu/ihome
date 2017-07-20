@@ -1,7 +1,7 @@
-package com.qhiehome.ihome.network.service;
+package com.qhiehome.ihome.network.service.park;
 
-import com.qhiehome.ihome.network.model.enterparking.EnterParkingRequest;
-import com.qhiehome.ihome.network.model.enterparking.EnterParkingResponse;
+import com.qhiehome.ihome.network.model.park.enter.EnterParkingRequest;
+import com.qhiehome.ihome.network.model.park.enter.EnterParkingResponse;
 
 import retrofit2.Call;
 import retrofit2.http.Body;

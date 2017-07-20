@@ -1,13 +1,9 @@
-package com.qhiehome.ihome.network.model.parkinglist;
+package com.qhiehome.ihome.network.model.lock.list;
 
-/**
- * Created by YueMa on 2017/7/20.
- */
-
-public class ParkingListResponse {
+public class LockListResponse {
 
     /**
-     * data : {"parking":{"id":123456789,"estate_id":123456789,"owner_id":123456789,"name":"xxxxxx","state":9}}
+     * data : {"lock":{"id":123456789,"owner_id":123456789,"parking_id":123456789,"gateway_id":"xxxxxx","state":9}}
      * errcode : 0
      * errmsg : success
      */
@@ -42,32 +38,32 @@ public class ParkingListResponse {
 
     public static class DataBean {
         /**
-         * parking : {"id":123456789,"estate_id":123456789,"owner_id":123456789,"name":"xxxxxx","state":9}
+         * lock : {"id":123456789,"owner_id":123456789,"parking_id":123456789,"gateway_id":"xxxxxx","state":9}
          */
 
-        private ParkingBean[] parking;
+        private LockBean[] lock;
 
-        public ParkingBean[] getParking() {
-            return parking;
+        public LockBean[] getLock() {
+            return lock;
         }
 
-        public void setParking(ParkingBean[] parking) {
-            this.parking = parking;
+        public void setLock(LockBean[] lock) {
+            this.lock = lock;
         }
 
-        public static class ParkingBean {
+        public static class LockBean {
             /**
              * id : 123456789
-             * estate_id : 123456789
              * owner_id : 123456789
-             * name : xxxxxx
+             * parking_id : 123456789
+             * gateway_id : xxxxxx
              * state : 9
              */
 
             private int id;
-            private int estate_id;
             private int owner_id;
-            private String name;
+            private int parking_id;
+            private String gateway_id;
             private int state;
 
             public int getId() {
@@ -78,14 +74,6 @@ public class ParkingListResponse {
                 this.id = id;
             }
 
-            public int getEstate_id() {
-                return estate_id;
-            }
-
-            public void setEstate_id(int estate_id) {
-                this.estate_id = estate_id;
-            }
-
             public int getOwner_id() {
                 return owner_id;
             }
@@ -94,12 +82,20 @@ public class ParkingListResponse {
                 this.owner_id = owner_id;
             }
 
-            public String getName() {
-                return name;
+            public int getParking_id() {
+                return parking_id;
             }
 
-            public void setName(String name) {
-                this.name = name;
+            public void setParking_id(int parking_id) {
+                this.parking_id = parking_id;
+            }
+
+            public String getGateway_id() {
+                return gateway_id;
+            }
+
+            public void setGateway_id(String gateway_id) {
+                this.gateway_id = gateway_id;
             }
 
             public int getState() {

@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 /**
- * Me Fragment recyclerView adapter
+ * BindLockAdapter recyclerView adapter {@link com.qhiehome.ihome.activity.BindLockActivity}
  */
 
 public class BindLockAdapter extends RecyclerView.Adapter<BindLockAdapter.BindLockHolder>{

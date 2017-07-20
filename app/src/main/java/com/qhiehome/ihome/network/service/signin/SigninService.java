@@ -1,4 +1,4 @@
-package com.qhiehome.ihome.network.service;
+package com.qhiehome.ihome.network.service.signin;
 
 import com.qhiehome.ihome.network.model.signin.SigninRequest;
 import com.qhiehome.ihome.network.model.signin.SigninResponse;
