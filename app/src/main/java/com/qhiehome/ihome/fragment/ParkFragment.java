@@ -1,6 +1,7 @@
 package com.qhiehome.ihome.fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -34,6 +35,8 @@ import com.baidu.mapapi.search.poi.PoiNearbySearchOption;
 import com.baidu.mapapi.search.poi.PoiResult;
 import com.baidu.mapapi.search.poi.PoiSearch;
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.activity.MainActivity;
+import com.qhiehome.ihome.activity.ParkingListActivity;
 import com.qhiehome.ihome.util.LogUtil;
 
 /**
@@ -54,6 +57,7 @@ public class ParkFragment extends Fragment {
     private boolean mFirstLocation;
     private LocationClient mLocationClient;
     private BDLocationListener mBDLocationListener;
+    private Intent mIntent;
 
     private static final float MAP_ZOOM_LEVEL = 15f;
     private static final String LOCATE_RESULT_TYPE = "bd09ll";
@@ -349,18 +353,18 @@ public class ParkFragment extends Fragment {
                 }
 
                 /********************跳转、传递参数********************/
-//               mOnMarkerClickListener = new BaiduMap.OnMarkerClickListener() {
-//                    @Override
-//                    public boolean onMarkerClick(Marker marker1) {
-//                        intent = new Intent(MainActivity.this,ListViewActivity.class);
-//                        //bundle1 = marker1.getExtraInfo();
-//                        String currentStr = marker1.getExtraInfo().getString("name");
-//                        intent.putExtra("name",currentStr);
-//                        startActivity(intent);
-//                        return false;
-//                    }
-//                };
-//                mBaiduMap.setOnMarkerClickListener(mOnMarkerClickListener);
+               mOnMarkerClickListener = new BaiduMap.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(Marker marker1) {
+                        mIntent = new Intent(getActivity(),ParkingListActivity.class);
+                        //bundle1 = marker1.getExtraInfo();
+                        String currentStr = marker1.getExtraInfo().getString("name");
+                        mIntent.putExtra("name",currentStr);
+                        startActivity(mIntent);
+                        return false;
+                    }
+                };
+                mBaiduMap.setOnMarkerClickListener(mOnMarkerClickListener);
 
             }
 
