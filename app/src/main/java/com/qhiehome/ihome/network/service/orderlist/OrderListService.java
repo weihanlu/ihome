@@ -1,4 +1,4 @@
-package com.qhiehome.ihome.network.service;
+package com.qhiehome.ihome.network.service.orderlist;
 
 import com.qhiehome.ihome.network.model.orderlist.OrderListRequest;
 import com.qhiehome.ihome.network.model.orderlist.OrderListResponse;

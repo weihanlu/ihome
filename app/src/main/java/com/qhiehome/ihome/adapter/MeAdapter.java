@@ -10,7 +10,7 @@ import android.widget.TextView;
 import com.qhiehome.ihome.R;
 
 /**
- * Me Fragment recyclerView adapter
+ * Me Fragment recyclerView adapter {@link com.qhiehome.ihome.fragment.MeFragment}
  */
 
 public class MeAdapter extends RecyclerView.Adapter<MeAdapter.MeHolder>{

@@ -1,8 +1,4 @@
-package com.qhiehome.ihome.network.model.bind;
-
-/**
- * Created by YueMa on 2017/7/20.
- */
+package com.qhiehome.ihome.network.model.lock.bind;
 
 public class BindRequest {
 

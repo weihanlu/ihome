@@ -1,8 +1,4 @@
-package com.qhiehome.ihome.network.model.parkinglist;
-
-/**
- * Created by YueMa on 2017/7/20.
- */
+package com.qhiehome.ihome.network.model.park.list;
 
 public class ParkingListRequest {
 

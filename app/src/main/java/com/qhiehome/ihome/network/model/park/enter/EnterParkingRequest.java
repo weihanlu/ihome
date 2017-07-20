@@ -1,8 +1,4 @@
-package com.qhiehome.ihome.network.model.enterparking;
-
-/**
- * Created by YueMa on 2017/7/20.
- */
+package com.qhiehome.ihome.network.model.park.enter;
 
 public class EnterParkingRequest {
 

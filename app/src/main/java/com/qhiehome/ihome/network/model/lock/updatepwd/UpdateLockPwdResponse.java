@@ -1,10 +1,7 @@
-package com.qhiehome.ihome.network.model.bind;
+package com.qhiehome.ihome.network.model.lock.updatepwd;
 
-/**
- * Created by YueMa on 2017/7/20.
- */
+public class UpdateLockPwdResponse {
 
-public class BindResponse {
 
     /**
      * errcode : 0

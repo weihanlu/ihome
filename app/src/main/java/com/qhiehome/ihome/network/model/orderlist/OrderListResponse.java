@@ -1,9 +1,5 @@
 package com.qhiehome.ihome.network.model.orderlist;
 
-/**
- * Created by YueMa on 2017/7/20.
- */
-
 public class OrderListResponse {
 
     /**

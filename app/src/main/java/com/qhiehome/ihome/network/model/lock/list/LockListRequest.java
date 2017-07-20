@@ -1,4 +1,4 @@
-package com.qhiehome.ihome.network.model.locklist;
+package com.qhiehome.ihome.network.model.lock.list;
 
 /**
  * Created by YueMa on 2017/7/20.
