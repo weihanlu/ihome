@@ -50,6 +50,7 @@ import butterknife.Unbinder;
  */
 public class ParkFragment extends Fragment {
 
+
     public static final String TAG = "ParkFragment";
     @BindView(R.id.btn_map_location)
     Button mBtnMapLocation;
@@ -288,7 +289,7 @@ public class ParkFragment extends Fragment {
                     true);
             BitmapDescriptor newbmd = BitmapDescriptorFactory.fromBitmap(newbm);
 
-/********************设置覆盖物********************/
+            // 设置覆盖物
             final Marker marker;
             OverlayOptions options;
             options = new MarkerOptions()
@@ -319,7 +320,7 @@ public class ParkFragment extends Fragment {
         } else {
             mFirstLocation = false;
         }
-/********************搜索POI********************/
+        // 搜索POI
         PoiSearch ps = PoiSearch.newInstance();
         ps.setOnGetPoiSearchResultListener(new OnGetPoiSearchResultListener() {
             @Override
@@ -367,7 +368,7 @@ public class ParkFragment extends Fragment {
                     count++;
                 }
 
-                /********************跳转、传递参数********************/
+                // 跳转、传递参数
                 mOnMarkerClickListener = new BaiduMap.OnMarkerClickListener() {
                     @Override
                     public boolean onMarkerClick(Marker marker1) {

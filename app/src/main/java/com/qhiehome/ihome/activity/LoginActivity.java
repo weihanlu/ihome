@@ -165,6 +165,7 @@ public class LoginActivity extends AppCompatActivity {
     public void verify() {
         mPhoneNum = mEtPhone.getText().toString();
         if (!TextUtils.isEmpty(mPhoneNum) && mPhoneNum.length() == DEFAULT_PHONE_LEN) {
+            mEtVerify.setText("");
             SMSSDK.getVerificationCode(DEFAULT_COUNTRY_CODE, mPhoneNum, null);
         } else {
             ToastUtil.showToast(this, login_wrongMobile);

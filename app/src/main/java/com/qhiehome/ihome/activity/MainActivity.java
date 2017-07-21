@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void initToolbar() {
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
-        mToolbar.setTitle("附近");
+        mToolbar.setTitle("Ihome");
         setSupportActionBar(mToolbar);
 
     }

@@ -12,4 +12,6 @@ public class Constant {
 
     public static final String PHONE_PARAM = "phoneNum";
 
+    public static final int TIME_PERIOD_LIMIT = 3;
+
 }

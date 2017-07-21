@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.activity.BindLockActivity;
 import com.qhiehome.ihome.activity.LoginActivity;
+import com.qhiehome.ihome.activity.PublishParkingActivity;
 import com.qhiehome.ihome.activity.UserInfoActivity;
 import com.qhiehome.ihome.adapter.MeAdapter;
 import com.qhiehome.ihome.manager.ActivityManager;
@@ -104,7 +105,7 @@ public class MeFragment extends Fragment {
                         BindLockActivity.start(mContext);
                         break;
                     case 2:
-                        ToastUtil.showToast(mContext, "发布");
+                        PublishParkingActivity.start(mContext);
                         break;
                     case 3:
                         break;
