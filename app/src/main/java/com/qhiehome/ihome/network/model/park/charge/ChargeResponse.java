@@ -1,13 +1,11 @@
-package com.qhiehome.ihome.network.model.charge;
+package com.qhiehome.ihome.network.model.park.charge;
 
 import com.qhiehome.ihome.network.model.base.Response;
 
 public class ChargeResponse extends Response {
 
     /**
-     * data : {"phone":"xxx...xxx","order":{"id":123456789,"fee":12.34}}
-     * errcode : 0
-     * errmsg : success
+     * data : {"order":{"id":123456789,"fee":12.34}}
      */
 
     private DataBean data;
@@ -22,20 +20,10 @@ public class ChargeResponse extends Response {
 
     public static class DataBean {
         /**
-         * phone : xxx...xxx
          * order : {"id":123456789,"fee":12.34}
          */
 
-        private String phone;
         private OrderBean order;
-
-        public String getPhone() {
-            return phone;
-        }
-
-        public void setPhone(String phone) {
-            this.phone = phone;
-        }
 
         public OrderBean getOrder() {
             return order;
