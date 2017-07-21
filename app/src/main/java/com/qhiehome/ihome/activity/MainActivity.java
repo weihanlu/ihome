@@ -27,8 +27,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private String mPhoneNum;
 
-    private TextView mTvPark;
-    private TextView mTvMe;
+    TextView mTvPark;
+    TextView mTvMe;
 
     private List<TextView> mTabTextIndicators = new ArrayList<>();
 
