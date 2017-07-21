@@ -35,7 +35,6 @@ import com.baidu.mapapi.search.poi.PoiNearbySearchOption;
 import com.baidu.mapapi.search.poi.PoiResult;
 import com.baidu.mapapi.search.poi.PoiSearch;
 import com.qhiehome.ihome.R;
-import com.qhiehome.ihome.activity.MainActivity;
 import com.qhiehome.ihome.activity.ParkingListActivity;
 import com.qhiehome.ihome.util.LogUtil;
 
@@ -45,7 +44,7 @@ import com.qhiehome.ihome.util.LogUtil;
  */
 public class ParkFragment extends Fragment {
 
-    private static final String TAG = "ParkFragment";
+    public static final String TAG = "ParkFragment";
 
     private Context mContext;
 

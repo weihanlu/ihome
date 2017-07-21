@@ -33,7 +33,7 @@ public class MeFragment extends Fragment {
     @BindArray(R.array.titles)
     String[] mTitles;
 
-    private static final String TAG = "MeFragment";
+    public static final String TAG = "MeFragment";
 
     private String mPhoneNum;
 
