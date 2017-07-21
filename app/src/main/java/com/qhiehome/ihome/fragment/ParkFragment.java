@@ -50,8 +50,7 @@ import butterknife.Unbinder;
  */
 public class ParkFragment extends Fragment {
 
-
-    private static final String TAG = "ParkFragment";
+    public static final String TAG = "ParkFragment";
     @BindView(R.id.btn_map_location)
     Button mBtnMapLocation;
     Unbinder unbinder;

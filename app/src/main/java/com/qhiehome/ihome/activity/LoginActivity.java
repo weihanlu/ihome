@@ -1,10 +1,15 @@
 package com.qhiehome.ihome.activity;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.telephony.SmsMessage;
 import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.EditText;
@@ -15,9 +20,14 @@ import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.signin.SigninRequest;
 import com.qhiehome.ihome.network.model.signin.SigninResponse;
 import com.qhiehome.ihome.network.service.signin.SigninService;
+import com.qhiehome.ihome.observer.SMSContentObserver;
 import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.ToastUtil;
+
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -28,6 +38,7 @@ import cn.smssdk.SMSSDK;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -65,12 +76,16 @@ public class LoginActivity extends AppCompatActivity {
 
     private String mPhoneNum;
 
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
         ActivityManager.add(this);
+
         mEventHandler = new EventHandler() {
             public void afterEvent(int event, int result, Object data) {
                 if (result == SMSSDK.RESULT_COMPLETE) {
@@ -101,7 +116,18 @@ public class LoginActivity extends AppCompatActivity {
         };
         // 注册监听器
         SMSSDK.registerEventHandler(mEventHandler);
-        mHandler = new Handler();
+        mHandler = new Handler(){
+
+            @Override
+            public void handleMessage(Message msg) {
+                if(msg.what==1){
+                    mEtVerify.setText(msg.obj.toString());
+                }
+            }
+        };
+        SMSContentObserver sco = new SMSContentObserver(LoginActivity.this,mHandler);
+        LoginActivity.this.getContentResolver().registerContentObserver(
+                Uri.parse("content://sms/"), true, sco);
     }
 
     private void webLogin() {
@@ -180,4 +206,6 @@ public class LoginActivity extends AppCompatActivity {
             }
         }
     }
+
+
 }
