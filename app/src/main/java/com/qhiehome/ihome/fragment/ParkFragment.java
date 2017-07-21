@@ -55,6 +55,7 @@ public class ParkFragment extends Fragment {
     Button mBtnMapLocation;
     Unbinder unbinder;
 
+
     private Context mContext;
 
     private MapView mMapView;
