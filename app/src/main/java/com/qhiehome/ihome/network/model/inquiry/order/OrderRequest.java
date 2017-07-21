@@ -1,10 +1,10 @@
-package com.qhiehome.ihome.network.model.orderlist;
+package com.qhiehome.ihome.network.model.inquiry.order;
 
 /**
- * Created by YueMa on 2017/7/20.
+ * Created by YueMa on 2017/7/21.
  */
 
-public class OrderListRequest {
+public class OrderRequest {
 
     /**
      * phone : xxxx...xxxx
