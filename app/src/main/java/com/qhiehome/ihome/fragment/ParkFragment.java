@@ -10,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
@@ -38,19 +39,30 @@ import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.activity.ParkingListActivity;
 import com.qhiehome.ihome.util.LogUtil;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+import butterknife.Unbinder;
+
 /**
  * This fragment show the nearest districts around the user
  * according to the current location info.
  */
 public class ParkFragment extends Fragment {
 
-    public static final String TAG = "ParkFragment";
+
+    private static final String TAG = "ParkFragment";
+    @BindView(R.id.btn_map_location)
+    Button mBtnMapLocation;
+    Unbinder unbinder;
+
 
     private Context mContext;
 
     private MapView mMapView;
     private BaiduMap mBaiduMap;
     private LatLng mCurrentPt;
+    private LatLng mMyPt;
     private Marker mMarker;
     private BaiduMap.OnMarkerClickListener mOnMarkerClickListener;
     private boolean mFirstLocation;
@@ -75,11 +87,12 @@ public class ParkFragment extends Fragment {
         initView(view);
         initMap();
         initLocate();
+        unbinder = ButterKnife.bind(this, view);
         return view;
     }
 
     @Override
-    public void onStart(){
+    public void onStart() {
         // 如果要显示位置图标,必须先开启图层定位
         super.onStart();
         if (!mLocationClient.isStarted()) {
@@ -141,7 +154,7 @@ public class ParkFragment extends Fragment {
         initListener();
     }
 
-    private void initListener(){
+    private void initListener() {
         mBaiduMap.setOnMapClickListener(new BaiduMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
@@ -149,6 +162,7 @@ public class ParkFragment extends Fragment {
                 mBaiduMap.clear();
                 updateMapState();
             }
+
             @Override
             public boolean onMapPoiClick(MapPoi mapPoi) {
                 return false;
@@ -159,7 +173,7 @@ public class ParkFragment extends Fragment {
     /**
      * 定位相关配置
      */
-    private void initLocate(){
+    private void initLocate() {
         // 定位初始化
         mLocationClient = new LocationClient(mContext.getApplicationContext());
         mFirstLocation = true;
@@ -182,9 +196,10 @@ public class ParkFragment extends Fragment {
         mBDLocationListener = new BDLocationListener() {
             @Override
             public void onReceiveLocation(BDLocation bdLocation) {
-                if (bdLocation == null || mMapView == null){
+                if (bdLocation == null || mMapView == null) {
                     return;
                 }
+                mMyPt = new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude());
                 MyLocationData locData = new MyLocationData.Builder()
                         .accuracy(bdLocation.getRadius())
                         // 此处设置开发者获取到的方向信息，顺时针0-360
@@ -201,6 +216,7 @@ public class ParkFragment extends Fragment {
                     updateMapState();
                 }
             }
+
             @Override
             public void onConnectHotSpotMessage(String s, int i) {
 
@@ -252,9 +268,9 @@ public class ParkFragment extends Fragment {
         mMapView.onSaveInstanceState(outState);
     }
 
-    private void updateMapState(){
+    private void updateMapState() {
         //BitmapDescriptor bitmap = BitmapDescriptorFactory.fromResource(R.drawable.flag);
-        if (!mFirstLocation){
+        if (!mFirstLocation) {
             Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.img_target);
             // 获得图片的宽高
             int width = bm.getWidth();
@@ -297,10 +313,11 @@ public class ParkFragment extends Fragment {
                 }
 
                 @Override
-                public void onMarkerDragStart(Marker marker) {}
+                public void onMarkerDragStart(Marker marker) {
+                }
             });
 
-        }else{
+        } else {
             mFirstLocation = false;
         }
 /********************搜索POI********************/
@@ -334,9 +351,9 @@ public class ParkFragment extends Fragment {
                 BitmapDescriptor arrow = BitmapDescriptorFactory.fromBitmap(newbm);
 
 
-                while (count<10 && count < resultNum){   //选择附近最多10个停车场
-                //while (count < resultNum){      //选择附近所有停车场
-                    final PoiInfo pif =  poiResult.getAllPoi().get(count);
+                while (count < 10 && count < resultNum) {   //选择附近最多10个停车场
+                    //while (count < resultNum){      //选择附近所有停车场
+                    final PoiInfo pif = poiResult.getAllPoi().get(count);
                     LatLng newPT = pif.location;
 
                     OverlayOptions options;
@@ -352,13 +369,13 @@ public class ParkFragment extends Fragment {
                 }
 
                 /********************跳转、传递参数********************/
-               mOnMarkerClickListener = new BaiduMap.OnMarkerClickListener() {
+                mOnMarkerClickListener = new BaiduMap.OnMarkerClickListener() {
                     @Override
                     public boolean onMarkerClick(Marker marker1) {
-                        mIntent = new Intent(getActivity(),ParkingListActivity.class);
+                        mIntent = new Intent(getActivity(), ParkingListActivity.class);
                         //bundle1 = marker1.getExtraInfo();
                         String currentStr = marker1.getExtraInfo().getString("name");
-                        mIntent.putExtra("name",currentStr);
+                        mIntent.putExtra("name", currentStr);
                         startActivity(mIntent);
                         return false;
                     }
@@ -388,6 +405,15 @@ public class ParkFragment extends Fragment {
     }
 
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
+    }
 
-
+    @OnClick(R.id.btn_map_location)
+    public void onViewClicked() {
+        MapStatusUpdate status = MapStatusUpdateFactory.newLatLng(mMyPt);
+        mBaiduMap.animateMapStatus(status);
+    }
 }
