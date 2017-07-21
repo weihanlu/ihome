@@ -23,6 +23,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.manager.ActivityManager;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.LogUtil;
 
@@ -56,6 +57,7 @@ public class UserInfoActivity extends AppCompatActivity {
         initData();
         initView();
         initUserInfo();
+        ActivityManager.add(this);
     }
 
     private void initData() {
@@ -105,6 +107,11 @@ public class UserInfoActivity extends AppCompatActivity {
         userInfo.add("铁锤");
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ActivityManager.remove(this);
+    }
 
     class UserInfoAdapter extends RecyclerView.Adapter<UserInfoAdapter.MyViewHolder>{
         @Override
