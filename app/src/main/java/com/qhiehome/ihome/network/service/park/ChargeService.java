@@ -1,7 +1,7 @@
-package com.qhiehome.ihome.network.service.charge;
+package com.qhiehome.ihome.network.service.park;
 
-import com.qhiehome.ihome.network.model.charge.ChargeRequest;
-import com.qhiehome.ihome.network.model.charge.ChargeResponse;
+import com.qhiehome.ihome.network.model.park.charge.ChargeRequest;
+import com.qhiehome.ihome.network.model.park.charge.ChargeResponse;
 
 
 import retrofit2.Call;

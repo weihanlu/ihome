@@ -1,16 +1,22 @@
-package com.qhiehome.ihome.network.model.orderlist;
+package com.qhiehome.ihome.network.model.inquiry.order;
 
-import com.qhiehome.ihome.network.model.base.Response;
+import java.util.List;
 
-public class OrderListResponse extends Response{
+/**
+ * Created by YueMa on 2017/7/21.
+ */
+
+public class OrderResponse {
 
     /**
-     * data : {"order":{"id":123456789,"lock_id":123456789,"user_id":123456789,"enter_time":1499826992574,"leave_time":1499826992574,"payment_time":1499826992574,"close_time":1499826992574,"pay_fee":100,"owner_fee":80,"estate_fee":10,"platform_fee":10,"state":9}}
-     * errcode : 0
+     * data : {"order":[{"id":123456789,"parking_id":123456789,"phone":"xxxx...xxxx","enter_time":1499826992574,"leave_time":1499826992574,"payment_time":1499826992574,"close_time":1499826992574,"pay_fee":100,"owner_fee":80,"estate_fee":10,"platform_fee":10,"state":2}]}
+     * errcode : 1
      * errmsg : success
      */
 
     private DataBean data;
+    private int errcode;
+    private String errmsg;
 
     public DataBean getData() {
         return data;
@@ -20,26 +26,38 @@ public class OrderListResponse extends Response{
         this.data = data;
     }
 
+    public int getErrcode() {
+        return errcode;
+    }
+
+    public void setErrcode(int errcode) {
+        this.errcode = errcode;
+    }
+
+    public String getErrmsg() {
+        return errmsg;
+    }
+
+    public void setErrmsg(String errmsg) {
+        this.errmsg = errmsg;
+    }
+
     public static class DataBean {
-        /**
-         * order : {"id":123456789,"lock_id":123456789,"user_id":123456789,"enter_time":1499826992574,"leave_time":1499826992574,"payment_time":1499826992574,"close_time":1499826992574,"pay_fee":100,"owner_fee":80,"estate_fee":10,"platform_fee":10,"state":9}
-         */
+        private List<OrderBean> order;
 
-        private OrderBean[] order;
-
-        public OrderBean[] getOrder() {
+        public List<OrderBean> getOrder() {
             return order;
         }
 
-        public void setOrder(OrderBean[] order) {
+        public void setOrder(List<OrderBean> order) {
             this.order = order;
         }
 
         public static class OrderBean {
             /**
              * id : 123456789
-             * lock_id : 123456789
-             * user_id : 123456789
+             * parking_id : 123456789
+             * phone : xxxx...xxxx
              * enter_time : 1499826992574
              * leave_time : 1499826992574
              * payment_time : 1499826992574
@@ -48,12 +66,12 @@ public class OrderListResponse extends Response{
              * owner_fee : 80
              * estate_fee : 10
              * platform_fee : 10
-             * state : 9
+             * state : 2
              */
 
             private int id;
-            private int lock_id;
-            private int user_id;
+            private int parking_id;
+            private String phone;
             private long enter_time;
             private long leave_time;
             private long payment_time;
@@ -72,20 +90,20 @@ public class OrderListResponse extends Response{
                 this.id = id;
             }
 
-            public int getLock_id() {
-                return lock_id;
+            public int getParking_id() {
+                return parking_id;
             }
 
-            public void setLock_id(int lock_id) {
-                this.lock_id = lock_id;
+            public void setParking_id(int parking_id) {
+                this.parking_id = parking_id;
             }
 
-            public int getUser_id() {
-                return user_id;
+            public String getPhone() {
+                return phone;
             }
 
-            public void setUser_id(int user_id) {
-                this.user_id = user_id;
+            public void setPhone(String phone) {
+                this.phone = phone;
             }
 
             public long getEnter_time() {

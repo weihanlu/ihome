@@ -1,10 +1,10 @@
-package com.qhiehome.ihome.network.model.lock.list;
+package com.qhiehome.ihome.network.model.inquiry.parkingowned;
 
 /**
- * Created by YueMa on 2017/7/20.
+ * Created by YueMa on 2017/7/21.
  */
 
-public class LockListRequest {
+public class ParkingOwnedRequest {
 
     /**
      * phone : xxxx...xxxx
