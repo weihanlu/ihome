@@ -6,12 +6,19 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
@@ -36,8 +43,15 @@ import com.baidu.mapapi.search.poi.PoiNearbySearchOption;
 import com.baidu.mapapi.search.poi.PoiResult;
 import com.baidu.mapapi.search.poi.PoiSearch;
 import com.qhiehome.ihome.R;
-import com.qhiehome.ihome.activity.ParkingListActivity;
 import com.qhiehome.ihome.util.LogUtil;
+import com.qhiehome.ihome.util.ToastUtil;
+
+import org.w3c.dom.Text;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -64,6 +78,7 @@ public class ParkFragment extends Fragment {
     private LatLng mCurrentPt;
     private LatLng mMyPt;
     private Marker mMarker;
+    private Marker mClickedMarker;
     private BaiduMap.OnMarkerClickListener mOnMarkerClickListener;
     private boolean mFirstLocation;
     private LocationClient mLocationClient;
@@ -372,11 +387,13 @@ public class ParkFragment extends Fragment {
                 mOnMarkerClickListener = new BaiduMap.OnMarkerClickListener() {
                     @Override
                     public boolean onMarkerClick(Marker marker1) {
-                        mIntent = new Intent(getActivity(), ParkingListActivity.class);
-                        //bundle1 = marker1.getExtraInfo();
-                        String currentStr = marker1.getExtraInfo().getString("name");
-                        mIntent.putExtra("name", currentStr);
-                        startActivity(mIntent);
+//                        mIntent = new Intent(getActivity(), ParkingListActivity.class);
+//                        //bundle1 = marker1.getExtraInfo();
+//                        String currentStr = marker1.getExtraInfo().getString("name");
+//                        mIntent.putExtra("name", currentStr);
+//                        startActivity(mIntent);
+                        mClickedMarker = marker1;
+                        showParkingDialog();
                         return false;
                     }
                 };
@@ -416,4 +433,78 @@ public class ParkFragment extends Fragment {
         MapStatusUpdate status = MapStatusUpdateFactory.newLatLng(mMyPt);
         mBaiduMap.animateMapStatus(status);
     }
+
+
+    private void showParkingDialog() {
+
+        String estateName = mClickedMarker.getExtraInfo().getString("name");
+        //网络请求
+        /**********暂时数据************/
+        List<Map<String, String>> parking_data = new ArrayList<>();
+        final List<CheckBox> cb_all = new ArrayList<>();
+        parking_data.add(new HashMap<String, String>() {{
+            put("name", "Jack");
+            put("time_start", "8");
+            put("time_end", "10");
+        }});
+        parking_data.add(new HashMap<String, String>() {{
+            put("name", "Jerry");
+            put("time_start", "9");
+            put("time_end", "14");
+        }});
+        parking_data.add(new HashMap<String, String>() {{
+            put("name", "Tom");
+            put("time_start", "10");
+            put("time_end", "13");
+        }});
+        /**********暂时数据************/
+        final int size = parking_data.size();
+        int count = 0;
+        if (size != 0) {
+            MaterialDialog.Builder dialogBuilder = new MaterialDialog.Builder(this.getContext())
+                    .positiveText("确定").negativeText("取消");
+            dialogBuilder.title(estateName).customView(R.layout.dialog_parking_list, true);
+            MaterialDialog dialog = dialogBuilder.build();
+            View customView = dialog.getCustomView();
+            while (customView != null && count<size) {
+                final LinearLayout container = (LinearLayout) customView.findViewById(R.id.parking_list_container);
+                View itemContainer = LayoutInflater.from(mContext).inflate(R.layout.item_parking_list, null);
+                String name = parking_data.get(count).get("name");
+                String time = parking_data.get(count).get("time_start") + "~" + parking_data.get(count).get("time_end");
+                TextView tv_name = (TextView) itemContainer.findViewById(R.id.tv_parking_name);
+                TextView tv_time = (TextView) itemContainer.findViewById(R.id.tv_parking_time);
+                tv_name.setText(name);
+                tv_time.setText(time);
+                CheckBox cb = (CheckBox) itemContainer.findViewById(R.id.cb_parking);
+                cb_all.add(cb);
+                container.addView(itemContainer);
+                count++;
+
+
+            }
+            dialog.getBuilder().onPositive(new MaterialDialog.SingleButtonCallback() {
+                @Override
+                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                    int num_chosen = 0;
+                    for (int i = 0; i<size; i++){
+                        if(cb_all.get(i).isChecked()){
+                            num_chosen++;
+                        }
+                    }
+                    //发出网络请求if(成功)
+                    ToastUtil.showToast(mContext, "已预约"+num_chosen+"车位");
+                    //if(失败) 显示网络访问错误
+                }
+            }).onNegative(new MaterialDialog.SingleButtonCallback() {
+                @Override
+                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                    ToastUtil.showToast(mContext, "negative");
+                }
+            });
+            dialog.show();
+        }else {
+            //没有停车位
+        }
+    }
+
 }
