@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.activity.BindLockActivity;
 import com.qhiehome.ihome.activity.LoginActivity;
+import com.qhiehome.ihome.activity.OrderListActivity;
 import com.qhiehome.ihome.activity.PublishParkingActivity;
 import com.qhiehome.ihome.activity.UserInfoActivity;
 import com.qhiehome.ihome.adapter.MeAdapter;
@@ -108,6 +109,7 @@ public class MeFragment extends Fragment {
                         PublishParkingActivity.start(mContext);
                         break;
                     case 3:
+                        OrderListActivity.start(mContext);
                         break;
                     case 4:
 
