@@ -5,7 +5,10 @@ import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
+import android.text.LoginFilter;
 import android.util.Log;
+
+import com.qhiehome.ihome.activity.LoginActivity;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -69,7 +72,7 @@ public class SMSContentObserver extends ContentObserver {
                 if (matcher.find())
                 {
                     code = matcher.group(0);
-                    mhandler.obtainMessage(1, code).sendToTarget();
+                    mhandler.obtainMessage(LoginActivity.GET_VERIFICATION, code).sendToTarget();
                     return;
                 }
             }

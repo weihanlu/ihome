@@ -21,6 +21,7 @@ import com.qhiehome.ihome.network.model.signin.SigninRequest;
 import com.qhiehome.ihome.network.model.signin.SigninResponse;
 import com.qhiehome.ihome.network.service.signin.SigninService;
 import com.qhiehome.ihome.observer.SMSContentObserver;
+import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.ToastUtil;
@@ -72,11 +73,11 @@ public class LoginActivity extends AppCompatActivity {
 
     private static final int REQUEST_SUCCESS_CODE = 200;
 
+    public static final int GET_VERIFICATION = 1;
+
     private Handler mHandler;
 
     private String mPhoneNum;
-
-
 
 
     @Override
@@ -120,8 +121,9 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void handleMessage(Message msg) {
-                if(msg.what==1){
+                if(msg.what == GET_VERIFICATION){
                     mEtVerify.setText(msg.obj.toString());
+                    CommonUtil.hideKeyboard(LoginActivity.this);
                 }
             }
         };
@@ -143,7 +145,12 @@ public class LoginActivity extends AppCompatActivity {
             }
             @Override
             public void onFailure(Call<SigninResponse> call, Throwable t) {
-                LogUtil.e(TAG, "retrofit login error: " + t.getMessage());
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ToastUtil.showToast(LoginActivity.this, "网络连接异常");
+                    }
+                });
             }
         });
     }

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -38,7 +39,7 @@ public class OrderListActivity extends AppCompatActivity implements SwipeRefresh
     Toolbar mTbOrder;
 
     private OrderAdapter mAdapter;
-    private List<Map<String, String>> mData = new ArrayList<>();
+    private List<Map<String, Object>> mData = new ArrayList<>();
     private static final int REFRESH_COMPLETE = 1;
 
     private Handler mHandler = new Handler()
@@ -49,12 +50,12 @@ public class OrderListActivity extends AppCompatActivity implements SwipeRefresh
             {
                 case REFRESH_COMPLETE:
                     /**************测试数据***************/
-                    mData.add(new HashMap<String, String>() {{
+                    mData.add(new HashMap<String, Object>() {{
                         put("estate", "天通苑3区");
                         put("time_start", "14");
                         put("time_end", "16");
                         put("fee", "￥15.64");
-                        put("income_expense", "2");
+                        put("income_expense", 1);
                     }});
                     /**************测试数据***************/
                     //initRecyclerView();
@@ -85,26 +86,26 @@ public class OrderListActivity extends AppCompatActivity implements SwipeRefresh
 
     private void initData() {
         /**********测试数据************/
-        mData.add(new HashMap<String, String>() {{
+        mData.add(new HashMap<String, Object>() {{
             put("estate", "天通苑1区");
             put("time_start", "8");
             put("time_end", "10");
             put("fee", "￥12.41");
-            put("income_expense", "2");
+            put("income_expense", 2);
         }});
-        mData.add(new HashMap<String, String>() {{
+        mData.add(new HashMap<String, Object>() {{
             put("estate", "天通苑2区");
             put("time_start", "9");
             put("time_end", "10");
             put("fee", "￥5.32");
-            put("income_expense", "2");
+            put("income_expense", 2);
         }});
-        mData.add(new HashMap<String, String>() {{
+        mData.add(new HashMap<String, Object>() {{
             put("estate", "天通苑5区");
             put("time_start", "14");
             put("time_end", "20");
             put("fee", "￥38.21");
-            put("income_expense", "1");
+            put("income_expense", 1);
         }});
         /**********测试数据************/
     }
@@ -142,10 +143,10 @@ public class OrderListActivity extends AppCompatActivity implements SwipeRefresh
 
         @Override
         public void onBindViewHolder(MyViewHolder holder, int position) {
-            holder.tv_estate.setText(mData.get(position).get("estate"));
+            holder.tv_estate.setText((String)mData.get(position).get("estate"));
             holder.tv_time.setText(mData.get(position).get("time_start") + "~" + mData.get(position).get("time_end"));
             String fee = "";
-            if (mData.get(position).get("income_expense") == "1") {
+            if (((Integer)mData.get(position).get("income_expense")) == 1) {
                 fee += "+";
                 holder.iv_income_expense.setColorFilter(Color.RED);
             } else {
