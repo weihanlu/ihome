@@ -62,7 +62,7 @@ public class SMSContentObserver extends ContentObserver {
 //                }
 
                 // 正则表达式截取短信中的6位验证码
-                Pattern pattern = Pattern.compile("(\\d{4})");
+                Pattern pattern = Pattern.compile("(\\d{6})");
                 Matcher matcher = pattern.matcher(body);
 
                 // 如果找到通过Handler发送给主线程

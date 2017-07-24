@@ -34,6 +34,7 @@ import com.baidu.mapapi.map.Marker;
 import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.map.OverlayOptions;
+import com.baidu.mapapi.map.UiSettings;
 import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.search.core.PoiInfo;
 import com.baidu.mapapi.search.poi.OnGetPoiSearchResultListener;
@@ -166,8 +167,13 @@ public class ParkFragment extends Fragment {
         MapStatusUpdate msu = MapStatusUpdateFactory.zoomTo(MAP_ZOOM_LEVEL);
         mBaiduMap.setMapStatus(msu);
         mBaiduMap.setMyLocationEnabled(true);
+        UiSettings settings = mBaiduMap.getUiSettings();
+        settings.setScrollGesturesEnabled(false);//禁用地图拖拽
+        settings.setRotateGesturesEnabled(false);//禁用地图旋转
         initListener();
     }
+
+
 
     private void initListener() {
         mBaiduMap.setOnMapClickListener(new BaiduMap.OnMapClickListener() {
