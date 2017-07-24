@@ -14,4 +14,8 @@ public class Constant {
 
     public static final int TIME_PERIOD_LIMIT = 3;
 
+    public static final int RESPONSE_SUCCESS_CODE = 200;
+
+    public static final int ERROR_SUCCESS_CODE = 1;
+
 }

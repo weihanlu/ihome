@@ -9,16 +9,16 @@ public class PublishparkRequest {
      * end_time : 1499828000000
      */
 
-    private int parking_id;
+    private long parking_id;
     private String password;
     private long start_time;
     private long end_time;
 
-    public int getParking_id() {
+    public long getParking_id() {
         return parking_id;
     }
 
-    public void setParking_id(int parking_id) {
+    public void setParking_id(long parking_id) {
         this.parking_id = parking_id;
     }
 

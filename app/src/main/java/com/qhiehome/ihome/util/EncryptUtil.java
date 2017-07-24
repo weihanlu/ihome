@@ -35,7 +35,7 @@ public class EncryptUtil {
                 encrypted = new String(Hex.encodeHex(DigestUtils.sha256(text)));
                 break;
             case SHA_512:
-                encrypted = new String(Hex.encodeHex(DigestUtils.sha256(text)));
+                encrypted = new String(Hex.encodeHex(DigestUtils.sha512(text)));
                 break;
             default:
                 break;

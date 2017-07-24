@@ -22,6 +22,7 @@ import com.qhiehome.ihome.network.model.signin.SigninResponse;
 import com.qhiehome.ihome.network.service.signin.SigninService;
 import com.qhiehome.ihome.observer.SMSContentObserver;
 import com.qhiehome.ihome.util.CommonUtil;
+import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.ToastUtil;
@@ -69,11 +70,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private static final int UPPER_SECOND = 60;
 
-    private static final int SUCCESS_MSG_CODE = 0;
-
-    private static final int REQUEST_SUCCESS_CODE = 200;
-
-    public static final int GET_VERIFICATION = 1;
+    public static final int GET_VERIFICATION = 3;
 
     private Handler mHandler;
 
@@ -139,7 +136,7 @@ public class LoginActivity extends AppCompatActivity {
         call.enqueue(new Callback<SigninResponse>() {
             @Override
             public void onResponse(Call<SigninResponse> call, Response<SigninResponse> response) {
-                if (response.code() == REQUEST_SUCCESS_CODE && response.body().getErrcode() == SUCCESS_MSG_CODE) {
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     MainActivity.start(LoginActivity.this, mPhoneNum);
                 }
             }
