@@ -25,8 +25,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private String mPhoneNum;
-
     TextView mTvPark;
     TextView mTvMe;
 
@@ -51,7 +49,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initData() {
-        mPhoneNum = getIntent().getStringExtra(Constant.PHONE_PARAM);
     }
 
     private void initView() {
@@ -80,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // First init load ParkFragment
         if (savedInstanceState == null) {
             mParkFragment = ParkFragment.newInstance();
-            mMeFragment = MeFragment.newInstance(mPhoneNum);
+            mMeFragment = MeFragment.newInstance();
             mFragmentManager.beginTransaction()
                     .add(R.id.fragment_container, mParkFragment, ParkFragment.TAG).commit();
         } else {
@@ -137,9 +134,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startActivity(intent);
     }
 
-    public static void start(Context context, String phoneNum) {
+    public static void start(Context context) {
         Intent intent = new Intent(context, MainActivity.class);
-        intent.putExtra(Constant.PHONE_PARAM, phoneNum);
         context.startActivity(intent);
     }
 

@@ -25,6 +25,7 @@ import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.LogUtil;
+import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
 
@@ -95,6 +96,7 @@ public class LoginActivity extends AppCompatActivity {
                             public void run() {
                                 CountDownTask countDownTask = new CountDownTask(UPPER_SECOND);
                                 countDownTask.run();
+                                CommonUtil.hideKeyboard(LoginActivity.this);
                             }
                         });
                     } else if (event == SMSSDK.EVENT_SUBMIT_VERIFICATION_CODE) {
@@ -120,7 +122,6 @@ public class LoginActivity extends AppCompatActivity {
             public void handleMessage(Message msg) {
                 if(msg.what == GET_VERIFICATION){
                     mEtVerify.setText(msg.obj.toString());
-                    CommonUtil.hideKeyboard(LoginActivity.this);
                 }
             }
         };
@@ -137,7 +138,8 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<SigninResponse> call, Response<SigninResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                    MainActivity.start(LoginActivity.this, mPhoneNum);
+                    MainActivity.start(LoginActivity.this);
+                    SharedPreferenceUtil.setString(LoginActivity.this, Constant.PHONE_KEY, mPhoneNum);
                 }
             }
             @Override

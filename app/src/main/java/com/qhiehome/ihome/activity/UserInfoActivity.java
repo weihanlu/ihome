@@ -26,6 +26,7 @@ import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.manager.ActivityManager;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.LogUtil;
+import com.qhiehome.ihome.util.SharedPreferenceUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,9 +47,6 @@ public class UserInfoActivity extends AppCompatActivity {
     private static final String[] LIST_CONTENT = {"头像","手机号","昵称"};
     private List<String> userInfo;
 
-    private String mPhoneNum;
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,12 +59,11 @@ public class UserInfoActivity extends AppCompatActivity {
     }
 
     private void initData() {
-        mPhoneNum = getIntent().getStringExtra(Constant.PHONE_PARAM);
+
     }
 
-    public static void start(Context context, String phoneNum) {
+    public static void start(Context context) {
         Intent intent = new Intent(context, UserInfoActivity.class);
-        intent.putExtra(Constant.PHONE_PARAM, phoneNum);
         context.startActivity(intent);
     }
 
@@ -103,7 +100,7 @@ public class UserInfoActivity extends AppCompatActivity {
     private void initUserInfo(){
         userInfo = new ArrayList<String>();
         userInfo.add("img_profile.jpg");
-        userInfo.add(mPhoneNum);
+        userInfo.add(SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, "123456"));
         userInfo.add("铁锤");
     }
 
