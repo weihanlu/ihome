@@ -20,4 +20,5 @@ public class Constant {
 
     public static final int VERIFY_NUM = 4;
 
+
 }

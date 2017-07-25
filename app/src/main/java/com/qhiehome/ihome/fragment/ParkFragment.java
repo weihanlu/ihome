@@ -58,6 +58,12 @@ import com.baidu.navisdk.adapter.BNaviSettingManager;
 import com.baidu.navisdk.adapter.BaiduNaviManager;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.activity.NaviGuideActivity;
+import com.qhiehome.ihome.network.ServiceGenerator;
+import com.qhiehome.ihome.network.model.base.ParkingResponse;
+import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyRequest;
+import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyResponse;
+import com.qhiehome.ihome.network.service.inquiry.ParkingEmptyService;
+import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
@@ -72,6 +78,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 /**
@@ -122,6 +131,12 @@ public class ParkFragment extends Fragment {
     private static final float MAP_ZOOM_LEVEL = 15f;
     private static final String LOCATE_RESULT_TYPE = "bd09ll";
     private static final int LOCATE_INTERVAL = 5000;
+    private static final String APP_ID = "9901662";
+    private static final int RADIUS = 1000;
+
+    private List<ParkingResponse.DataBean.EstateBean> mEstateBeanList = new ArrayList<>();
+    private List<ParkingResponse.DataBean.EstateBean.ParkingBean> mParkingBeanList = new ArrayList<>();
+
 
     @Override
     public void onAttach(Context context) {
@@ -197,7 +212,7 @@ public class ParkFragment extends Fragment {
     }
 
     /**
-     * 设置百度地图的缩放级别和点击事件
+     * 设置百度地图的缩放级别
      */
     private void initMap() {
         mBaiduMap = mMapView.getMap();
@@ -207,24 +222,6 @@ public class ParkFragment extends Fragment {
         UiSettings settings = mBaiduMap.getUiSettings();
         settings.setScrollGesturesEnabled(false);//禁用地图拖拽
         settings.setRotateGesturesEnabled(false);//禁用地图旋转
-        initListener();
-    }
-
-
-    private void initListener() {
-        mBaiduMap.setOnMapClickListener(new BaiduMap.OnMapClickListener() {
-            @Override
-            public void onMapClick(LatLng latLng) {
-                mCurrentPt = latLng;
-                mBaiduMap.clear();
-                updateMapState();
-            }
-
-            @Override
-            public boolean onMapPoiClick(MapPoi mapPoi) {
-                return false;
-            }
-        });
     }
 
     /**
@@ -289,7 +286,6 @@ public class ParkFragment extends Fragment {
             //onReceiveLocation();将得到定位数据
         }
     }
-
     // if this view is visible to user, start to request user location
     // if this view is not visible to user, stop to request user
     // location
@@ -319,13 +315,56 @@ public class ParkFragment extends Fragment {
         }
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        mMapView.onSaveInstanceState(outState);
+    private void updateMapState(){
+        ParkingEmptyService parkingEmptyService = ServiceGenerator.createService(ParkingEmptyService.class);
+        ParkingEmptyRequest parkingEmptyRequest = new ParkingEmptyRequest(mCurrentPt.longitude, mCurrentPt.latitude, RADIUS);
+        Call<ParkingEmptyResponse> call = parkingEmptyService.parkingEmpty(parkingEmptyRequest);
+        call.enqueue(new Callback<ParkingEmptyResponse>() {
+            @Override
+            public void onResponse(Call<ParkingEmptyResponse> call, Response<ParkingEmptyResponse> response) {
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
+                    mEstateBeanList = response.body().getData().getEstate();
+                    Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.img_park);
+                    // 获得图片的宽高
+                    int width = bm.getWidth();
+                    int height = bm.getHeight();
+                    // 设置想要的大小
+                    int newWidth = 60;
+                    int newHeight = 60;
+                    // 计算缩放比例
+                    float scaleWidth = ((float) newWidth) / width;
+                    float scaleHeight = ((float) newHeight) / height;
+                    // 取得想要缩放的matrix参数
+                    Matrix matrix = new Matrix();
+                    matrix.postScale(scaleWidth, scaleHeight);
+                    // 得到新的图片
+                    Bitmap newbm = Bitmap.createBitmap(bm, 0, 0, width, height, matrix,
+                            true);
+                    BitmapDescriptor arrow = BitmapDescriptorFactory.fromBitmap(newbm);
+
+                    for (int i = 0; i<mEstateBeanList.size(); i++){
+                        LatLng newPT = new LatLng(mEstateBeanList.get(i).getY(),mEstateBeanList.get(i).getX());
+                        OverlayOptions options;
+                        options = new MarkerOptions()
+                                .position(newPT)//设置位置
+                                .icon(arrow);//设置图标样式
+                        Bundle bundle = new Bundle();
+                        bundle.putString("name", mEstateBeanList.get(i).getName());
+                        mMarker = (Marker) mBaiduMap.addOverlay(options);
+                        mMarker.setExtraInfo(bundle);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ParkingEmptyResponse> call, Throwable t) {
+                ToastUtil.showToast(mContext,"网络连接异常");
+            }
+        });
     }
 
-    private void updateMapState() {
+/*******归位、点击、搜索:待删除*******/
+/*    private void updateMapState() {
         //BitmapDescriptor bitmap = BitmapDescriptorFactory.fromResource(R.drawable.flag);
         if (!mFirstLocation) {
             Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.img_target);
@@ -462,12 +501,20 @@ public class ParkFragment extends Fragment {
         ps.searchNearby(nearbySearchOption);// 发起附近检索请求
 
     }
+    private void initListener() {
+        mBaiduMap.setOnMapClickListener(new BaiduMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                mCurrentPt = latLng;
+                mBaiduMap.clear();
+                updateMapState();
+            }
 
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
+            @Override
+            public boolean onMapPoiClick(MapPoi mapPoi) {
+                return false;
+            }
+        });
     }
 
     @OnClick(R.id.btn_map_location)
@@ -476,7 +523,23 @@ public class ParkFragment extends Fragment {
         mBaiduMap.animateMapStatus(status);
     }
 
+*/         /*******归位、点击、搜索:待删除*******/
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mMapView.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
+    }
+
+
+
+    /*********显示小区的停车位***********/
     private void showParkingDialog() {
 
         String estateName = mClickedMarker.getExtraInfo().getString("name");
@@ -701,7 +764,7 @@ public class ParkFragment extends Fragment {
         BNaviSettingManager.setIsAutoQuitWhenArrived(true);
         Bundle bundle = new Bundle();
         // 必须设置APPID，否则会静音
-        bundle.putString(BNCommonSettingParam.TTS_APP_ID, "9901662");
+        bundle.putString(BNCommonSettingParam.TTS_APP_ID, APP_ID);
         BNaviSettingManager.setNaviSdkParam(bundle);
     }
 
