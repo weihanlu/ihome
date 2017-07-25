@@ -37,8 +37,6 @@ public class MeFragment extends Fragment {
 
     public static final String TAG = "MeFragment";
 
-    private String mPhoneNum;
-
     private Context mContext;
 
     public MeFragment() {
@@ -51,12 +49,8 @@ public class MeFragment extends Fragment {
      *
      * @return A new instance of fragment ParkFragment.
      */
-    public static MeFragment newInstance(String phoneNum) {
-        MeFragment meFragment = new MeFragment();
-        Bundle bundle = new Bundle();
-        bundle.putString(Constant.PHONE_PARAM, phoneNum);
-        meFragment.setArguments(bundle);
-        return meFragment;
+    public static MeFragment newInstance() {
+        return new MeFragment();
     }
 
     @Override
@@ -69,9 +63,6 @@ public class MeFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mTitles = mContext.getResources().getStringArray(R.array.titles);
-        if (getArguments() != null) {
-            mPhoneNum = getArguments().getString(Constant.PHONE_PARAM);
-        }
     }
 
     @Override
@@ -100,7 +91,7 @@ public class MeFragment extends Fragment {
             public void onClick(int i) {
                 switch (i) {
                     case 0:
-                        UserInfoActivity.start(mContext, mPhoneNum);
+                        UserInfoActivity.start(mContext);
                         break;
                     case 1:
                         BindLockActivity.start(mContext);
