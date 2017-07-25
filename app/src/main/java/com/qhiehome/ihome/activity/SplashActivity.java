@@ -6,7 +6,7 @@ import android.os.Bundle;
 import com.qhiehome.ihome.manager.ActivityManager;
 import com.qhiehome.ihome.util.LogUtil;
 
-public class SplashActivity extends AppCompatActivity {
+public class SplashActivity extends BaseActivity {
 
     private static final String TAG = SplashActivity.class.getSimpleName();
 
@@ -15,7 +15,6 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ActivityManager.add(this);
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
@@ -27,9 +26,4 @@ public class SplashActivity extends AppCompatActivity {
         }, SPLASH_DURATION);
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        ActivityManager.remove(this);
-    }
 }

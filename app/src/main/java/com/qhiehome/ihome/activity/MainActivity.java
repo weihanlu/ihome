@@ -21,7 +21,7 @@ import com.qhiehome.ihome.util.Constant;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends BaseActivity implements View.OnClickListener{
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -45,7 +45,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initData();
         initView();
         initFragments(savedInstanceState);
-        ActivityManager.add(this);
     }
 
     private void initData() {
@@ -142,7 +141,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        ActivityManager.remove(this);
     }
 
 }

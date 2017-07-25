@@ -46,7 +46,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class OrderListActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener{
+public class OrderListActivity extends BaseActivity implements SwipeRefreshLayout.OnRefreshListener{
 
     @BindView(R.id.rv_order)
     RecyclerView mRvOrder;

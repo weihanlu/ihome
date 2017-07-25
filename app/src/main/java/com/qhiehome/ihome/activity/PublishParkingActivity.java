@@ -44,7 +44,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class PublishParkingActivity extends AppCompatActivity {
+public class PublishParkingActivity extends BaseActivity {
 
     private static final String TAG = PublishParkingActivity.class.getSimpleName();
 
@@ -58,7 +58,7 @@ public class PublishParkingActivity extends AppCompatActivity {
     SwipeRefreshLayout mSrfPublish;
 
     @BindView(R.id.rv_publish)
-    RecyclerView mRvPublish;
+    RecyclerViewEmptySupport mRvPublish;
 
     private boolean hasParkingId;
 
@@ -72,7 +72,9 @@ public class PublishParkingActivity extends AppCompatActivity {
     AppCompatSpinner mStartSpinner;
     AppCompatSpinner mEndSpinner;
 
-    ArrayList<TimePeriod> mTimePeriods;
+    private ArrayList<TimePeriod> mTimePeriods;
+
+    private ArrayList<PublishparkRequest> mPublishList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,7 +83,6 @@ public class PublishParkingActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         initData();
         initView();
-        ActivityManager.add(this);
         mContext = this;
     }
 
@@ -92,8 +93,8 @@ public class PublishParkingActivity extends AppCompatActivity {
         parkingIdList.add("123457");
         parkingIdList.add("123458");
         parkingIdList.add("123459");
-
         mTimePeriods = new ArrayList<>();
+        mPublishList = new ArrayList<>();
     }
 
     private void initView() {
@@ -134,27 +135,26 @@ public class PublishParkingActivity extends AppCompatActivity {
                 parkAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 mParkSpinner.setAdapter(parkAdapter);
                 final LinearLayout container = (LinearLayout) customView.findViewById(R.id.container_period);
-                Button addBtn = (Button) customView.findViewById(R.id.btn_add);
+                final Button addBtn = (Button) customView.findViewById(R.id.btn_add);
                 addBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if (mPeriodTimes >= Constant.TIME_PERIOD_LIMIT) {
-                            ToastUtil.showToast(mContext, "已达上限");
-                        } else {
-                            View itemContainer = LayoutInflater.from(mContext).inflate(R.layout.item_publish_parking, null);
-                            mStartSpinner = (AppCompatSpinner) itemContainer.findViewById(R.id.spinner_start);
-                            ArrayAdapter<String> startAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, TimeUtil.getInstance().getOnedayTime());
-                            startAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                            mStartSpinner.setAdapter(startAdapter);
-                            mEndSpinner = (AppCompatSpinner) itemContainer.findViewById(R.id.spinner_end);
-                            ArrayAdapter<String> endAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, TimeUtil.getInstance().getOnedayTime());
-                            endAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                            mEndSpinner.setAdapter(endAdapter);
-                            container.addView(itemContainer);
-                            mPeriodTimes++;
-                            TimePeriod timePeriod = new TimePeriod(TimeUtil.getInstance().getTimeStamp(mStartSpinner.getSelectedItem().toString()),
-                                    TimeUtil.getInstance().getTimeStamp(mEndSpinner.getSelectedItem().toString()));
-                            mTimePeriods.add(timePeriod);
+                        View itemContainer = LayoutInflater.from(mContext).inflate(R.layout.item_publish_parking, null);
+                        mStartSpinner = (AppCompatSpinner) itemContainer.findViewById(R.id.spinner_start);
+                        ArrayAdapter<String> startAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, TimeUtil.getInstance().getOnedayTime());
+                        startAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        mStartSpinner.setAdapter(startAdapter);
+                        mEndSpinner = (AppCompatSpinner) itemContainer.findViewById(R.id.spinner_end);
+                        ArrayAdapter<String> endAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, TimeUtil.getInstance().getOnedayTime());
+                        endAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        mEndSpinner.setAdapter(endAdapter);
+                        container.addView(itemContainer);
+                        mPeriodTimes++;
+                        TimePeriod timePeriod = new TimePeriod(TimeUtil.getInstance().getTimeStamp(mStartSpinner.getSelectedItem().toString()),
+                                TimeUtil.getInstance().getTimeStamp(mEndSpinner.getSelectedItem().toString()));
+                        mTimePeriods.add(timePeriod);
+                        if (mPeriodTimes == Constant.TIME_PERIOD_LIMIT) {
+                            addBtn.setVisibility(View.GONE);
                         }
                     }
                 });
@@ -182,16 +182,21 @@ public class PublishParkingActivity extends AppCompatActivity {
         PublishparkRequest publishparkRequest = new PublishparkRequest();
         publishparkRequest.setParking_id(Long.valueOf(mParkSpinner.getSelectedItem().toString()));
         publishparkRequest.setPassword(EncryptUtil.encrypt(Constant.DEFAULT_PASSWORD, EncryptUtil.ALGO.SHA_256));
+        List<PublishparkRequest.ShareBean> share = new ArrayList<>();
         for (TimePeriod timePeriod: mTimePeriods) {
-            publishparkRequest.setStart_time(timePeriod.getStartTime());
-            publishparkRequest.setEnd_time(timePeriod.getEndTime());
+            PublishparkRequest.ShareBean shareBean = new PublishparkRequest.ShareBean();
+            shareBean.setStart_time(timePeriod.getStartTime());
+            shareBean.setEnd_time(timePeriod.getEndTime());
+            share.add(shareBean);
         }
+        publishparkRequest.setShare(share);
         Call<PublishparkResponse> call = publishParkService.publish(publishparkRequest);
         call.enqueue(new Callback<PublishparkResponse>() {
             @Override
             public void onResponse(Call<PublishparkResponse> call, Response<PublishparkResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                    ToastUtil.showToast(PublishParkingActivity.this, "发布成功");
+                    ToastUtil.showToast(mContext, "发布成功");
+                    addNewPublishInfo();
                 }
             }
             @Override
@@ -199,17 +204,20 @@ public class PublishParkingActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        ToastUtil.showToast(PublishParkingActivity.this, "网络异常");
+                        ToastUtil.showToast(mContext, "网络异常");
                     }
                 });
             }
         });
     }
 
+    private void addNewPublishInfo() {
+
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        ActivityManager.remove(this);
     }
 
     public static void start(Context context) {

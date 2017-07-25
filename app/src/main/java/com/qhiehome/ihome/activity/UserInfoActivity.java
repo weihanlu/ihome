@@ -34,7 +34,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class UserInfoActivity extends AppCompatActivity {
+public class UserInfoActivity extends BaseActivity {
 
     private static final String TAG = UserInfoActivity.class.getSimpleName();
 
@@ -55,7 +55,6 @@ public class UserInfoActivity extends AppCompatActivity {
         initData();
         initView();
         initUserInfo();
-        ActivityManager.add(this);
     }
 
     private void initData() {
@@ -107,7 +106,6 @@ public class UserInfoActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        ActivityManager.remove(this);
     }
 
     class UserInfoAdapter extends RecyclerView.Adapter<UserInfoAdapter.MyViewHolder>{

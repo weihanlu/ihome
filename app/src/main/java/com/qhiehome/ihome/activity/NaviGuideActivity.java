@@ -15,7 +15,7 @@ import com.qhiehome.ihome.fragment.ParkFragment;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NaviGuideActivity extends AppCompatActivity {
+public class NaviGuideActivity extends BaseActivity {
 
     private BNRoutePlanNode mBNRoutePlanNode = null;
 
