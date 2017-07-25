@@ -8,7 +8,6 @@ import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -31,7 +30,7 @@ import java.util.ArrayList;
 /**
  * 还有一些数据的回返方面比较模糊，有点奇怪，先看使用效果
  */
-public class LockDetailActivity extends AppCompatActivity {
+public class LockDetailActivity extends BaseActivity {
 
     private static final String TAG = LockDetailActivity.class.getSimpleName();
 
@@ -83,7 +82,6 @@ public class LockDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lock_detail);
-        ActivityManager.add(this);
 
         mHandler = new LockDetailHandler(this);
         initView();
@@ -307,7 +305,6 @@ public class LockDetailActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        ActivityManager.remove(this);
     }
 
     protected void doDown() {

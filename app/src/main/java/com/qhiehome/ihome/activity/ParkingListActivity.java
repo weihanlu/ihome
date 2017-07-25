@@ -24,7 +24,7 @@ import java.util.Map;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class ParkingListActivity extends AppCompatActivity {
+public class ParkingListActivity extends BaseActivity {
 
 
     @BindView(R.id.tb_parking)
@@ -44,7 +44,6 @@ public class ParkingListActivity extends AppCompatActivity {
         initToolbar();
         initData();
         initRecyclerView();
-
     }
 
     private void initToolbar() {

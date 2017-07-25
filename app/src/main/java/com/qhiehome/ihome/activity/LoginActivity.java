@@ -44,7 +44,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends BaseActivity {
 
     private static final String TAG = LoginActivity.class.getSimpleName();
     @BindView(R.id.et_phone)
@@ -84,7 +84,6 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
-        ActivityManager.add(this);
 
         mEventHandler = new EventHandler() {
             public void afterEvent(int event, int result, Object data) {
@@ -164,7 +163,6 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        ActivityManager.remove(this);
         SMSSDK.unregisterEventHandler(mEventHandler);
         mHandler.removeCallbacksAndMessages(null);
     }

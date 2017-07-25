@@ -7,7 +7,6 @@ import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.Toolbar;
@@ -21,7 +20,6 @@ import android.widget.TextView;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.adapter.ScanLockAdapter;
 import com.qhiehome.ihome.bean.BLEDevice;
-import com.qhiehome.ihome.manager.ActivityManager;
 import com.qhiehome.ihome.manager.CommunicationManager;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.LogUtil;
@@ -31,7 +29,7 @@ import com.qhiehome.ihome.view.RecyclerViewEmptySupport;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
-public class BluetoothScanActivity extends AppCompatActivity {
+public class BluetoothScanActivity extends BaseActivity {
 
     private static final String TAG = BluetoothScanActivity.class.getSimpleName();
 
@@ -59,7 +57,6 @@ public class BluetoothScanActivity extends AppCompatActivity {
         setContentView(R.layout.activity_bluetooth_scan);
         detectBLE();
         enableBluetooth();
-        ActivityManager.add(this);
 
         mHandler = new ScanHandler(this);
         mLeDevices = new ArrayList<>();
@@ -205,7 +202,6 @@ public class BluetoothScanActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        ActivityManager.remove(this);
         mHandler.removeCallbacksAndMessages(null);
     }
 

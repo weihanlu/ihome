@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.text.TextUtils;
@@ -23,21 +22,19 @@ import com.qhiehome.ihome.bean.LockBean;
 import com.qhiehome.ihome.ble.db.DatabaseHelper;
 import com.qhiehome.ihome.ble.profile.BLECommandIntent;
 import com.qhiehome.ihome.ble.profile.IhomeService;
-import com.qhiehome.ihome.manager.ActivityManager;
 import com.qhiehome.ihome.manager.CommunicationManager;
+import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 import com.qhiehome.ihome.view.RecyclerViewEmptySupport;
 
 import java.util.ArrayList;
 
-public class BindLockActivity extends AppCompatActivity {
+public class BindLockActivity extends BaseActivity {
 
     private static final String TAG = BindLockActivity.class.getSimpleName();
 
     private static final int REQUEST_CODE = 1;
-
-    private static final String DEFAULT_PASSWORD = "123456";
 
     private ArrayList<BLEDevice> mLeDevices;
     private BindLockAdapter bindLockAdapter;
@@ -63,7 +60,6 @@ public class BindLockActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bind_lock);
-        ActivityManager.add(this);
         mLeDevices = new ArrayList<>();
         initView();
 
@@ -166,7 +162,6 @@ public class BindLockActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        ActivityManager.remove(this);
         if (mEventReceiver != null) {
             unregisterReceiver(mEventReceiver);
             mEventReceiver = null;
@@ -261,7 +256,7 @@ public class BindLockActivity extends AppCompatActivity {
                                     cv.put(DatabaseHelper.FIELD_LOCK_NAME, mDeviceName);
                                 }
                                 if (isOwner) {
-                                    password = DEFAULT_PASSWORD;
+                                    password = Constant.DEFAULT_PASSWORD;
                                     if (lock.getPassword().equals(password)) {
                                         change = true;
                                         cv.put(DatabaseHelper.FIELD_LOCK_PASSWORD, password);
@@ -278,7 +273,7 @@ public class BindLockActivity extends AppCompatActivity {
                                                 : LockBean.LOCK_ROLE.CUSTOMER
                                                 .ordinal(), LockBean.LOCK_DEFAULT.DEFAULT.ordinal(),CommunicationManager.getInstance().DEVICE_REAL_NAME);
                                 if (isOwner){
-                                    password = DEFAULT_PASSWORD;
+                                    password = Constant.DEFAULT_PASSWORD;
                                     lock.setPassword(password);
                                 }
                                 DatabaseHelper.getInstance().insertLock(lock);
@@ -337,7 +332,7 @@ public class BindLockActivity extends AppCompatActivity {
             }
         }
         if (TextUtils.isEmpty(mLockPassword)) {
-            mLockPassword = DEFAULT_PASSWORD;
+            mLockPassword = Constant.DEFAULT_PASSWORD;
         }
         // send password
         Bundle bundle = new Bundle();

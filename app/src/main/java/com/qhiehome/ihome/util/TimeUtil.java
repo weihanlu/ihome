@@ -57,8 +57,6 @@ public class TimeUtil {
         return getTimesmorning() + passedHour * 3600 * 1000;
     }
 
-
-    private static final DateFormat DEFAULT_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
     public static Date millis2Date(final long millis) {
         return new Date(millis);
     }
