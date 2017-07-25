@@ -23,4 +23,13 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true" />
 
+    <Button
+        android:id="@+id/btn_map_navi"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/btn_map_location"
+        android:layout_marginEnd="22dp"
+        android:layout_toStartOf="@+id/btn_map_location"
+        android:text="Navi" />
+
 </RelativeLayout>
