@@ -19,8 +19,21 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.network.ServiceGenerator;
+import com.qhiehome.ihome.network.model.inquiry.order.OrderRequest;
+import com.qhiehome.ihome.network.model.inquiry.order.OrderResponse;
+import com.qhiehome.ihome.network.model.signin.SigninRequest;
+import com.qhiehome.ihome.network.model.signin.SigninResponse;
+import com.qhiehome.ihome.network.service.inquiry.OrderService;
+import com.qhiehome.ihome.network.service.signin.SigninService;
+import com.qhiehome.ihome.util.Constant;
+import com.qhiehome.ihome.util.EncryptUtil;
+import com.qhiehome.ihome.util.TimeUtil;
+import com.qhiehome.ihome.util.ToastUtil;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +41,10 @@ import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 public class OrderListActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener{
 
@@ -39,7 +56,8 @@ public class OrderListActivity extends AppCompatActivity implements SwipeRefresh
     Toolbar mTbOrder;
 
     private OrderAdapter mAdapter;
-    private List<Map<String, Object>> mData = new ArrayList<>();
+    private List<OrderResponse.DataBean.OrderBean> mData = new ArrayList<>();
+    //private List<Map<String, Objects>> mData = new ArrayList<>();
     private static final int REFRESH_COMPLETE = 1;
 
     private Handler mHandler = new Handler()
@@ -50,13 +68,13 @@ public class OrderListActivity extends AppCompatActivity implements SwipeRefresh
             {
                 case REFRESH_COMPLETE:
                     /**************测试数据***************/
-                    mData.add(new HashMap<String, Object>() {{
-                        put("estate", "天通苑3区");
-                        put("time_start", "14");
-                        put("time_end", "16");
-                        put("fee", "￥15.64");
-                        put("income_expense", 1);
-                    }});
+//                    mData.add(new HashMap<String, Object>() {{
+//                        put("estate", "天通苑3区");
+//                        put("time_start", "14");
+//                        put("time_end", "16");
+//                        put("fee", "￥15.64");
+//                        put("income_expense", 1);
+//                    }});
                     /**************测试数据***************/
                     //initRecyclerView();
                     mAdapter.notifyDataSetChanged();
@@ -67,6 +85,9 @@ public class OrderListActivity extends AppCompatActivity implements SwipeRefresh
         };
     };
 
+    SimpleDateFormat mStartSimpleDateFormate = new SimpleDateFormat("yy-MM-dd HH:mm");
+    SimpleDateFormat mEndSimpleDateFormate = new SimpleDateFormat("HH:mm");
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,6 +95,7 @@ public class OrderListActivity extends AppCompatActivity implements SwipeRefresh
         ButterKnife.bind(this);
         initToolbar();
         initData();
+
         initRecyclerView();
         mSrlOrderList.setOnRefreshListener(this);
     }
@@ -85,28 +107,51 @@ public class OrderListActivity extends AppCompatActivity implements SwipeRefresh
 
 
     private void initData() {
+
+        OrderService orderService = ServiceGenerator.createService(OrderService.class);
+        OrderRequest orderRequest = new OrderRequest(EncryptUtil.encrypt("8888", EncryptUtil.ALGO.SHA_256));
+        Call<OrderResponse> call = orderService.order(orderRequest);
+        call.enqueue(new Callback<OrderResponse>() {
+            @Override
+            public void onResponse(Call<OrderResponse> call, Response<OrderResponse> response) {
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                    mData = response.body().getData().getOrder();
+                }
+            }
+            @Override
+            public void onFailure(Call<OrderResponse> call, Throwable t) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ToastUtil.showToast(OrderListActivity.this, "网络连接异常");
+                    }
+                });
+            }
+        });
+
+
         /**********测试数据************/
-        mData.add(new HashMap<String, Object>() {{
-            put("estate", "天通苑1区");
-            put("time_start", "8");
-            put("time_end", "10");
-            put("fee", "￥12.41");
-            put("income_expense", 2);
-        }});
-        mData.add(new HashMap<String, Object>() {{
-            put("estate", "天通苑2区");
-            put("time_start", "9");
-            put("time_end", "10");
-            put("fee", "￥5.32");
-            put("income_expense", 2);
-        }});
-        mData.add(new HashMap<String, Object>() {{
-            put("estate", "天通苑5区");
-            put("time_start", "14");
-            put("time_end", "20");
-            put("fee", "￥38.21");
-            put("income_expense", 1);
-        }});
+//        mData.add(new HashMap<String, Object>() {{
+//            put("estate", "天通苑1区");
+//            put("time_start", "8");
+//            put("time_end", "10");
+//            put("fee", "￥12.41");
+//            put("income_expense", 2);
+//        }});
+//        mData.add(new HashMap<String, Object>() {{
+//            put("estate", "天通苑2区");
+//            put("time_start", "9");
+//            put("time_end", "10");
+//            put("fee", "￥5.32");
+//            put("income_expense", 2);
+//        }});
+//        mData.add(new HashMap<String, Object>() {{
+//            put("estate", "天通苑5区");
+//            put("time_start", "14");
+//            put("time_end", "20");
+//            put("fee", "￥38.21");
+//            put("income_expense", 1);
+//        }});
         /**********测试数据************/
     }
 
@@ -143,19 +188,25 @@ public class OrderListActivity extends AppCompatActivity implements SwipeRefresh
 
         @Override
         public void onBindViewHolder(MyViewHolder holder, int position) {
-            holder.tv_estate.setText((String)mData.get(position).get("estate"));
-            holder.tv_time.setText(mData.get(position).get("time_start") + "~" + mData.get(position).get("time_end"));
-            String fee = "";
-            if (((Integer)mData.get(position).get("income_expense")) == 1) {
-                fee += "+";
-                holder.iv_income_expense.setColorFilter(Color.RED);
-            } else {
-                fee += "-";
-                holder.iv_income_expense.setColorFilter(Color.GREEN);
-            }
-            fee += mData.get(position).get("fee");
-            holder.tv_fee.setText(fee);
-
+//            holder.tv_estate.setText((String)mData.get(position).get("estate"));
+//            holder.tv_time.setText(mData.get(position).get("time_start") + "~" + mData.get(position).get("time_end"));
+//            String fee = "";
+//            if (((Integer)mData.get(position).get("income_expense")) == 1) {
+//                fee += "+";
+//                holder.iv_income_expense.setColorFilter(Color.RED);
+//            } else {
+//                fee += "-";
+//                holder.iv_income_expense.setColorFilter(Color.GREEN);
+//            }
+//            fee += mData.get(position).get("fee");
+//            holder.tv_fee.setText(fee);
+            OrderResponse.DataBean.OrderBean order = mData.get(position);
+            holder.tv_estate.setText(order.getId());//订单号
+            Date start = TimeUtil.getInstance().millis2Date(order.getEnter_time());
+            Date end = TimeUtil.getInstance().millis2Date(order.getClose_time());
+            holder.tv_time.setText(mStartSimpleDateFormate.format(start) + "-" + mEndSimpleDateFormate.format(end));
+            //holder.tv_fee.setText();
+            // TODO: 2017/7/25 设置费用和区分收支 
         }
 
 
