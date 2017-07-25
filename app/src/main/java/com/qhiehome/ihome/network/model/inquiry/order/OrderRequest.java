@@ -5,12 +5,15 @@ package com.qhiehome.ihome.network.model.inquiry.order;
  */
 
 public class OrderRequest {
-
     /**
      * phone : xxxx...xxxx
      */
 
     private String phone;
+
+    public OrderRequest(String phone) {
+        this.phone = phone;
+    }
 
     public String getPhone() {
         return phone;
@@ -19,4 +22,12 @@ public class OrderRequest {
     public void setPhone(String phone) {
         this.phone = phone;
     }
+
+    /**
+     * phone : xxxx...xxxx
+     */
+
+
+
+
 }
