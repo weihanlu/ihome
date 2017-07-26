@@ -49,23 +49,23 @@ public class PublishparkRequest {
          * end_time : 1499828000000
          */
 
-        private long start_time;
-        private long end_time;
+        private long startTime;
+        private long endTime;
 
-        public long getStart_time() {
-            return start_time;
+        public long getStartTime() {
+            return startTime;
         }
 
-        public void setStart_time(long start_time) {
-            this.start_time = start_time;
+        public void setStartTime(long startTime) {
+            this.startTime = startTime;
         }
 
-        public long getEnd_time() {
-            return end_time;
+        public long getEndTime() {
+            return endTime;
         }
 
-        public void setEnd_time(long end_time) {
-            this.end_time = end_time;
+        public void setEndTime(long endTime) {
+            this.endTime = endTime;
         }
     }
 }

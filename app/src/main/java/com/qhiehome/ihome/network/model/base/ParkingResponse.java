@@ -107,6 +107,25 @@ public class ParkingResponse {
 
                 private String id;
                 private String name;
+                private String gateWayId;
+                private String lockMac;
+
+                public String getGateWayId() {
+                    return gateWayId;
+                }
+
+                public void setGateWayId(String gateWayId) {
+                    this.gateWayId = gateWayId;
+                }
+
+                public String getLockMac() {
+                    return lockMac;
+                }
+
+                public void setLockMac(String lockMac) {
+                    this.lockMac = lockMac;
+                }
+
                 private List<ShareBean> share;
 
                 public String getId() {

@@ -23,7 +23,12 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.adapter.PublishParkingAdapter;
 import com.qhiehome.ihome.bean.PublishBean;
+import com.qhiehome.ihome.network.ServiceGenerator;
+import com.qhiehome.ihome.network.model.park.publish.PublishparkRequest;
+import com.qhiehome.ihome.network.model.park.publish.PublishparkResponse;
+import com.qhiehome.ihome.network.service.park.PublishParkService;
 import com.qhiehome.ihome.util.Constant;
+import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.TimeUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 import com.qhiehome.ihome.view.RecyclerViewEmptySupport;
@@ -31,6 +36,7 @@ import com.qhiehome.ihome.view.RecyclerViewEmptySupport;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -187,8 +193,8 @@ public class PublishParkingActivity extends BaseActivity {
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                     // do nothing
                 }
-            });
-            dialog.show();
+            }).canceledOnTouchOutside(false)
+                    .show();
         } else {
             // TODO: 2017/7/21 跳转到设置车位的页面
         }
@@ -208,47 +214,45 @@ public class PublishParkingActivity extends BaseActivity {
 
     private void publishParking() {
         long parkingId = Long.valueOf(mParkSpinner.getSelectedItem().toString());
-//        PublishParkService publishParkService = ServiceGenerator.createService(PublishParkService.class);
-//        PublishparkRequest publishparkRequest = new PublishparkRequest();
-//        publishparkRequest.setParking_id(parkingId);
-//        publishparkRequest.setPassword(EncryptUtil.encrypt(Constant.DEFAULT_PASSWORD, EncryptUtil.ALGO.SHA_256));
-//        List<PublishparkRequest.ShareBean> share = new ArrayList<>();
+        PublishParkService publishParkService = ServiceGenerator.createService(PublishParkService.class);
+        PublishparkRequest publishparkRequest = new PublishparkRequest();
+        publishparkRequest.setParking_id(parkingId);
+        publishparkRequest.setPassword(EncryptUtil.encrypt(Constant.DEFAULT_PASSWORD, EncryptUtil.ALGO.SHA_256));
+        List<PublishparkRequest.ShareBean> share = new ArrayList<>();
         for (TimePeriod timePeriod: mTimePeriods) {
-//            PublishparkRequest.ShareBean shareBean = new PublishparkRequest.ShareBean();
+            PublishparkRequest.ShareBean shareBean = new PublishparkRequest.ShareBean();
             long startTime = timePeriod.getStartTime();
             long endTime = timePeriod.getEndTime();
-//            shareBean.setStart_time(startTime);
-//            shareBean.setEnd_time(endTime);
-//            share.add(shareBean);
-            SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm");
+            shareBean.setStartTime(startTime);
+            shareBean.setEndTime(endTime);
+            share.add(shareBean);
+            SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.CHINA);
             PublishBean publishBean = new PublishBean(parkingId + "", timeFormat.format(TimeUtil.getInstance().millis2Date(startTime)), timeFormat.format(TimeUtil.getInstance().millis2Date(endTime)));
             mPublishList.add(publishBean);
         }
-//        publishparkRequest.setShare(share);
-//        Call<PublishparkResponse> call = publishParkService.publish(publishparkRequest);
-//        call.enqueue(new Callback<PublishparkResponse>() {
-//            @Override
-//            public void onResponse(Call<PublishparkResponse> call, Response<PublishparkResponse> response) {
-//                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-//                    ToastUtil.showToast(mContext, "发布成功");
-//                    addNewPublishInfo();
-//                }
-//            }
-//            @Override
-//            public void onFailure(Call<PublishparkResponse> call, Throwable t) {
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        ToastUtil.showToast(mContext, "网络异常");
-//                    }
-//                });
-//            }
-//        });
-        mPublishAdapter.notifyDataSetChanged();
-    }
-
-    private void addNewPublishInfo() {
-
+        publishparkRequest.setShare(share);
+        Call<PublishparkResponse> call = publishParkService.publish(publishparkRequest);
+        call.enqueue(new Callback<PublishparkResponse>() {
+            @Override
+            public void onResponse(Call<PublishparkResponse> call, Response<PublishparkResponse> response) {
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                    ToastUtil.showToast(mContext, "发布成功");
+                    mPublishAdapter.notifyDataSetChanged();
+                } else {
+                    ToastUtil.showToast(mContext, "发布失败");
+                    mPublishList.clear();
+                }
+            }
+            @Override
+            public void onFailure(Call<PublishparkResponse> call, Throwable t) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ToastUtil.showToast(mContext, "网络异常");
+                    }
+                });
+            }
+        });
     }
 
     @Override
@@ -264,16 +268,16 @@ public class PublishParkingActivity extends BaseActivity {
     private class TimePeriod {
         private long startTime;
         private long endTime;
-        public TimePeriod(long startTime, long endTime) {
+        private TimePeriod(long startTime, long endTime) {
             this.startTime = startTime;
             this.endTime = endTime;
         }
 
-        public long getStartTime() {
+        private long getStartTime() {
             return startTime;
         }
 
-        public long getEndTime() {
+        private long getEndTime() {
             return endTime;
         }
     }

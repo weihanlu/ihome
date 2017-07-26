@@ -1,5 +1,6 @@
 package com.qhiehome.ihome.activity;
 
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -18,14 +19,25 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.network.ServiceGenerator;
+import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedRequest;
+import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedResponse;
+import com.qhiehome.ihome.network.model.signin.SigninRequest;
+import com.qhiehome.ihome.network.model.signin.SigninResponse;
+import com.qhiehome.ihome.network.service.inquiry.ParkingOwnedService;
 import com.qhiehome.ihome.util.Constant;
+import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
+import com.qhiehome.ihome.util.ToastUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class UserInfoActivity extends BaseActivity {
 
@@ -51,7 +63,29 @@ public class UserInfoActivity extends BaseActivity {
     }
 
     private void initData() {
+        // 请求头像数据，昵称
+//        requestAvatarAndNickName();
+        // 查看该用户名下是否有车位
+        inquiryParkings();
+    }
 
+    private void inquiryParkings() {
+        ParkingOwnedService parkingOwnedService = ServiceGenerator.createService(ParkingOwnedService.class);
+        ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(Constant.TEST_PHONE_NUM);
+        Call<ParkingOwnedResponse> call = parkingOwnedService.parkingOwned(parkingOwnedRequest);
+        call.enqueue(new Callback<ParkingOwnedResponse>() {
+            @Override
+            public void onResponse(Call<ParkingOwnedResponse> call, Response<ParkingOwnedResponse> response) {
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ParkingOwnedResponse> call, Throwable t) {
+
+            }
+        });
     }
 
     public static void start(Context context) {

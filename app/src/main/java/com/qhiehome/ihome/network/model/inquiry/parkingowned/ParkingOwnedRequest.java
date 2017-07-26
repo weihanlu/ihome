@@ -12,6 +12,10 @@ public class ParkingOwnedRequest {
 
     private String phone;
 
+    public ParkingOwnedRequest(String phone) {
+        this.phone = phone;
+    }
+
     public String getPhone() {
         return phone;
     }
