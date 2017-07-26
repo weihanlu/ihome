@@ -20,16 +20,17 @@
 
     <TextView
         android:id="@+id/tv_order_time"
-        android:layout_width="128dp"
-        android:layout_height="22dp"
+        android:layout_width="331dp"
+        android:layout_height="25dp"
         android:text="TextView"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginBottom="8dp"
         android:layout_marginTop="0dp"
         app:layout_constraintTop_toBottomOf="@+id/tv_order_estate"
         app:layout_constraintVertical_bias="0.0"
-        android:layout_marginRight="-65dp"
-        app:layout_constraintRight_toRightOf="@+id/tv_order_estate" />
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        tools:layout_editor_absoluteX="72dp" />
 
     <TextView
         android:id="@+id/tv_order_fee"
@@ -39,7 +40,8 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginRight="16dp"
-        app:layout_constraintRight_toRightOf="parent" />
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintVertical_bias="0.222" />
 
     <ImageView
         android:id="@+id/iv_order_income_expense"

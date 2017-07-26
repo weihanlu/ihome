@@ -9,7 +9,7 @@ import java.util.List;
 public class OrderResponse {
 
     /**
-     * data : {"order":[{"id":123456789,"parking_id":123456789,"phone":"xxxx...xxxx","enter_time":1499826992574,"leave_time":1499826992574,"payment_time":1499826992574,"close_time":1499826992574,"pay_fee":100,"owner_fee":80,"estate_fee":10,"platform_fee":10,"state":2}]}
+     * data : {"order":[{"id":123456789,"parking_id":123456789,"phone":"xxxx...xxxx","enter_time":1499826992574,"leave_time":1499826992574,"payment_time":1499826992574,"close_time":1499826992574,"pay_fee":100.32,"owner_fee":80.21,"estate_fee":10.21,"platform_fee":10.45,"state":2}]}
      * errcode : 1
      * errmsg : success
      */
@@ -62,10 +62,10 @@ public class OrderResponse {
              * leave_time : 1499826992574
              * payment_time : 1499826992574
              * close_time : 1499826992574
-             * pay_fee : 100
-             * owner_fee : 80
-             * estate_fee : 10
-             * platform_fee : 10
+             * pay_fee : 100.32
+             * owner_fee : 80.21
+             * estate_fee : 10.21
+             * platform_fee : 10.45
              * state : 2
              */
 
@@ -76,10 +76,10 @@ public class OrderResponse {
             private long leave_time;
             private long payment_time;
             private long close_time;
-            private int pay_fee;
-            private int owner_fee;
-            private int estate_fee;
-            private int platform_fee;
+            private double pay_fee;
+            private double owner_fee;
+            private double estate_fee;
+            private double platform_fee;
             private int state;
 
             public int getId() {
@@ -138,35 +138,35 @@ public class OrderResponse {
                 this.close_time = close_time;
             }
 
-            public int getPay_fee() {
+            public double getPay_fee() {
                 return pay_fee;
             }
 
-            public void setPay_fee(int pay_fee) {
+            public void setPay_fee(double pay_fee) {
                 this.pay_fee = pay_fee;
             }
 
-            public int getOwner_fee() {
+            public double getOwner_fee() {
                 return owner_fee;
             }
 
-            public void setOwner_fee(int owner_fee) {
+            public void setOwner_fee(double owner_fee) {
                 this.owner_fee = owner_fee;
             }
 
-            public int getEstate_fee() {
+            public double getEstate_fee() {
                 return estate_fee;
             }
 
-            public void setEstate_fee(int estate_fee) {
+            public void setEstate_fee(double estate_fee) {
                 this.estate_fee = estate_fee;
             }
 
-            public int getPlatform_fee() {
+            public double getPlatform_fee() {
                 return platform_fee;
             }
 
-            public void setPlatform_fee(int platform_fee) {
+            public void setPlatform_fee(double platform_fee) {
                 this.platform_fee = platform_fee;
             }
 

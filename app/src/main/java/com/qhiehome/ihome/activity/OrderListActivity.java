@@ -32,6 +32,7 @@ import com.qhiehome.ihome.util.TimeUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
 import java.lang.ref.WeakReference;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -61,10 +62,12 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
     private List<OrderResponse.DataBean.OrderBean> mData = new ArrayList<>();
     //private List<Map<String, Objects>> mData = new ArrayList<>();
     private static final int REFRESH_COMPLETE = 1;
+    private boolean mFirstInquiry = true;
 
 
-    private static final SimpleDateFormat START_TIME_FORMAT = new SimpleDateFormat("yy-MM-dd HH:mm");
+    private static final SimpleDateFormat START_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
     private static final SimpleDateFormat END_TIME_FORMAT = new SimpleDateFormat("HH:mm");
+    private static final DecimalFormat FEE_FORMAT = new DecimalFormat("######0.00");
 
     private static class OrderListHandler extends Handler{
         private final WeakReference<OrderListActivity> mActivity;
@@ -92,10 +95,10 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
         ButterKnife.bind(this);
         mHandler = new OrderListHandler(this);
         initToolbar();
-        initData();
-
         initRecyclerView();
         mSrlOrderList.setOnRefreshListener(this);
+        mSrlOrderList.setRefreshing(true);
+        initData();
     }
 
     public static void start(Context context) {
@@ -107,13 +110,19 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
     private void initData() {
 
         OrderService orderService = ServiceGenerator.createService(OrderService.class);
-        OrderRequest orderRequest = new OrderRequest(EncryptUtil.encrypt("8888", EncryptUtil.ALGO.SHA_256));
+        //OrderRequest orderRequest = new OrderRequest(EncryptUtil.encrypt("8888", EncryptUtil.ALGO.SHA_256));
+        OrderRequest orderRequest = new OrderRequest("f8cfd23a25811570298c8773bdca4d4d538d0d7fe52f6e5b3aefd08b907c8df2");
         Call<OrderResponse> call = orderService.order(orderRequest);
         call.enqueue(new Callback<OrderResponse>() {
             @Override
             public void onResponse(Call<OrderResponse> call, Response<OrderResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     mData = response.body().getData().getOrder();
+                    if (mFirstInquiry){
+                        mAdapter.notifyDataSetChanged();
+                        mSrlOrderList.setRefreshing(false);
+                        mFirstInquiry = false;
+                    }
                 }
             }
             @Override
@@ -175,12 +184,19 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
 //            fee += mData.get(position).get("fee");
 //            holder.tv_fee.setText(fee);
             OrderResponse.DataBean.OrderBean order = mData.get(position);
-            holder.tv_estate.setText(order.getId());//订单号
+            holder.tv_estate.setText(String.valueOf(order.getId()));//订单号
             Date start = TimeUtil.getInstance().millis2Date(order.getEnter_time());
-            Date end = TimeUtil.getInstance().millis2Date(order.getClose_time());
+            Date end = TimeUtil.getInstance().millis2Date(order.getLeave_time());
             holder.tv_time.setText(START_TIME_FORMAT.format(start) + "-" + END_TIME_FORMAT.format(end));
             //holder.tv_fee.setText();
-            // TODO: 2017/7/25 设置费用和区分收支 
+            double pay_fee = order.getPay_fee();
+            if (pay_fee == 0){
+                holder.iv_income_expense.setColorFilter(Color.GREEN);
+                holder.tv_fee.setText("");
+            }else {
+                holder.iv_income_expense.setColorFilter(Color.RED);
+                holder.tv_fee.setText(FEE_FORMAT.format(pay_fee));
+            }
         }
 
 
@@ -211,6 +227,8 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
     public void onRefresh()
     {
         initData();
-        mHandler.sendEmptyMessage(REFRESH_COMPLETE);//测试数据
+        mHandler.sendEmptyMessage(REFRESH_COMPLETE);
     }
+
+
 }
