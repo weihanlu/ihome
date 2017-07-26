@@ -31,6 +31,7 @@ import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.TimeUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
+import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -56,43 +57,40 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
     Toolbar mTbOrder;
 
     private OrderAdapter mAdapter;
+    private Handler mHandler;
     private List<OrderResponse.DataBean.OrderBean> mData = new ArrayList<>();
     //private List<Map<String, Objects>> mData = new ArrayList<>();
     private static final int REFRESH_COMPLETE = 1;
 
-    private Handler mHandler = new Handler()
-    {
+
+    private static final SimpleDateFormat START_TIME_FORMAT = new SimpleDateFormat("yy-MM-dd HH:mm");
+    private static final SimpleDateFormat END_TIME_FORMAT = new SimpleDateFormat("HH:mm");
+
+    private static class OrderListHandler extends Handler{
+        private final WeakReference<OrderListActivity> mActivity;
+        private OrderListHandler(OrderListActivity orderListActivity){
+            mActivity = new WeakReference<OrderListActivity>(orderListActivity);
+        }
+        @Override
         public void handleMessage(android.os.Message msg)
         {
+            OrderListActivity orderListActivity = mActivity.get();
             switch (msg.what)
             {
                 case REFRESH_COMPLETE:
-                    /**************测试数据***************/
-//                    mData.add(new HashMap<String, Object>() {{
-//                        put("estate", "天通苑3区");
-//                        put("time_start", "14");
-//                        put("time_end", "16");
-//                        put("fee", "￥15.64");
-//                        put("income_expense", 1);
-//                    }});
-                    /**************测试数据***************/
-                    //initRecyclerView();
-                    mAdapter.notifyDataSetChanged();
-                    mSrlOrderList.setRefreshing(false);
+                    orderListActivity.mAdapter.notifyDataSetChanged();
+                    orderListActivity.mSrlOrderList.setRefreshing(false);
                     break;
-
             }
-        };
-    };
-
-    SimpleDateFormat mStartSimpleDateFormate = new SimpleDateFormat("yy-MM-dd HH:mm");
-    SimpleDateFormat mEndSimpleDateFormate = new SimpleDateFormat("HH:mm");
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order_list);
         ButterKnife.bind(this);
+        mHandler = new OrderListHandler(this);
         initToolbar();
         initData();
 
@@ -129,30 +127,6 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
             }
         });
 
-
-        /**********测试数据************/
-//        mData.add(new HashMap<String, Object>() {{
-//            put("estate", "天通苑1区");
-//            put("time_start", "8");
-//            put("time_end", "10");
-//            put("fee", "￥12.41");
-//            put("income_expense", 2);
-//        }});
-//        mData.add(new HashMap<String, Object>() {{
-//            put("estate", "天通苑2区");
-//            put("time_start", "9");
-//            put("time_end", "10");
-//            put("fee", "￥5.32");
-//            put("income_expense", 2);
-//        }});
-//        mData.add(new HashMap<String, Object>() {{
-//            put("estate", "天通苑5区");
-//            put("time_start", "14");
-//            put("time_end", "20");
-//            put("fee", "￥38.21");
-//            put("income_expense", 1);
-//        }});
-        /**********测试数据************/
     }
 
     private void initToolbar() {
@@ -204,7 +178,7 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
             holder.tv_estate.setText(order.getId());//订单号
             Date start = TimeUtil.getInstance().millis2Date(order.getEnter_time());
             Date end = TimeUtil.getInstance().millis2Date(order.getClose_time());
-            holder.tv_time.setText(mStartSimpleDateFormate.format(start) + "-" + mEndSimpleDateFormate.format(end));
+            holder.tv_time.setText(START_TIME_FORMAT.format(start) + "-" + END_TIME_FORMAT.format(end));
             //holder.tv_fee.setText();
             // TODO: 2017/7/25 设置费用和区分收支 
         }
@@ -236,6 +210,7 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
 
     public void onRefresh()
     {
-        mHandler.sendEmptyMessageDelayed(REFRESH_COMPLETE, 2000);//测试数据
+        initData();
+        mHandler.sendEmptyMessage(REFRESH_COMPLETE);//测试数据
     }
 }

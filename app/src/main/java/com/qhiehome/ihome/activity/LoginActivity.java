@@ -29,6 +29,7 @@ import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
 
+import java.lang.ref.WeakReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -115,18 +116,24 @@ public class LoginActivity extends BaseActivity {
         };
         // 注册监听器
         SMSSDK.registerEventHandler(mEventHandler);
-        mHandler = new Handler(){
-
-            @Override
-            public void handleMessage(Message msg) {
-                if(msg.what == GET_VERIFICATION){
-                    mEtVerify.setText(msg.obj.toString());
-                }
-            }
-        };
+        mHandler = new SMSObserverHandler(this);
         SMSContentObserver sco = new SMSContentObserver(LoginActivity.this,mHandler);
         LoginActivity.this.getContentResolver().registerContentObserver(
                 Uri.parse("content://sms/"), true, sco);
+    }
+
+    private static class SMSObserverHandler extends Handler{
+        private final WeakReference<LoginActivity> mActivity;
+        private SMSObserverHandler(LoginActivity loginActivity){
+            mActivity = new WeakReference<LoginActivity>(loginActivity);
+        }
+        @Override
+        public void handleMessage(Message msg) {
+            LoginActivity loginActivity = mActivity.get();
+            if(msg.what == GET_VERIFICATION){
+                loginActivity.mEtVerify.setText(msg.obj.toString());
+            }
+        }
     }
 
     private void webLogin() {
