@@ -2,15 +2,10 @@ package com.qhiehome.ihome.activity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -23,9 +18,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
-import com.qhiehome.ihome.manager.ActivityManager;
 import com.qhiehome.ihome.util.Constant;
-import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 
 import java.util.ArrayList;
@@ -99,7 +92,7 @@ public class UserInfoActivity extends BaseActivity {
     private void initUserInfo(){
         userInfo = new ArrayList<String>();
         userInfo.add("img_profile.jpg");
-        userInfo.add(SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, "123456"));
+        userInfo.add(SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, Constant.TEST_PHONE_NUM));
         userInfo.add("铁锤");
     }
 

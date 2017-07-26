@@ -1,16 +1,10 @@
 package com.qhiehome.ihome.util;
 
 import android.util.ArrayMap;
-import android.util.SparseArray;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 
 public class TimeUtil {
 
@@ -57,7 +51,7 @@ public class TimeUtil {
         return getTimesmorning() + passedHour * 3600 * 1000;
     }
 
-    public static Date millis2Date(final long millis) {
+    public Date millis2Date(final long millis) {
         return new Date(millis);
     }
 

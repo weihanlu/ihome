@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.activity.BindLockActivity;
 import com.qhiehome.ihome.activity.LoginActivity;
@@ -103,7 +104,12 @@ public class MeFragment extends Fragment {
                         OrderListActivity.start(mContext);
                         break;
                     case 4:
-
+                        View aboutApp = LayoutInflater.from(mContext).inflate(R.layout.dialog_about_app, null);
+                        new MaterialDialog.Builder(mContext)
+                                .title("关于App")
+                                .customView(aboutApp ,false)
+                                .show();
+                        break;
                     case 5:
                         ActivityManager.finishAll();
                         LoginActivity.start(mContext);
