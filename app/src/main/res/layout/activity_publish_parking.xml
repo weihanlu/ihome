@@ -37,7 +37,7 @@
                 android:layout_height="match_parent"/>
 
             <TextView
-                android:id="@+id/tv_list_empty"
+                android:id="@+id/tv_publish_empty"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="暂无车位发布"

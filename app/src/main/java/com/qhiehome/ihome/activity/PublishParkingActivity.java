@@ -6,34 +6,40 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.AppCompatSpinner;
-import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.qhiehome.ihome.R;
-import com.qhiehome.ihome.manager.ActivityManager;
+import com.qhiehome.ihome.adapter.BindLockAdapter;
+import com.qhiehome.ihome.adapter.PublishParkingAdapter;
+import com.qhiehome.ihome.bean.BLEDevice;
+import com.qhiehome.ihome.bean.PublishBean;
+import com.qhiehome.ihome.ble.profile.IhomeService;
+import com.qhiehome.ihome.manager.CommunicationManager;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.park.publish.PublishparkRequest;
 import com.qhiehome.ihome.network.model.park.publish.PublishparkResponse;
-import com.qhiehome.ihome.network.model.signin.SigninRequest;
-import com.qhiehome.ihome.network.model.signin.SigninResponse;
 import com.qhiehome.ihome.network.service.park.PublishParkService;
-import com.qhiehome.ihome.network.service.signin.SigninService;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
+import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.TimeUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 import com.qhiehome.ihome.view.RecyclerViewEmptySupport;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,13 +74,15 @@ public class PublishParkingActivity extends BaseActivity {
 
     private int mPeriodTimes;
 
+    LinearLayout mContainer;
+
     AppCompatSpinner mParkSpinner;
-    AppCompatSpinner mStartSpinner;
-    AppCompatSpinner mEndSpinner;
 
     private ArrayList<TimePeriod> mTimePeriods;
 
-    private ArrayList<PublishparkRequest> mPublishList;
+    private ArrayList<PublishBean> mPublishList;
+
+    private PublishParkingAdapter mPublishAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,12 +101,35 @@ public class PublishParkingActivity extends BaseActivity {
         parkingIdList.add("123457");
         parkingIdList.add("123458");
         parkingIdList.add("123459");
-        mTimePeriods = new ArrayList<>();
         mPublishList = new ArrayList<>();
+        mTimePeriods = new ArrayList<>();
     }
 
     private void initView() {
         initToolbar();
+        initRecyclerView();
+    }
+
+    private void initRecyclerView() {
+        RecyclerViewEmptySupport rv = (RecyclerViewEmptySupport) findViewById(R.id.rv_publish);
+        TextView tvListEmpty = (TextView) findViewById(R.id.tv_publish_empty);
+        rv.setEmptyView(tvListEmpty);
+        rv.setHasFixedSize(true);
+        rv.setLayoutManager(new LinearLayoutManager(this));
+        rv.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        mPublishAdapter = new PublishParkingAdapter(this, mPublishList);
+        initListener(mPublishAdapter);
+        rv.setAdapter(mPublishAdapter);
+    }
+
+    private void initListener(PublishParkingAdapter mPublishAdapter) {
+       mPublishAdapter.setOnItemClickListener(new PublishParkingAdapter.OnClickListener() {
+           @Override
+           public void onClick(int i) {
+               PublishBean publishBean = mPublishList.get(i);
+               ToastUtil.showToast(mContext, publishBean.getParkingId());
+           }
+       });
     }
 
     private void initToolbar() {
@@ -134,25 +165,22 @@ public class PublishParkingActivity extends BaseActivity {
                 ArrayAdapter<String> parkAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, parkingIdList);
                 parkAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 mParkSpinner.setAdapter(parkAdapter);
-                final LinearLayout container = (LinearLayout) customView.findViewById(R.id.container_period);
+                mContainer = (LinearLayout) customView.findViewById(R.id.container_period);
                 final Button addBtn = (Button) customView.findViewById(R.id.btn_add);
                 addBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         View itemContainer = LayoutInflater.from(mContext).inflate(R.layout.item_publish_parking, null);
-                        mStartSpinner = (AppCompatSpinner) itemContainer.findViewById(R.id.spinner_start);
+                        AppCompatSpinner startSpinner = (AppCompatSpinner) itemContainer.findViewById(R.id.spinner_start);
                         ArrayAdapter<String> startAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, TimeUtil.getInstance().getOnedayTime());
                         startAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                        mStartSpinner.setAdapter(startAdapter);
-                        mEndSpinner = (AppCompatSpinner) itemContainer.findViewById(R.id.spinner_end);
+                        startSpinner.setAdapter(startAdapter);
+                        AppCompatSpinner endSpinner = (AppCompatSpinner) itemContainer.findViewById(R.id.spinner_end);
                         ArrayAdapter<String> endAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, TimeUtil.getInstance().getOnedayTime());
                         endAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                        mEndSpinner.setAdapter(endAdapter);
-                        container.addView(itemContainer);
+                        endSpinner.setAdapter(endAdapter);
+                        mContainer.addView(itemContainer);
                         mPeriodTimes++;
-                        TimePeriod timePeriod = new TimePeriod(TimeUtil.getInstance().getTimeStamp(mStartSpinner.getSelectedItem().toString()),
-                                TimeUtil.getInstance().getTimeStamp(mEndSpinner.getSelectedItem().toString()));
-                        mTimePeriods.add(timePeriod);
                         if (mPeriodTimes == Constant.TIME_PERIOD_LIMIT) {
                             addBtn.setVisibility(View.GONE);
                         }
@@ -162,7 +190,7 @@ public class PublishParkingActivity extends BaseActivity {
             dialog.getBuilder().onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                    // publish parking info
+                    getSelectedPeriod();
                     publishParking();
                 }
             }).onNegative(new MaterialDialog.SingleButtonCallback() {
@@ -177,38 +205,57 @@ public class PublishParkingActivity extends BaseActivity {
         }
     }
 
-    private void publishParking() {
-        PublishParkService publishParkService = ServiceGenerator.createService(PublishParkService.class);
-        PublishparkRequest publishparkRequest = new PublishparkRequest();
-        publishparkRequest.setParking_id(Long.valueOf(mParkSpinner.getSelectedItem().toString()));
-        publishparkRequest.setPassword(EncryptUtil.encrypt(Constant.DEFAULT_PASSWORD, EncryptUtil.ALGO.SHA_256));
-        List<PublishparkRequest.ShareBean> share = new ArrayList<>();
-        for (TimePeriod timePeriod: mTimePeriods) {
-            PublishparkRequest.ShareBean shareBean = new PublishparkRequest.ShareBean();
-            shareBean.setStart_time(timePeriod.getStartTime());
-            shareBean.setEnd_time(timePeriod.getEndTime());
-            share.add(shareBean);
+    private void getSelectedPeriod() {
+        mTimePeriods.clear();
+        for (int i = 0; i < mContainer.getChildCount(); i++) {
+            View item = mContainer.getChildAt(i);
+            AppCompatSpinner startSpinner = (AppCompatSpinner) item.findViewById(R.id.spinner_start);
+            AppCompatSpinner endSpinner = (AppCompatSpinner) item.findViewById(R.id.spinner_end);
+            TimePeriod timePeriod = new TimePeriod(TimeUtil.getInstance().getTimeStamp(startSpinner.getSelectedItem().toString()),
+                    TimeUtil.getInstance().getTimeStamp(endSpinner.getSelectedItem().toString()));
+            mTimePeriods.add(timePeriod);
         }
-        publishparkRequest.setShare(share);
-        Call<PublishparkResponse> call = publishParkService.publish(publishparkRequest);
-        call.enqueue(new Callback<PublishparkResponse>() {
-            @Override
-            public void onResponse(Call<PublishparkResponse> call, Response<PublishparkResponse> response) {
-                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                    ToastUtil.showToast(mContext, "发布成功");
-                    addNewPublishInfo();
-                }
-            }
-            @Override
-            public void onFailure(Call<PublishparkResponse> call, Throwable t) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        ToastUtil.showToast(mContext, "网络异常");
-                    }
-                });
-            }
-        });
+    }
+
+    private void publishParking() {
+        long parkingId = Long.valueOf(mParkSpinner.getSelectedItem().toString());
+//        PublishParkService publishParkService = ServiceGenerator.createService(PublishParkService.class);
+//        PublishparkRequest publishparkRequest = new PublishparkRequest();
+//        publishparkRequest.setParking_id(parkingId);
+//        publishparkRequest.setPassword(EncryptUtil.encrypt(Constant.DEFAULT_PASSWORD, EncryptUtil.ALGO.SHA_256));
+//        List<PublishparkRequest.ShareBean> share = new ArrayList<>();
+        for (TimePeriod timePeriod: mTimePeriods) {
+//            PublishparkRequest.ShareBean shareBean = new PublishparkRequest.ShareBean();
+            long startTime = timePeriod.getStartTime();
+            long endTime = timePeriod.getEndTime();
+//            shareBean.setStart_time(startTime);
+//            shareBean.setEnd_time(endTime);
+//            share.add(shareBean);
+            SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm");
+            PublishBean publishBean = new PublishBean(parkingId + "", timeFormat.format(TimeUtil.millis2Date(startTime)), timeFormat.format(TimeUtil.millis2Date(endTime)));
+            mPublishList.add(publishBean);
+        }
+//        publishparkRequest.setShare(share);
+//        Call<PublishparkResponse> call = publishParkService.publish(publishparkRequest);
+//        call.enqueue(new Callback<PublishparkResponse>() {
+//            @Override
+//            public void onResponse(Call<PublishparkResponse> call, Response<PublishparkResponse> response) {
+//                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+//                    ToastUtil.showToast(mContext, "发布成功");
+//                    addNewPublishInfo();
+//                }
+//            }
+//            @Override
+//            public void onFailure(Call<PublishparkResponse> call, Throwable t) {
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        ToastUtil.showToast(mContext, "网络异常");
+//                    }
+//                });
+//            }
+//        });
+        mPublishAdapter.notifyDataSetChanged();
     }
 
     private void addNewPublishInfo() {
