@@ -50,6 +50,7 @@ import com.baidu.mapapi.search.poi.PoiIndoorResult;
 import com.baidu.mapapi.search.poi.PoiNearbySearchOption;
 import com.baidu.mapapi.search.poi.PoiResult;
 import com.baidu.mapapi.search.poi.PoiSearch;
+import com.baidu.mapapi.utils.DistanceUtil;
 import com.baidu.navisdk.adapter.BNCommonSettingParam;
 import com.baidu.navisdk.adapter.BNOuterTTSPlayerCallback;
 import com.baidu.navisdk.adapter.BNRoutePlanNode;
@@ -104,10 +105,11 @@ public class ParkFragment extends Fragment {
     private BaiduMap mBaiduMap;
     private LatLng mCurrentPt;
     private LatLng mMyPt;
+    private LatLng mPrePt;
     private Marker mMarker;
     private Marker mClickedMarker;
     private BaiduMap.OnMarkerClickListener mOnMarkerClickListener;
-    private boolean mFirstLocation;
+    private boolean mRefreshEstate;
     private LocationClient mLocationClient;
     private BDLocationListener mBDLocationListener;
     private Intent mIntent;
@@ -133,6 +135,7 @@ public class ParkFragment extends Fragment {
     private static final int LOCATE_INTERVAL = 5000;
     private static final String APP_ID = "9901662";
     private static final int RADIUS = 1000;
+    private static final double REFRESH_DISTANCE = 1000;
 
     private List<ParkingResponse.DataBean.EstateBean> mEstateBeanList = new ArrayList<>();
     private List<ParkingResponse.DataBean.EstateBean.ParkingBean> mParkingBeanList = new ArrayList<>();
@@ -230,7 +233,7 @@ public class ParkFragment extends Fragment {
     private void initLocate() {
         // 定位初始化
         mLocationClient = new LocationClient(mContext.getApplicationContext());
-        mFirstLocation = true;
+        mRefreshEstate = true;
         // 设置定位的相关配置
         LocationClientOption locOption = new LocationClientOption();
         locOption.setOpenGps(true);
@@ -253,21 +256,27 @@ public class ParkFragment extends Fragment {
                 if (bdLocation == null || mMapView == null) {
                     return;
                 }
-                mMyPt = new LatLng(bdLocation.getLatitude(), bdLocation.getLongitude());
                 MyLocationData locData = new MyLocationData.Builder()
                         .accuracy(bdLocation.getRadius())
                         // 此处设置开发者获取到的方向信息，顺时针0-360
                         .direction(100).latitude(bdLocation.getLatitude())
                         .longitude(bdLocation.getLongitude()).build();
+                LatLng xy = new LatLng(bdLocation.getLatitude(),
+                        bdLocation.getLongitude());
                 // 设置定位数据
                 mBaiduMap.setMyLocationData(locData);
-                if (mFirstLocation) {
-                    LatLng xy = new LatLng(bdLocation.getLatitude(),
-                            bdLocation.getLongitude());
+                if (mRefreshEstate) {
                     mCurrentPt = xy;
                     MapStatusUpdate status = MapStatusUpdateFactory.newLatLng(xy);
                     mBaiduMap.animateMapStatus(status);
                     updateMapState();
+                    mRefreshEstate = false;
+                    mPrePt = xy;
+                }else {
+                    double distance = DistanceUtil.getDistance(xy, mPrePt);
+                    if (distance >= REFRESH_DISTANCE){
+                        mRefreshEstate = true;
+                    }
                 }
             }
 
