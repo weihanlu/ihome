@@ -135,6 +135,7 @@ public class ParkFragment extends Fragment {
     private static final int LOCATE_INTERVAL = 5000;
     private static final String APP_ID = "9901662";
     private static final int RADIUS = 1000;
+  
     private static final double REFRESH_DISTANCE = 1000;
 
     private List<ParkingResponse.DataBean.EstateBean> mEstateBeanList = new ArrayList<>();
