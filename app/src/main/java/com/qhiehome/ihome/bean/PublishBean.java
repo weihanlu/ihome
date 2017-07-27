@@ -8,6 +8,8 @@ public class PublishBean {
 
     private String endTime;
 
+    private int shareId;
+
     public PublishBean(String parkingId, String startTime, String endTime) {
         this.parkingId = parkingId;
         this.startTime = startTime;
@@ -36,5 +38,13 @@ public class PublishBean {
 
     public void setEndTime(String endTime) {
         this.endTime = endTime;
+    }
+
+    public int getShareId() {
+        return shareId;
+    }
+
+    public void setShareId(int shareId) {
+        this.shareId = shareId;
     }
 }

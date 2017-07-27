@@ -21,6 +21,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.GravityEnum;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.adapter.ScanLockAdapter;
 import com.qhiehome.ihome.adapter.UserLockAdapter;
@@ -68,6 +70,8 @@ public class UserInfoActivity extends BaseActivity {
 
     private long currentTime;
 
+    private StringBuilder mParkingIds;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,6 +86,7 @@ public class UserInfoActivity extends BaseActivity {
     private void initData() {
         //requestAvatarAndNickName();
         mUserLocks = new ArrayList<>();
+        mParkingIds = new StringBuilder();
         inquiryOwnedParkings();
     }
 
@@ -122,7 +127,25 @@ public class UserInfoActivity extends BaseActivity {
             @Override
             public void onClick(int i) {
                 UserLockBean userLockBean = mUserLocks.get(i);
-                ToastUtil.showToast(mContext, userLockBean.getGatewayId() + " " + userLockBean.getLockMac());
+                View controllLock = LayoutInflater.from(mContext).inflate(R.layout.dialog_controll_lock, null);
+                ImageView imgUpLock = (ImageView) controllLock.findViewById(R.id.img_up_lock);
+                ImageView imgDownLock = (ImageView) controllLock.findViewById(R.id.img_down_Lock);
+                imgUpLock.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        ToastUtil.showToast(mContext, "raise up the lock");
+                    }
+                });
+                imgDownLock.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        ToastUtil.showToast(mContext, "lower the lock");
+                    }
+                });
+                new MaterialDialog.Builder(mContext)
+                        .title("连接中").titleGravity(GravityEnum.CENTER)
+                        .customView(controllLock ,false)
+                        .show();
             }
         });
     }
@@ -146,8 +169,10 @@ public class UserInfoActivity extends BaseActivity {
                 userLockBean = new UserLockBean(estate.getName(), parkingBean.getName(), parkingBean.getGatewayId(),
                         parkingBean.getLockMac(), isRented);
                 mUserLocks.add(userLockBean);
+                mParkingIds.append(parkingBean.getId()).append(",");
             }
         }
+        SharedPreferenceUtil.setString(this, Constant.OWNED_PARKING_KEY, mParkingIds.deleteCharAt(mParkingIds.length() - 1).toString());
     }
 
     public static void start(Context context) {

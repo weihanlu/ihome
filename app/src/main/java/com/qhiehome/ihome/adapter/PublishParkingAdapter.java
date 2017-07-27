@@ -41,10 +41,13 @@ public class PublishParkingAdapter extends RecyclerView.Adapter<PublishParkingAd
         PublishBean requestBean = mPublishList.get(adapterPosition);
         holder.mTvParkingId.setText(requestBean.getParkingId());
         holder.mTvParkingPeriod.setText("发布时间段 " + requestBean.getStartTime() + " ~ " + requestBean.getEndTime());
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
+        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
-            public void onClick(View v) {
-                onClickListener.onClick(adapterPosition);
+            public boolean onLongClick(View v) {
+                if (onClickListener != null) {
+                    onClickListener.onLongClick(adapterPosition);
+                }
+                return true;
             }
         });
     }
@@ -66,13 +69,14 @@ public class PublishParkingAdapter extends RecyclerView.Adapter<PublishParkingAd
         }
     }
 
-    public interface OnClickListener {
-        void onClick(int i);
+
+    public interface OnLongClickListener {
+        void onLongClick(int i);
     }
 
-    public void setOnItemClickListener(OnClickListener listener) {
+    public void setOnItemLongClickListener(OnLongClickListener listener) {
         this.onClickListener = listener;
     }
 
-    private OnClickListener onClickListener;
+    private OnLongClickListener onClickListener;
 }

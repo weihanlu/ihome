@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.SmsMessage;
 import android.text.TextUtils;
@@ -142,14 +143,14 @@ public class LoginActivity extends BaseActivity {
         Call<SigninResponse> call = signinService.signin(signinRequest);
         call.enqueue(new Callback<SigninResponse>() {
             @Override
-            public void onResponse(Call<SigninResponse> call, Response<SigninResponse> response) {
+            public void onResponse(@NonNull Call<SigninResponse> call, @NonNull Response<SigninResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     MainActivity.start(LoginActivity.this);
                     SharedPreferenceUtil.setString(LoginActivity.this, Constant.PHONE_KEY, mPhoneNum);
                 }
             }
             @Override
-            public void onFailure(Call<SigninResponse> call, Throwable t) {
+            public void onFailure(@NonNull Call<SigninResponse> call, @NonNull Throwable t) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

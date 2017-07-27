@@ -11,15 +11,20 @@ public class PublishCancelRequest {
      * password : xxxx...xxxx
      */
 
-    private int share_id;
+    private long shareId;
     private String password;
 
-    public int getShare_id() {
-        return share_id;
+    public PublishCancelRequest(long shareId, String password) {
+        this.shareId = shareId;
+        this.password = password;
     }
 
-    public void setShare_id(int share_id) {
-        this.share_id = share_id;
+    public long getShareId() {
+        return shareId;
+    }
+
+    public void setShareId(int shareId) {
+        this.shareId = shareId;
     }
 
     public String getPassword() {

@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
-import com.qhiehome.ihome.bean.BLEDevice;
 import com.qhiehome.ihome.bean.UserLockBean;
 
 import java.util.ArrayList;
