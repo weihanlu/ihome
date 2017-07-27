@@ -216,7 +216,7 @@ public class PublishParkingActivity extends BaseActivity {
         long parkingId = Long.valueOf(mParkSpinner.getSelectedItem().toString());
         PublishParkService publishParkService = ServiceGenerator.createService(PublishParkService.class);
         PublishparkRequest publishparkRequest = new PublishparkRequest();
-        publishparkRequest.setParking_id(parkingId);
+        publishparkRequest.setParkingId(parkingId);
         publishparkRequest.setPassword(EncryptUtil.encrypt(Constant.DEFAULT_PASSWORD, EncryptUtil.ALGO.SHA_256));
         List<PublishparkRequest.ShareBean> share = new ArrayList<>();
         for (TimePeriod timePeriod: mTimePeriods) {
@@ -234,7 +234,7 @@ public class PublishParkingActivity extends BaseActivity {
         Call<PublishparkResponse> call = publishParkService.publish(publishparkRequest);
         call.enqueue(new Callback<PublishparkResponse>() {
             @Override
-            public void onResponse(Call<PublishparkResponse> call, Response<PublishparkResponse> response) {
+            public void onResponse(@NonNull  Call<PublishparkResponse> call, @NonNull  Response<PublishparkResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     ToastUtil.showToast(mContext, "发布成功");
                     mPublishAdapter.notifyDataSetChanged();
@@ -244,7 +244,7 @@ public class PublishParkingActivity extends BaseActivity {
                 }
             }
             @Override
-            public void onFailure(Call<PublishparkResponse> call, Throwable t) {
+            public void onFailure(@NonNull Call<PublishparkResponse> call, Throwable t) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

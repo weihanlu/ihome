@@ -15,16 +15,16 @@ public class PublishparkRequest {
      * ]
      */
 
-    private long parking_id;
+    private long parkingId;
     private String password;
     private List<ShareBean> share;
 
-    public long getParking_id() {
-        return parking_id;
+    public long getParkingId() {
+        return parkingId;
     }
 
-    public void setParking_id(long parking_id) {
-        this.parking_id = parking_id;
+    public void setParkingId(long parkingId) {
+        this.parkingId = parkingId;
     }
 
     public String getPassword() {

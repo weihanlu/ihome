@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -15,11 +16,17 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.adapter.ScanLockAdapter;
+import com.qhiehome.ihome.adapter.UserLockAdapter;
+import com.qhiehome.ihome.bean.UserLockBean;
 import com.qhiehome.ihome.network.ServiceGenerator;
+import com.qhiehome.ihome.network.model.base.ParkingResponse;
 import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedRequest;
 import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedResponse;
 import com.qhiehome.ihome.network.model.signin.SigninRequest;
@@ -27,6 +34,7 @@ import com.qhiehome.ihome.network.model.signin.SigninResponse;
 import com.qhiehome.ihome.network.service.inquiry.ParkingOwnedService;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
+import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
@@ -48,44 +56,98 @@ public class UserInfoActivity extends BaseActivity {
     @BindView(R.id.rv_userinfo)
     RecyclerView mRvUserinfo;
 
-    private UserInfoAdapter mAdapter;
+    @BindView(R.id.vs_user_locks)
+    ViewStub mViewStub;
+
     private static final String[] LIST_CONTENT = {"头像","手机号","昵称"};
     private List<String> userInfo;
+
+    private Context mContext;
+
+    private ArrayList<UserLockBean> mUserLocks;
+
+    private long currentTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_info);
         ButterKnife.bind(this);
+        mContext = this;
         initData();
         initView();
         initUserInfo();
     }
 
     private void initData() {
-        // 请求头像数据，昵称
-//        requestAvatarAndNickName();
-        // 查看该用户名下是否有车位
-        inquiryParkings();
+        //requestAvatarAndNickName();
+        mUserLocks = new ArrayList<>();
+        inquiryOwnedParkings();
     }
 
-    private void inquiryParkings() {
+    private void inquiryOwnedParkings() {
+        currentTime = System.currentTimeMillis();
         ParkingOwnedService parkingOwnedService = ServiceGenerator.createService(ParkingOwnedService.class);
         ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(Constant.TEST_PHONE_NUM);
         Call<ParkingOwnedResponse> call = parkingOwnedService.parkingOwned(parkingOwnedRequest);
         call.enqueue(new Callback<ParkingOwnedResponse>() {
             @Override
-            public void onResponse(Call<ParkingOwnedResponse> call, Response<ParkingOwnedResponse> response) {
+            public void onResponse(@NonNull  Call<ParkingOwnedResponse> call,@NonNull Response<ParkingOwnedResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-
+                    // success and then inflate ViewStub
+                    List<ParkingResponse.DataBean.EstateBean> estateList = response.body().getData().getEstate();
+                    if (estateList.size() != 0) {
+                        mViewStub.inflate();
+                        RecyclerView rvUserLocks = (RecyclerView) findViewById(R.id.rv_user_locks);
+                        rvUserLocks.setHasFixedSize(true);
+                        LinearLayoutManager llm = new LinearLayoutManager(mContext);
+                        rvUserLocks.setLayoutManager(llm);
+                        initLocks(estateList);
+                        UserLockAdapter userLockAdapter = new UserLockAdapter(mContext, mUserLocks);
+                        rvUserLocks.setAdapter(userLockAdapter);
+                        initListener(userLockAdapter);
+                    }
                 }
             }
 
             @Override
-            public void onFailure(Call<ParkingOwnedResponse> call, Throwable t) {
+            public void onFailure(@NonNull  Call<ParkingOwnedResponse> call,@NonNull Throwable t) {
 
             }
         });
+    }
+
+    private void initListener(final UserLockAdapter userLockAdapter) {
+        userLockAdapter.setOnItemClickListener(new ScanLockAdapter.OnClickListener() {
+            @Override
+            public void onClick(int i) {
+                UserLockBean userLockBean = mUserLocks.get(i);
+                ToastUtil.showToast(mContext, userLockBean.getGatewayId() + " " + userLockBean.getLockMac());
+            }
+        });
+    }
+
+
+    private void initLocks(List<ParkingResponse.DataBean.EstateBean> estateList) {
+        mUserLocks.clear();
+        UserLockBean userLockBean;
+        boolean isRented = false;
+        for (ParkingResponse.DataBean.EstateBean estate: estateList) {
+            for (ParkingResponse.DataBean.EstateBean.ParkingBean parkingBean: estate.getParking()) {
+                List<ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean> share = parkingBean.getShare();
+                for (int i = 0; i < share.size(); i++) {
+                    ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean shareBean = share.get(i);
+                    long startTime = shareBean.getStartTime();
+                    long endTime = shareBean.getEndTime();
+                    if (currentTime >= startTime && currentTime <= endTime) {
+                        isRented = true;
+                    }
+                }
+                userLockBean = new UserLockBean(estate.getName(), parkingBean.getName(), parkingBean.getGatewayId(),
+                        parkingBean.getLockMac(), isRented);
+                mUserLocks.add(userLockBean);
+            }
+        }
     }
 
     public static void start(Context context) {
@@ -116,7 +178,7 @@ public class UserInfoActivity extends BaseActivity {
 
     private void initRecyclerView(){
         mRvUserinfo.setLayoutManager(new LinearLayoutManager(this));
-        mAdapter = new UserInfoAdapter();
+        UserInfoAdapter mAdapter = new UserInfoAdapter();
         mRvUserinfo.setAdapter(mAdapter);
         Context context = UserInfoActivity.this;
         DividerItemDecoration did = new DividerItemDecoration(context,LinearLayoutManager.VERTICAL);

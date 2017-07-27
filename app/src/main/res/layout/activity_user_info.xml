@@ -34,7 +34,7 @@
         />
 
     <ViewStub
-        android:id="@+id/lock_stub"
+        android:id="@+id/vs_user_locks"
         android:layout="@layout/rv_user_locks"
         android:inflatedId="@+id/rv_user_locks"
         android:layout_width="match_parent"
