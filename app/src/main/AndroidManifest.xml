@@ -101,6 +101,9 @@
             android:name=".ble.profile.IhomeService"
             android:singleUser="true" />
         <service android:name=".ble.profile.BLECommandService" />
+        <receiver
+            android:name=".persistence.AlarmReceiver"
+            android:process=":remote" />
 
         <activity
             android:name=".activity.LockDetailActivity"

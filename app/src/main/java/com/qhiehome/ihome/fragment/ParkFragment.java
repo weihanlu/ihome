@@ -2,9 +2,14 @@ package com.qhiehome.ihome.fragment;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -13,6 +18,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -63,13 +69,23 @@ import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.base.ParkingResponse;
 import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyRequest;
 import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyResponse;
+import com.qhiehome.ihome.network.model.park.publish.PublishparkRequest;
 import com.qhiehome.ihome.network.service.inquiry.ParkingEmptyService;
+import com.qhiehome.ihome.persistence.AlarmReceiver;
+import com.qhiehome.ihome.persistence.AlarmTimer;
+import com.qhiehome.ihome.persistence.ParkingSQLHelper;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.LogUtil;
+import com.qhiehome.ihome.util.TimeUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -128,19 +144,23 @@ public class ParkFragment extends Fragment {
     public static List<Activity> activityList = new LinkedList<Activity>();
     public static final String RESET_END_NODE = "resetEndNode";
     private CoordinateType mCoordinateType;
-    /******百度地图导航******/
 
     private static final float MAP_ZOOM_LEVEL = 15f;
     private static final String LOCATE_RESULT_TYPE = "bd09ll";
     private static final int LOCATE_INTERVAL = 5000;
     private static final String APP_ID = "9901662";
-    private static final int RADIUS = 1000;
+    private static final int RADIUS = 5000;
   
     private static final double REFRESH_DISTANCE = 1000;
+    private static final SimpleDateFormat START_DATE_FORMATE = new SimpleDateFormat("MM-dd HH:mm");
+    private static final SimpleDateFormat END_DATE_FORMATE = new SimpleDateFormat("HH:mm");
 
     private List<ParkingResponse.DataBean.EstateBean> mEstateBeanList = new ArrayList<>();
     private List<ParkingResponse.DataBean.EstateBean.ParkingBean> mParkingBeanList = new ArrayList<>();
 
+    private ParkingSQLHelper mParkingSQLHelper;
+    private SQLiteDatabase mParkingReadDB;
+    private SQLiteDatabase mParkingWriteDB;
 
     @Override
     public void onAttach(Context context) {
@@ -156,12 +176,16 @@ public class ParkFragment extends Fragment {
         initMap();
         initLocate();
         unbinder = ButterKnife.bind(this, view);
-
+        mParkingSQLHelper = new ParkingSQLHelper(mContext);
         if (initDirs()) {
             initNavi();
         }
+        AlarmTimer.setRepeatAlarmTime(mContext, System.currentTimeMillis(),
+                10*1000, Constant.TIMER_ACTION, AlarmManager.RTC_WAKEUP);
+
         return view;
     }
+
 
     @Override
     public void onStart() {
@@ -326,6 +350,7 @@ public class ParkFragment extends Fragment {
     }
 
     private void updateMapState(){
+        mBaiduMap.removeMarkerClickListener(mOnMarkerClickListener);
         ParkingEmptyService parkingEmptyService = ServiceGenerator.createService(ParkingEmptyService.class);
         ParkingEmptyRequest parkingEmptyRequest = new ParkingEmptyRequest(mCurrentPt.longitude, mCurrentPt.latitude, RADIUS);
         Call<ParkingEmptyResponse> call = parkingEmptyService.parkingEmpty(parkingEmptyRequest);
@@ -359,7 +384,8 @@ public class ParkFragment extends Fragment {
                                 .position(newPT)//设置位置
                                 .icon(arrow);//设置图标样式
                         Bundle bundle = new Bundle();
-                        bundle.putString("name", mEstateBeanList.get(i).getName());
+                        bundle.putSerializable("estate", mEstateBeanList.get(i));
+                        //bundle.putString("name", mEstateBeanList.get(i).getName());
                         mMarker = (Marker) mBaiduMap.addOverlay(options);
                         mMarker.setExtraInfo(bundle);
                     }
@@ -371,6 +397,16 @@ public class ParkFragment extends Fragment {
                 ToastUtil.showToast(mContext,"网络连接异常");
             }
         });
+
+        mOnMarkerClickListener = new BaiduMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker1) {
+                mClickedMarker = marker1;
+                showParkingDialog();
+                return false;
+            }
+        };
+        mBaiduMap.setOnMarkerClickListener(mOnMarkerClickListener);
     }
 
 /*******归位、点击、搜索:待删除*******/
@@ -551,45 +587,35 @@ public class ParkFragment extends Fragment {
 
     /*********显示小区的停车位***********/
     private void showParkingDialog() {
-
-        String estateName = mClickedMarker.getExtraInfo().getString("name");
-        //网络请求
-        /**********暂时数据************/
-        List<Map<String, String>> parking_data = new ArrayList<>();
         final List<CheckBox> cb_all = new ArrayList<>();
-        parking_data.add(new HashMap<String, String>() {{
-            put("name", "Jack");
-            put("time_start", "8");
-            put("time_end", "10");
-        }});
-        parking_data.add(new HashMap<String, String>() {{
-            put("name", "Jerry");
-            put("time_start", "9");
-            put("time_end", "14");
-        }});
-        parking_data.add(new HashMap<String, String>() {{
-            put("name", "Tom");
-            put("time_start", "10");
-            put("time_end", "13");
-        }});
-        /**********暂时数据************/
-        final int size = parking_data.size();
+        Bundle bundle = mClickedMarker.getExtraInfo();
+        final ParkingResponse.DataBean.EstateBean estateBean =(ParkingResponse.DataBean.EstateBean) bundle.getSerializable("estate");
+        LatLng estateLocation = new LatLng(estateBean.getY(), estateBean.getX());
+        List<ParkingResponse.DataBean.EstateBean.ParkingBean> parking_data = estateBean.getParking();
+
+        //对startTime排序
+        final List<ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean> shareBeanList = new ArrayList<>();
+        for (int i = 0; i<parking_data.size();i++){
+            shareBeanList.addAll(parking_data.get(i).getShare());
+        }
+        Collections.sort(shareBeanList, new startTimeComparator());
+
+
+        final int size = shareBeanList.size();
         int count = 0;
         if (size != 0) {
             MaterialDialog.Builder dialogBuilder = new MaterialDialog.Builder(this.getContext())
                     .positiveText("确定").negativeText("取消");
-            dialogBuilder.title(estateName).customView(R.layout.dialog_parking_list, true);
+            dialogBuilder.title(estateBean.getName()).customView(R.layout.dialog_parking_list, true);
             MaterialDialog dialog = dialogBuilder.build();
             View customView = dialog.getCustomView();
             while (customView != null && count < size) {
                 final LinearLayout container = (LinearLayout) customView.findViewById(R.id.parking_list_container);
                 View itemContainer = LayoutInflater.from(mContext).inflate(R.layout.item_parking_list, null);
-                String name = parking_data.get(count).get("name");
-                String time = parking_data.get(count).get("time_start") + "~" + parking_data.get(count).get("time_end");
-                TextView tv_name = (TextView) itemContainer.findViewById(R.id.tv_parking_name);
+                Date startTime = TimeUtil.getInstance().millis2Date(shareBeanList.get(count).getStartTime());
+                Date endTime = TimeUtil.getInstance().millis2Date(shareBeanList.get(count).getEndTime());
                 TextView tv_time = (TextView) itemContainer.findViewById(R.id.tv_parking_time);
-                tv_name.setText(name);
-                tv_time.setText(time);
+                tv_time.setText(START_DATE_FORMATE.format(startTime) + "~" +END_DATE_FORMATE.format(endTime));
                 CheckBox cb = (CheckBox) itemContainer.findViewById(R.id.cb_parking);
                 cb_all.add(cb);
                 container.addView(itemContainer);
@@ -601,12 +627,25 @@ public class ParkFragment extends Fragment {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                     int num_chosen = 0;
+                    mParkingReadDB = mParkingSQLHelper.getReadableDatabase();
                     for (int i = 0; i < size; i++) {
                         if (cb_all.get(i).isChecked()) {
+                            //发出网络请求if(成功)
+                            //数据库记录预约数据
+                            mParkingWriteDB = mParkingSQLHelper.getWritableDatabase();
+                            ContentValues cv = new ContentValues();
+                            cv.put("shareID",shareBeanList.get(i).getId());
+                            cv.put("startTime",shareBeanList.get(i).getStartTime());
+                            cv.put("endTime",shareBeanList.get(i).getEndTime());
+                            cv.put("estateName",estateBean.getName());
+                            cv.put("x",estateBean.getX());
+                            cv.put("y",estateBean.getY());
+                            mParkingWriteDB.insert(ParkingSQLHelper.TABLE_NAME, null, cv);
                             num_chosen++;
                         }
                     }
-                    //发出网络请求if(成功)
+                    mParkingWriteDB.close();
+                    mParkingReadDB.close();
                     ToastUtil.showToast(mContext, "已预约" + num_chosen + "车位");
                     //if(失败) 显示网络访问错误
                 }
@@ -619,6 +658,24 @@ public class ParkFragment extends Fragment {
             dialog.show();
         } else {
             //没有停车位
+            MaterialDialog.Builder dialogBuilder = new MaterialDialog.Builder(this.getContext())
+                    .positiveText("确定");
+            dialogBuilder.title(estateBean.getName()+"没有可用车位").customView(R.layout.dialog_parking_list, true);
+            MaterialDialog dialog = dialogBuilder.build();
+            dialog.show();
+        }
+    }
+
+    static class startTimeComparator implements Comparator{
+        @Override
+        public int compare(Object o, Object t1) {
+            ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean shareBean1 = (ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean) o;
+            ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean shareBean2 = (ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean) t1;
+            if (shareBean1.getStartTime() != shareBean2.getStartTime()){
+                return Long.valueOf(shareBean1.getStartTime()).compareTo(shareBean2.getStartTime());
+            }else {
+                return Long.valueOf(shareBean1.getEndTime()).compareTo(shareBean2.getEndTime());
+            }
         }
     }
 
@@ -815,26 +872,40 @@ public class ParkFragment extends Fragment {
         BNRoutePlanNode sNode = null;
         BNRoutePlanNode eNode = null;
         switch (coType) {
-            case GCJ02: {
-                sNode = new BNRoutePlanNode(116.30142, 40.05087, "百度大厦", null, coType);
-                eNode = new BNRoutePlanNode(116.39750, 39.90882, "北京天安门", null, coType);
-                break;
-            }
-            case WGS84: {
-                sNode = new BNRoutePlanNode(116.300821, 40.050969, "百度大厦", null, coType);
-                eNode = new BNRoutePlanNode(116.397491, 39.908749, "北京天安门", null, coType);
-                break;
-            }
-            case BD09_MC: {
-                sNode = new BNRoutePlanNode(12947471, 4846474, "百度大厦", null, coType);
-                eNode = new BNRoutePlanNode(12958160, 4825947, "北京天安门", null, coType);
-                break;
-            }
+//            case GCJ02: {
+//                sNode = new BNRoutePlanNode(116.30142, 40.05087, "百度大厦", null, coType);
+//                eNode = new BNRoutePlanNode(116.39750, 39.90882, "北京天安门", null, coType);
+//                break;
+//            }
+//            case WGS84: {
+//                sNode = new BNRoutePlanNode(116.300821, 40.050969, "百度大厦", null, coType);
+//                eNode = new BNRoutePlanNode(116.397491, 39.908749, "北京天安门", null, coType);
+//                break;
+//            }
+//            case BD09_MC: {
+//                sNode = new BNRoutePlanNode(12947471, 4846474, "百度大厦", null, coType);
+//                eNode = new BNRoutePlanNode(12958160, 4825947, "北京天安门", null, coType);
+//                break;
+//            }
             case BD09LL: {
                 sNode = new BNRoutePlanNode(mCurrentPt.longitude, mCurrentPt.latitude, "我的位置", null, coType);
-                //sNode = new BNRoutePlanNode(116.30784537597782, 40.057009624099436, "百度大厦", null, coType);
-                //网络请求获得目的地经纬度
-                eNode = new BNRoutePlanNode(116.40386525193937, 39.915160800132085, "北京天安门", null, coType);
+                //查询数据库得到目的地经纬度
+                mParkingReadDB = mParkingSQLHelper.getReadableDatabase();
+                Cursor cursor = mParkingReadDB.query(ParkingSQLHelper.TABLE_NAME,
+                        new String[] {"startTime","estateName","x","y"},
+                        null,null,null,null,"startTime ASC");
+                while (cursor.moveToNext()){
+                    long startTime = cursor.getLong(cursor.getColumnIndex("startTime"));
+                    if (startTime >= System.currentTimeMillis()){
+                        String estateName = cursor.getString(cursor.getColumnIndex("estateName"));
+                        double x = cursor.getDouble(cursor.getColumnIndex("x"));
+                        double y = cursor.getDouble(cursor.getColumnIndex("y"));
+                        eNode = new BNRoutePlanNode(x, y, estateName, null, coType);
+                        break;
+                    }
+                }
+
+                mParkingReadDB.close();
                 break;
             }
             default:

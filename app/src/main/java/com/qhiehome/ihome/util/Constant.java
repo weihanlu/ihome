@@ -22,7 +22,11 @@ public class Constant {
 
     public static final int VERIFY_NUM = 4;
 
+
     public static final String OWNED_PARKING_KEY = "owned_parking_key";
+
+    public static final String TIMER_ACTION= "TIMER_ACTION";
+
 
 
 }
