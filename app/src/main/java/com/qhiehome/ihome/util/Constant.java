@@ -22,6 +22,9 @@ public class Constant {
 
     public static final int VERIFY_NUM = 4;
 
+    public static final String CURRENT_LONGITUDE= "CURRENT_LONGITUDE";
+
+    public static final String CURRENT_LATITUDE= "CURRENT_LATITUDE";
 
     public static final String OWNED_PARKING_KEY = "owned_parking_key";
 

@@ -63,8 +63,7 @@
         <activity
             android:name=".activity.SplashActivity"
             android:theme="@style/SplashTheme" />
-        <activity android:name=".activity.LoginActivity">
-        </activity>
+        <activity android:name=".activity.LoginActivity"></activity>
         <activity
             android:name=".activity.MainActivity"
             android:launchMode="singleTask">
@@ -101,9 +100,6 @@
             android:name=".ble.profile.IhomeService"
             android:singleUser="true" />
         <service android:name=".ble.profile.BLECommandService" />
-        <receiver
-            android:name=".persistence.AlarmReceiver"
-            android:process=":remote" />
 
         <activity
             android:name=".activity.LockDetailActivity"
@@ -113,7 +109,18 @@
         <activity android:name=".activity.PublishParkingActivity" />
         <activity android:name=".activity.OrderListActivity" />
         <activity android:name=".activity.NaviGuideActivity" />
-        <activity android:name=".activity.BaseActivity"></activity>
+        <activity android:name=".activity.BaseActivity" />
+
+        <receiver
+            android:name=".persistence.AlarmReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="TIMER_ACTION" />
+            </intent-filter>
+        </receiver>
+
+        <activity android:name=".activity.ReserveListActivity"></activity>
     </application>
 
 </manifest>

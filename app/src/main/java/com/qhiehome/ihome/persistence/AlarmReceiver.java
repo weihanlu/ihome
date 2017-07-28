@@ -19,7 +19,8 @@ public class AlarmReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
         if (action == Constant.TIMER_ACTION){
-            ToastUtil.showToast(context,"清除数据库");
+            ParkingSQLHelper parkingSQLHelper = new ParkingSQLHelper(context);
+            //ToastUtil.showToast(context,"清除数据库");
         }
     }
 

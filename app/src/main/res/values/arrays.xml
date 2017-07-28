@@ -2,7 +2,7 @@
 <resources>
     <string-array name="titles">
         <item>Account</item>
-        <item>Binding Lock</item>
+        <item>My Reservation</item>
         <item>Release</item>
         <item>My Orders</item>
         <item>About</item>
