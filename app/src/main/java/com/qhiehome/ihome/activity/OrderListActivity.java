@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -22,12 +21,8 @@ import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.inquiry.order.OrderRequest;
 import com.qhiehome.ihome.network.model.inquiry.order.OrderResponse;
-import com.qhiehome.ihome.network.model.signin.SigninRequest;
-import com.qhiehome.ihome.network.model.signin.SigninResponse;
 import com.qhiehome.ihome.network.service.inquiry.OrderService;
-import com.qhiehome.ihome.network.service.signin.SigninService;
 import com.qhiehome.ihome.util.Constant;
-import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.TimeUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
@@ -36,17 +31,13 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
 
 public class OrderListActivity extends BaseActivity implements SwipeRefreshLayout.OnRefreshListener{
 
@@ -131,6 +122,7 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
                     @Override
                     public void run() {
                         ToastUtil.showToast(OrderListActivity.this, "网络连接异常");
+                        mSrlOrderList.setRefreshing(false);
                     }
                 });
             }
@@ -185,11 +177,10 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
 //            holder.tv_fee.setText(fee);
             OrderResponse.DataBean.OrderBean order = mData.get(position);
             holder.tv_estate.setText(String.valueOf(order.getId()));//订单号
-            Date start = TimeUtil.getInstance().millis2Date(order.getEnter_time());
-            Date end = TimeUtil.getInstance().millis2Date(order.getLeave_time());
+            Date start = TimeUtil.getInstance().millis2Date(order.getEnterTime());
+            Date end = TimeUtil.getInstance().millis2Date(order.getLeaveTime());
             holder.tv_time.setText(START_TIME_FORMAT.format(start) + "-" + END_TIME_FORMAT.format(end));
-            //holder.tv_fee.setText();
-            double pay_fee = order.getPay_fee();
+            double pay_fee = order.getPayFee();
             if (pay_fee == 0){
                 holder.iv_income_expense.setColorFilter(Color.GREEN);
                 holder.tv_fee.setText("");

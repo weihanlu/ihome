@@ -1,22 +1,19 @@
 package com.qhiehome.ihome.network.model.base;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Created by YueMa on 2017/7/21.
  */
 
-public class ParkingResponse {
+public class ParkingResponse extends Response {
 
     /**
-     * data : {"estate":[{"name":"xxxxxx","x":12.345678,"y":87.654321,"parking":[{"id":"xxxx...xxxx","name":"xxxxxx","share":[{"id":123456789,"start_time":1499826000000,"end_time":1499828000000}]}]}]}
-     * errcode : 1
-     * errmsg : success
+     * data : {"estate":[{"name":"xxxxxx","x":12.345678,"y":87.654321,"parking":[{"id":"xxxx...xxxx","name":"xxxxxx","gatewayId":"xxxxxx","lockMac":"xxxxxx","share":[{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]}]}]}
      */
 
     private DataBean data;
-    private int errcode;
-    private String errmsg;
 
     public DataBean getData() {
         return data;
@@ -24,22 +21,6 @@ public class ParkingResponse {
 
     public void setData(DataBean data) {
         this.data = data;
-    }
-
-    public int getErrcode() {
-        return errcode;
-    }
-
-    public void setErrcode(int errcode) {
-        this.errcode = errcode;
-    }
-
-    public String getErrmsg() {
-        return errmsg;
-    }
-
-    public void setErrmsg(String errmsg) {
-        this.errmsg = errmsg;
     }
 
     public static class DataBean {
@@ -53,12 +34,12 @@ public class ParkingResponse {
             this.estate = estate;
         }
 
-        public static class EstateBean {
+        public static class EstateBean implements Serializable{
             /**
              * name : xxxxxx
              * x : 12.345678
              * y : 87.654321
-             * parking : [{"id":"xxxx...xxxx","name":"xxxxxx","share":[{"id":123456789,"start_time":1499826000000,"end_time":1499828000000}]}]
+             * parking : [{"id":"xxxx...xxxx","name":"xxxxxx","gatewayId":"xxxxxx","lockMac":"xxxxxx","share":[{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]}]
              */
 
             private String name;
@@ -102,29 +83,15 @@ public class ParkingResponse {
                 /**
                  * id : xxxx...xxxx
                  * name : xxxxxx
-                 * share : [{"id":123456789,"start_time":1499826000000,"end_time":1499828000000}]
+                 * gatewayId : xxxxxx
+                 * lockMac : xxxxxx
+                 * share : [{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]
                  */
 
                 private String id;
                 private String name;
                 private String gatewayId;
                 private String lockMac;
-
-                public String getGatewayId() {
-                    return gatewayId;
-                }
-
-                public void setGatewayId(String gatewayId) {
-                    this.gatewayId = gatewayId;
-                }
-
-                public String getLockMac() {
-                    return lockMac;
-                }
-
-                public void setLockMac(String lockMac) {
-                    this.lockMac = lockMac;
-                }
 
                 private List<ShareBean> share;
 
@@ -144,6 +111,22 @@ public class ParkingResponse {
                     this.name = name;
                 }
 
+                public String getGatewayId() {
+                    return gatewayId;
+                }
+
+                public void setGatewayId(String gatewayId) {
+                    this.gatewayId = gatewayId;
+                }
+
+                public String getLockMac() {
+                    return lockMac;
+                }
+
+                public void setLockMac(String lockMac) {
+                    this.lockMac = lockMac;
+                }
+
                 public List<ShareBean> getShare() {
                     return share;
                 }
@@ -155,8 +138,8 @@ public class ParkingResponse {
                 public static class ShareBean {
                     /**
                      * id : 123456789
-                     * start_time : 1499826000000
-                     * end_time : 1499828000000
+                     * startTime : 1499826000000
+                     * endTime : 1499828000000
                      */
 
                     private int id;

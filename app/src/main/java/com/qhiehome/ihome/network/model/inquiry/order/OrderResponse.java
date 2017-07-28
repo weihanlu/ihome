@@ -1,22 +1,20 @@
 package com.qhiehome.ihome.network.model.inquiry.order;
 
+import com.qhiehome.ihome.network.model.base.Response;
+
 import java.util.List;
 
 /**
  * Created by YueMa on 2017/7/21.
  */
 
-public class OrderResponse {
+public class OrderResponse extends Response{
 
     /**
-     * data : {"order":[{"id":123456789,"parking_id":123456789,"phone":"xxxx...xxxx","enter_time":1499826992574,"leave_time":1499826992574,"payment_time":1499826992574,"close_time":1499826992574,"pay_fee":100.32,"owner_fee":80.21,"estate_fee":10.21,"platform_fee":10.45,"state":2}]}
-     * errcode : 1
-     * errmsg : success
+     * data : {"order":[{"id":123456789,"parkingId":123456789,"phone":"xxxx...xxxx","enterTime":1499826992574,"leaveTime":1499826992574,"paymentTime":1499826992574,"closeTime":1499826992574,"payFee":100,"ownerFee":80,"estateFee":10,"platformFee":10,"state":2}]}
      */
 
     private DataBean data;
-    private int errcode;
-    private String errmsg;
 
     public DataBean getData() {
         return data;
@@ -24,22 +22,6 @@ public class OrderResponse {
 
     public void setData(DataBean data) {
         this.data = data;
-    }
-
-    public int getErrcode() {
-        return errcode;
-    }
-
-    public void setErrcode(int errcode) {
-        this.errcode = errcode;
-    }
-
-    public String getErrmsg() {
-        return errmsg;
-    }
-
-    public void setErrmsg(String errmsg) {
-        this.errmsg = errmsg;
     }
 
     public static class DataBean {
@@ -56,30 +38,30 @@ public class OrderResponse {
         public static class OrderBean {
             /**
              * id : 123456789
-             * parking_id : 123456789
+             * parkingId : 123456789
              * phone : xxxx...xxxx
-             * enter_time : 1499826992574
-             * leave_time : 1499826992574
-             * payment_time : 1499826992574
-             * close_time : 1499826992574
-             * pay_fee : 100.32
-             * owner_fee : 80.21
-             * estate_fee : 10.21
-             * platform_fee : 10.45
+             * enterTime : 1499826992574
+             * leaveTime : 1499826992574
+             * paymentTime : 1499826992574
+             * closeTime : 1499826992574
+             * payFee : 100
+             * ownerFee : 80
+             * estateFee : 10
+             * platformFee : 10
              * state : 2
              */
 
             private int id;
-            private int parking_id;
+            private int parkingId;
             private String phone;
-            private long enter_time;
-            private long leave_time;
-            private long payment_time;
-            private long close_time;
-            private double pay_fee;
-            private double owner_fee;
-            private double estate_fee;
-            private double platform_fee;
+            private long enterTime;
+            private long leaveTime;
+            private long paymentTime;
+            private long closeTime;
+            private int payFee;
+            private int ownerFee;
+            private int estateFee;
+            private int platformFee;
             private int state;
 
             public int getId() {
@@ -90,12 +72,12 @@ public class OrderResponse {
                 this.id = id;
             }
 
-            public int getParking_id() {
-                return parking_id;
+            public int getParkingId() {
+                return parkingId;
             }
 
-            public void setParking_id(int parking_id) {
-                this.parking_id = parking_id;
+            public void setParkingId(int parkingId) {
+                this.parkingId = parkingId;
             }
 
             public String getPhone() {
@@ -106,68 +88,68 @@ public class OrderResponse {
                 this.phone = phone;
             }
 
-            public long getEnter_time() {
-                return enter_time;
+            public long getEnterTime() {
+                return enterTime;
             }
 
-            public void setEnter_time(long enter_time) {
-                this.enter_time = enter_time;
+            public void setEnterTime(long enterTime) {
+                this.enterTime = enterTime;
             }
 
-            public long getLeave_time() {
-                return leave_time;
+            public long getLeaveTime() {
+                return leaveTime;
             }
 
-            public void setLeave_time(long leave_time) {
-                this.leave_time = leave_time;
+            public void setLeaveTime(long leaveTime) {
+                this.leaveTime = leaveTime;
             }
 
-            public long getPayment_time() {
-                return payment_time;
+            public long getPaymentTime() {
+                return paymentTime;
             }
 
-            public void setPayment_time(long payment_time) {
-                this.payment_time = payment_time;
+            public void setPaymentTime(long paymentTime) {
+                this.paymentTime = paymentTime;
             }
 
-            public long getClose_time() {
-                return close_time;
+            public long getCloseTime() {
+                return closeTime;
             }
 
-            public void setClose_time(long close_time) {
-                this.close_time = close_time;
+            public void setCloseTime(long closeTime) {
+                this.closeTime = closeTime;
             }
 
-            public double getPay_fee() {
-                return pay_fee;
+            public int getPayFee() {
+                return payFee;
             }
 
-            public void setPay_fee(double pay_fee) {
-                this.pay_fee = pay_fee;
+            public void setPayFee(int payFee) {
+                this.payFee = payFee;
             }
 
-            public double getOwner_fee() {
-                return owner_fee;
+            public int getOwnerFee() {
+                return ownerFee;
             }
 
-            public void setOwner_fee(double owner_fee) {
-                this.owner_fee = owner_fee;
+            public void setOwnerFee(int ownerFee) {
+                this.ownerFee = ownerFee;
             }
 
-            public double getEstate_fee() {
-                return estate_fee;
+            public int getEstateFee() {
+                return estateFee;
             }
 
-            public void setEstate_fee(double estate_fee) {
-                this.estate_fee = estate_fee;
+            public void setEstateFee(int estateFee) {
+                this.estateFee = estateFee;
             }
 
-            public double getPlatform_fee() {
-                return platform_fee;
+            public int getPlatformFee() {
+                return platformFee;
             }
 
-            public void setPlatform_fee(double platform_fee) {
-                this.platform_fee = platform_fee;
+            public void setPlatformFee(int platformFee) {
+                this.platformFee = platformFee;
             }
 
             public int getState() {

@@ -116,7 +116,6 @@ public class ParkingListActivity extends BaseActivity {
 
             public MyViewHolder(View view) {
                 super(view);
-                tv_name = (TextView) view.findViewById(R.id.tv_parking_name);
                 tv_time = (TextView) view.findViewById(R.id.tv_parking_time);
             }
 
