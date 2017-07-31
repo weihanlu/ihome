@@ -3,7 +3,6 @@ package com.qhiehome.ihome.fragment;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -18,7 +17,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -39,7 +37,6 @@ import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
-import com.baidu.mapapi.map.MapPoi;
 import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
@@ -49,13 +46,6 @@ import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.UiSettings;
 import com.baidu.mapapi.model.LatLng;
-import com.baidu.mapapi.search.core.PoiInfo;
-import com.baidu.mapapi.search.poi.OnGetPoiSearchResultListener;
-import com.baidu.mapapi.search.poi.PoiDetailResult;
-import com.baidu.mapapi.search.poi.PoiIndoorResult;
-import com.baidu.mapapi.search.poi.PoiNearbySearchOption;
-import com.baidu.mapapi.search.poi.PoiResult;
-import com.baidu.mapapi.search.poi.PoiSearch;
 import com.baidu.mapapi.utils.DistanceUtil;
 import com.baidu.navisdk.adapter.BNCommonSettingParam;
 import com.baidu.navisdk.adapter.BNOuterTTSPlayerCallback;
@@ -69,27 +59,26 @@ import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.base.ParkingResponse;
 import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyRequest;
 import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyResponse;
-import com.qhiehome.ihome.network.model.park.publish.PublishparkRequest;
+import com.qhiehome.ihome.network.model.park.reserve.ReserveRequest;
+import com.qhiehome.ihome.network.model.park.reserve.ReserveResponse;
 import com.qhiehome.ihome.network.service.inquiry.ParkingEmptyService;
-import com.qhiehome.ihome.persistence.AlarmReceiver;
+import com.qhiehome.ihome.network.service.park.ReserveService;
 import com.qhiehome.ihome.persistence.AlarmTimer;
 import com.qhiehome.ihome.persistence.ParkingSQLHelper;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.LogUtil;
+import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.TimeUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -113,6 +102,8 @@ public class ParkFragment extends Fragment {
     Unbinder unbinder;
     @BindView(R.id.btn_map_navi)
     Button mBtnMapNavi;
+    @BindView(R.id.btn_map_refresh)
+    Button mBtnMapRefresh;
 
 
     private Context mContext;
@@ -150,7 +141,7 @@ public class ParkFragment extends Fragment {
     private static final int LOCATE_INTERVAL = 5000;
     private static final String APP_ID = "9901662";
     private static final int RADIUS = 5000;
-  
+
     private static final double REFRESH_DISTANCE = 1000;
     private static final SimpleDateFormat START_DATE_FORMATE = new SimpleDateFormat("MM-dd HH:mm");
     private static final SimpleDateFormat END_DATE_FORMATE = new SimpleDateFormat("HH:mm");
@@ -158,9 +149,10 @@ public class ParkFragment extends Fragment {
     private List<ParkingResponse.DataBean.EstateBean> mEstateBeanList = new ArrayList<>();
     private List<ParkingResponse.DataBean.EstateBean.ParkingBean> mParkingBeanList = new ArrayList<>();
 
-    private ParkingSQLHelper mParkingSQLHelper;
-    private SQLiteDatabase mParkingReadDB;
-    private SQLiteDatabase mParkingWriteDB;
+    //private ParkingSQLHelper mParkingSQLHelper;
+    //private SQLiteDatabase mParkingReadDB;
+    //private SQLiteDatabase mParkingWriteDB;
+    private int mChosenCount;
 
     @Override
     public void onAttach(Context context) {
@@ -176,12 +168,13 @@ public class ParkFragment extends Fragment {
         initMap();
         initLocate();
         unbinder = ButterKnife.bind(this, view);
-        mParkingSQLHelper = new ParkingSQLHelper(mContext);
-        if (initDirs()) {
-            initNavi();
-        }
-        AlarmTimer.setRepeatAlarmTime(mContext, System.currentTimeMillis(),
-                10*1000, Constant.TIMER_ACTION, AlarmManager.RTC_WAKEUP);
+//        mParkingSQLHelper = new ParkingSQLHelper(mContext);
+//        if (initDirs()) {
+//            initNavi();
+//        }
+        //暂时不需定时器
+//        AlarmTimer.setRepeatAlarmTime(mContext, System.currentTimeMillis(),
+//                10 * 1000, Constant.TIMER_ACTION, AlarmManager.RTC_WAKEUP);
 
         return view;
     }
@@ -250,6 +243,7 @@ public class ParkFragment extends Fragment {
         UiSettings settings = mBaiduMap.getUiSettings();
         settings.setScrollGesturesEnabled(false);//禁用地图拖拽
         settings.setRotateGesturesEnabled(false);//禁用地图旋转
+        settings.setOverlookingGesturesEnabled(false);
     }
 
     /**
@@ -288,6 +282,8 @@ public class ParkFragment extends Fragment {
                         .longitude(bdLocation.getLongitude()).build();
                 LatLng xy = new LatLng(bdLocation.getLatitude(),
                         bdLocation.getLongitude());
+                SharedPreferenceUtil.setFloat(mContext, Constant.CURRENT_LATITUDE, (float) bdLocation.getLatitude());
+                SharedPreferenceUtil.setFloat(mContext, Constant.CURRENT_LONGITUDE, (float)bdLocation.getLongitude());
                 // 设置定位数据
                 mBaiduMap.setMyLocationData(locData);
                 if (mRefreshEstate) {
@@ -297,9 +293,9 @@ public class ParkFragment extends Fragment {
                     updateMapState();
                     mRefreshEstate = false;
                     mPrePt = xy;
-                }else {
+                } else {
                     double distance = DistanceUtil.getDistance(xy, mPrePt);
-                    if (distance >= REFRESH_DISTANCE){
+                    if (distance >= REFRESH_DISTANCE) {
                         mRefreshEstate = true;
                     }
                 }
@@ -320,6 +316,7 @@ public class ParkFragment extends Fragment {
             //onReceiveLocation();将得到定位数据
         }
     }
+
     // if this view is visible to user, start to request user location
     // if this view is not visible to user, stop to request user
     // location
@@ -349,7 +346,7 @@ public class ParkFragment extends Fragment {
         }
     }
 
-    private void updateMapState(){
+    private void updateMapState() {
         mBaiduMap.removeMarkerClickListener(mOnMarkerClickListener);
         ParkingEmptyService parkingEmptyService = ServiceGenerator.createService(ParkingEmptyService.class);
         ParkingEmptyRequest parkingEmptyRequest = new ParkingEmptyRequest(mCurrentPt.longitude, mCurrentPt.latitude, RADIUS);
@@ -357,7 +354,7 @@ public class ParkFragment extends Fragment {
         call.enqueue(new Callback<ParkingEmptyResponse>() {
             @Override
             public void onResponse(Call<ParkingEmptyResponse> call, Response<ParkingEmptyResponse> response) {
-                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     mEstateBeanList = response.body().getData().getEstate();
                     Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.img_park);
                     // 获得图片的宽高
@@ -377,24 +374,33 @@ public class ParkFragment extends Fragment {
                             true);
                     BitmapDescriptor arrow = BitmapDescriptorFactory.fromBitmap(newbm);
 
-                    for (int i = 0; i<mEstateBeanList.size(); i++){
-                        LatLng newPT = new LatLng(mEstateBeanList.get(i).getY(),mEstateBeanList.get(i).getX());
-                        OverlayOptions options;
-                        options = new MarkerOptions()
-                                .position(newPT)//设置位置
-                                .icon(arrow);//设置图标样式
-                        Bundle bundle = new Bundle();
-                        bundle.putSerializable("estate", mEstateBeanList.get(i));
-                        //bundle.putString("name", mEstateBeanList.get(i).getName());
-                        mMarker = (Marker) mBaiduMap.addOverlay(options);
-                        mMarker.setExtraInfo(bundle);
+                    for (int i = 0; i < mEstateBeanList.size(); i++) {
+                        boolean hasShare = false;
+                        for (int j = 0; j < mEstateBeanList.get(i).getParking().size(); j++) {
+                            if (mEstateBeanList.get(i).getParking().get(j).getShare().size() != 0) {
+                                hasShare = true;
+                                break;
+                            }
+                        }
+                        if (hasShare) {
+                            LatLng newPT = new LatLng(mEstateBeanList.get(i).getY(), mEstateBeanList.get(i).getX());
+                            OverlayOptions options;
+                            options = new MarkerOptions()
+                                    .position(newPT)//设置位置
+                                    .icon(arrow);//设置图标样式
+                            Bundle bundle = new Bundle();
+                            bundle.putSerializable("estate", mEstateBeanList.get(i));
+                            //bundle.putString("name", mEstateBeanList.get(i).getName());
+                            mMarker = (Marker) mBaiduMap.addOverlay(options);
+                            mMarker.setExtraInfo(bundle);
+                        }
                     }
                 }
             }
 
             @Override
             public void onFailure(Call<ParkingEmptyResponse> call, Throwable t) {
-                ToastUtil.showToast(mContext,"网络连接异常");
+                ToastUtil.showToast(mContext, "网络连接异常");
             }
         });
 
@@ -569,7 +575,9 @@ public class ParkFragment extends Fragment {
         mBaiduMap.animateMapStatus(status);
     }
 
-*/         /*******归位、点击、搜索:待删除*******/
+*/
+
+    /*******归位、点击、搜索:待删除*******/
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
@@ -584,18 +592,17 @@ public class ParkFragment extends Fragment {
     }
 
 
-
     /*********显示小区的停车位***********/
     private void showParkingDialog() {
         final List<CheckBox> cb_all = new ArrayList<>();
         Bundle bundle = mClickedMarker.getExtraInfo();
-        final ParkingResponse.DataBean.EstateBean estateBean =(ParkingResponse.DataBean.EstateBean) bundle.getSerializable("estate");
+        final ParkingResponse.DataBean.EstateBean estateBean = (ParkingResponse.DataBean.EstateBean) bundle.getSerializable("estate");
         LatLng estateLocation = new LatLng(estateBean.getY(), estateBean.getX());
         List<ParkingResponse.DataBean.EstateBean.ParkingBean> parking_data = estateBean.getParking();
 
         //对startTime排序
         final List<ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean> shareBeanList = new ArrayList<>();
-        for (int i = 0; i<parking_data.size();i++){
+        for (int i = 0; i < parking_data.size(); i++) {
             shareBeanList.addAll(parking_data.get(i).getShare());
         }
         Collections.sort(shareBeanList, new startTimeComparator());
@@ -615,7 +622,7 @@ public class ParkFragment extends Fragment {
                 Date startTime = TimeUtil.getInstance().millis2Date(shareBeanList.get(count).getStartTime());
                 Date endTime = TimeUtil.getInstance().millis2Date(shareBeanList.get(count).getEndTime());
                 TextView tv_time = (TextView) itemContainer.findViewById(R.id.tv_parking_time);
-                tv_time.setText(START_DATE_FORMATE.format(startTime) + "~" +END_DATE_FORMATE.format(endTime));
+                tv_time.setText(START_DATE_FORMATE.format(startTime) + "~" + END_DATE_FORMATE.format(endTime));
                 CheckBox cb = (CheckBox) itemContainer.findViewById(R.id.cb_parking);
                 cb_all.add(cb);
                 container.addView(itemContainer);
@@ -626,27 +633,45 @@ public class ParkFragment extends Fragment {
             dialog.getBuilder().onPositive(new MaterialDialog.SingleButtonCallback() {
                 @Override
                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                    int num_chosen = 0;
-                    mParkingReadDB = mParkingSQLHelper.getReadableDatabase();
+                    mChosenCount = 0;
+//                    mParkingReadDB = mParkingSQLHelper.getReadableDatabase();
+//                    mParkingWriteDB = mParkingSQLHelper.getWritableDatabase();
                     for (int i = 0; i < size; i++) {
                         if (cb_all.get(i).isChecked()) {
+
+                            ReserveService reserveService = ServiceGenerator.createService(ReserveService.class);
+                            final ReserveRequest reserveRequest = new ReserveRequest(shareBeanList.get(i).getId());
+                            Call<ReserveResponse> call = reserveService.reserve(reserveRequest);
+                            call.enqueue(new Callback<ReserveResponse>() {
+                                @Override
+                                public void onResponse(Call<ReserveResponse> call, Response<ReserveResponse> response) {
+                                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                                        //预约信息不做持久化处理
+//                                        ContentValues cv = new ContentValues();
+//                                        cv.put("shareID", response.body().getData().getEstate().getSingleParking().getSingleShare().getId());
+//                                        cv.put("startTime", response.body().getData().getEstate().getSingleParking().getSingleShare().getStartTime());
+//                                        cv.put("endTime", response.body().getData().getEstate().getSingleParking().getSingleShare().getEndTime());
+//                                        cv.put("estateName", response.body().getData().getEstate().getName());
+//                                        cv.put("x", response.body().getData().getEstate().getX());
+//                                        cv.put("y", response.body().getData().getEstate().getY());
+//                                        mParkingWriteDB.insert(ParkingSQLHelper.TABLE_NAME, null, cv);
+                                        mChosenCount++;
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<ReserveResponse> call, Throwable t) {
+                                    ToastUtil.showToast(mContext, "网络连接异常");
+                                }
+                            });
                             //发出网络请求if(成功)
                             //数据库记录预约数据
-                            mParkingWriteDB = mParkingSQLHelper.getWritableDatabase();
-                            ContentValues cv = new ContentValues();
-                            cv.put("shareID",shareBeanList.get(i).getId());
-                            cv.put("startTime",shareBeanList.get(i).getStartTime());
-                            cv.put("endTime",shareBeanList.get(i).getEndTime());
-                            cv.put("estateName",estateBean.getName());
-                            cv.put("x",estateBean.getX());
-                            cv.put("y",estateBean.getY());
-                            mParkingWriteDB.insert(ParkingSQLHelper.TABLE_NAME, null, cv);
-                            num_chosen++;
+
                         }
                     }
-                    mParkingWriteDB.close();
-                    mParkingReadDB.close();
-                    ToastUtil.showToast(mContext, "已预约" + num_chosen + "车位");
+//                    mParkingWriteDB.close();
+//                    mParkingReadDB.close();
+                    ToastUtil.showToast(mContext, "已预约" + mChosenCount + "车位");
                     //if(失败) 显示网络访问错误
                 }
             }).onNegative(new MaterialDialog.SingleButtonCallback() {
@@ -660,20 +685,25 @@ public class ParkFragment extends Fragment {
             //没有停车位
             MaterialDialog.Builder dialogBuilder = new MaterialDialog.Builder(this.getContext())
                     .positiveText("确定");
-            dialogBuilder.title(estateBean.getName()+"没有可用车位").customView(R.layout.dialog_parking_list, true);
+            dialogBuilder.title(estateBean.getName() + "没有可用车位").customView(R.layout.dialog_parking_list, true);
             MaterialDialog dialog = dialogBuilder.build();
             dialog.show();
         }
     }
 
-    static class startTimeComparator implements Comparator{
+    @OnClick(R.id.btn_map_refresh)
+    public void onViewClicked() {
+        updateMapState();
+    }
+
+    static class startTimeComparator implements Comparator {
         @Override
         public int compare(Object o, Object t1) {
             ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean shareBean1 = (ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean) o;
             ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean shareBean2 = (ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean) t1;
-            if (shareBean1.getStartTime() != shareBean2.getStartTime()){
+            if (shareBean1.getStartTime() != shareBean2.getStartTime()) {
                 return Long.valueOf(shareBean1.getStartTime()).compareTo(shareBean2.getStartTime());
-            }else {
+            } else {
                 return Long.valueOf(shareBean1.getEndTime()).compareTo(shareBean2.getEndTime());
             }
         }
@@ -890,22 +920,24 @@ public class ParkFragment extends Fragment {
             case BD09LL: {
                 sNode = new BNRoutePlanNode(mCurrentPt.longitude, mCurrentPt.latitude, "我的位置", null, coType);
                 //查询数据库得到目的地经纬度
-                mParkingReadDB = mParkingSQLHelper.getReadableDatabase();
-                Cursor cursor = mParkingReadDB.query(ParkingSQLHelper.TABLE_NAME,
-                        new String[] {"startTime","estateName","x","y"},
-                        null,null,null,null,"startTime ASC");
-                while (cursor.moveToNext()){
-                    long startTime = cursor.getLong(cursor.getColumnIndex("startTime"));
-                    if (startTime >= System.currentTimeMillis()){
-                        String estateName = cursor.getString(cursor.getColumnIndex("estateName"));
-                        double x = cursor.getDouble(cursor.getColumnIndex("x"));
-                        double y = cursor.getDouble(cursor.getColumnIndex("y"));
-                        eNode = new BNRoutePlanNode(x, y, estateName, null, coType);
-                        break;
-                    }
-                }
+//                mParkingReadDB = mParkingSQLHelper.getReadableDatabase();
+//                Cursor cursor = mParkingReadDB.query(ParkingSQLHelper.TABLE_NAME,
+//                        new String[]{"startTime", "estateName", "x", "y"},
+//                        null, null, null, null, "startTime ASC");
+//                while (cursor.moveToNext()) {
+//                    long startTime = cursor.getLong(cursor.getColumnIndex("startTime"));
+//                    if (startTime >= System.currentTimeMillis()) {
+//                        String estateName = cursor.getString(cursor.getColumnIndex("estateName"));
+//                        double x = cursor.getDouble(cursor.getColumnIndex("x"));
+//                        double y = cursor.getDouble(cursor.getColumnIndex("y"));
+//                        eNode = new BNRoutePlanNode(x, y, estateName, null, coType);
+//                        break;
+//                    }
+//                }
 
-                mParkingReadDB.close();
+                // TODO: 2017/7/28 导航页面移至我的预约页面
+
+//                mParkingReadDB.close();
                 break;
             }
             default:
@@ -933,9 +965,9 @@ public class ParkFragment extends Fragment {
 
     @OnClick(R.id.btn_map_navi)
     public void onNaviClicked() {
-        if (BaiduNaviManager.isNaviInited()){
-            routeplanToNavi(CoordinateType.BD09LL);
-        }
+//        if (BaiduNaviManager.isNaviInited()) {
+//            routeplanToNavi(CoordinateType.BD09LL);
+//        }
     }
 
     public class DemoRoutePlanListener implements BaiduNaviManager.RoutePlanListener {

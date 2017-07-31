@@ -17,6 +17,7 @@ import com.qhiehome.ihome.activity.BindLockActivity;
 import com.qhiehome.ihome.activity.LoginActivity;
 import com.qhiehome.ihome.activity.OrderListActivity;
 import com.qhiehome.ihome.activity.PublishParkingActivity;
+import com.qhiehome.ihome.activity.ReserveListActivity;
 import com.qhiehome.ihome.activity.UserInfoActivity;
 import com.qhiehome.ihome.adapter.MeAdapter;
 import com.qhiehome.ihome.manager.ActivityManager;
@@ -95,7 +96,8 @@ public class MeFragment extends Fragment {
                         UserInfoActivity.start(mContext);
                         break;
                     case 1:
-                        BindLockActivity.start(mContext);
+                        //BindLockActivity.start(mContext);
+                        ReserveListActivity.start(mContext);
                         break;
                     case 2:
                         PublishParkingActivity.start(mContext);
