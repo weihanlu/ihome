@@ -48,7 +48,15 @@ public class TimeUtil {
 
     public long getTimeStamp(String str) {
         int passedHour = timeMap.get(str);
-        return getTimesmorning() + passedHour * 3600 * 1000;
+        return getTimeStamp(passedHour);
+    }
+
+    public int getPassedHour(long timeStamp) {
+        return (int)(timeStamp - getTimesmorning()) / (3600 * 1000) + 1;
+    }
+
+    public long getTimeStamp(int passHours) {
+        return getTimesmorning() + passHours * 3600 * 1000;
     }
 
     public Date millis2Date(final long millis) {

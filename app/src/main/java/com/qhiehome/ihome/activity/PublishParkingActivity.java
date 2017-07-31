@@ -269,6 +269,8 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                     endAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     endSpinner.setAdapter(endAdapter);
                     mContainer.addView(itemContainer);
+                    startSpinner.setSelection(TimeUtil.getInstance().getPassedHour(System.currentTimeMillis()));
+                    endSpinner.setSelection(TimeUtil.getInstance().getPassedHour(System.currentTimeMillis()) + 1);
                     mPeriodTimes++;
                     if (mPeriodTimes == Constant.TIME_PERIOD_LIMIT) {
                         addBtn.setVisibility(View.GONE);
