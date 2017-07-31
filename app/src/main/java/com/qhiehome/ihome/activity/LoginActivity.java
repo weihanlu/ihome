@@ -1,45 +1,44 @@
 package com.qhiehome.ihome.activity;
 
-import android.content.BroadcastReceiver;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
-import android.telephony.SmsMessage;
 import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.EditText;
 
 import com.qhiehome.ihome.R;
-import com.qhiehome.ihome.manager.ActivityManager;
 import com.qhiehome.ihome.network.ServiceGenerator;
+import com.qhiehome.ihome.network.model.SMS.SMSResponse;
 import com.qhiehome.ihome.network.model.signin.SigninRequest;
 import com.qhiehome.ihome.network.model.signin.SigninResponse;
+import com.qhiehome.ihome.network.service.SMS.SMSService;
+import com.qhiehome.ihome.network.service.SMS.SMSServiceGenerator;
 import com.qhiehome.ihome.network.service.signin.SigninService;
 import com.qhiehome.ihome.observer.SMSContentObserver;
 import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
-import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
 
+import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.BindString;
-import cn.smssdk.EventHandler;
-import cn.smssdk.SMSSDK;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -65,19 +64,27 @@ public class LoginActivity extends BaseActivity {
     @BindString(R.string.login_successGetVerification)
     String login_successGetVerification;
 
-    private EventHandler mEventHandler;
-
     private static final int DEFAULT_PHONE_LEN = 11;
 
     private static final String DEFAULT_COUNTRY_CODE = "86";
 
     private static final int UPPER_SECOND = 60;
 
+    private static final int COUNT_DOWN_START = 0;
+
     public static final int GET_VERIFICATION = 3;
+
+    private static final String SMS_KEY = "c718da9eb368b06d145a81f5661e093d";
+
+    private static final int SUCCESS_ERROR_CODE = 0;
 
     private Handler mHandler;
 
     private String mPhoneNum;
+
+    private String mVerification;
+
+    private boolean mHasSentSMS;
 
 
     @Override
@@ -86,44 +93,13 @@ public class LoginActivity extends BaseActivity {
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
 
-        mEventHandler = new EventHandler() {
-            public void afterEvent(int event, int result, Object data) {
-                if (result == SMSSDK.RESULT_COMPLETE) {
-                    if (event == SMSSDK.EVENT_GET_VERIFICATION_CODE) {
-                        // 获取验证码成功
-                        // count down
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                CountDownTask countDownTask = new CountDownTask(UPPER_SECOND);
-                                countDownTask.run();
-                                CommonUtil.hideKeyboard(LoginActivity.this);
-                            }
-                        });
-                    } else if (event == SMSSDK.EVENT_SUBMIT_VERIFICATION_CODE) {
-                        // 验证码验证成功 + 同时向线上发送请求说明用户已登录后台
-                        webLogin();
-                    }
-                } else {
-                    LogUtil.d(TAG, ((Throwable) data).getMessage());
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            ToastUtil.showToast(LoginActivity.this, login_wrongVerification);
-                        }
-                    });
-                }
-            }
-        };
-        // 注册监听器
-        SMSSDK.registerEventHandler(mEventHandler);
         mHandler = new SMSObserverHandler(this);
         SMSContentObserver sco = new SMSContentObserver(LoginActivity.this,mHandler);
         LoginActivity.this.getContentResolver().registerContentObserver(
                 Uri.parse("content://sms/"), true, sco);
     }
 
-    private static class SMSObserverHandler extends Handler{
+    private class SMSObserverHandler extends Handler{
         private final WeakReference<LoginActivity> mActivity;
         private SMSObserverHandler(LoginActivity loginActivity){
             mActivity = new WeakReference<>(loginActivity);
@@ -134,8 +110,20 @@ public class LoginActivity extends BaseActivity {
             if(msg.what == GET_VERIFICATION){
                 loginActivity.mEtVerify.setText(msg.obj.toString());
             }
+            if (msg.what == COUNT_DOWN_START){
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        CountDownTask countDownTask = new CountDownTask(UPPER_SECOND);
+                        countDownTask.run();
+                        CommonUtil.hideKeyboard(LoginActivity.this);
+                    }
+                });
+            }
         }
     }
+
+
 
     private void webLogin() {
         SigninService signinService = ServiceGenerator.createService(SigninService.class);
@@ -164,7 +152,6 @@ public class LoginActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        SMSSDK.unregisterEventHandler(mEventHandler);
         mHandler.removeCallbacksAndMessages(null);
     }
 
@@ -178,7 +165,44 @@ public class LoginActivity extends BaseActivity {
         mPhoneNum = mEtPhone.getText().toString();
         if (!TextUtils.isEmpty(mPhoneNum) && mPhoneNum.length() == DEFAULT_PHONE_LEN) {
             mEtVerify.setText("");
-            SMSSDK.getVerificationCode(DEFAULT_COUNTRY_CODE, mPhoneNum, null);
+            //获取验证码
+            mHasSentSMS = true;
+            mHandler.sendEmptyMessage(COUNT_DOWN_START);
+            //请求参数
+            Map options = new HashMap();
+            options.put("mobile",mPhoneNum);
+            options.put("tpl_id",41356);
+            float rand = new Random().nextFloat();
+            mVerification = String.valueOf(rand);
+            mVerification = mVerification.substring(2, 8);
+            try{
+                String StrVerification = URLEncoder.encode("#code#=" + mVerification,"UTF-8");
+                options.put("tpl_value",StrVerification);
+            }catch (UnsupportedEncodingException e){
+                e.printStackTrace();
+            }
+            options.put("key",SMS_KEY);
+            //网络请求
+            SMSService smsService = SMSServiceGenerator.createService(SMSService.class);
+            Call<SMSResponse> call = smsService.sendSMS(options);
+            call.enqueue(new Callback<SMSResponse>() {
+                @Override
+                public void onResponse(Call<SMSResponse> call, Response<SMSResponse> response) {
+                    SMSResponse smsResponse = response.body();
+                    int error_code = smsResponse.getError_code();
+                    if (error_code == SUCCESS_ERROR_CODE){
+                        ToastUtil.showToast(LoginActivity.this,"短信发送成功");
+                    }else {
+                        ToastUtil.showToast(LoginActivity.this, smsResponse.getReason());
+                        mHasSentSMS = false;
+                    }
+                }
+                @Override
+                public void onFailure(Call<SMSResponse> call, Throwable t) {
+                    ToastUtil.showToast(LoginActivity.this, "网络异常");
+                    mHasSentSMS = false;
+                }
+            });
         } else {
             ToastUtil.showToast(this, login_wrongMobile);
         }
@@ -191,7 +215,13 @@ public class LoginActivity extends BaseActivity {
         if (TextUtils.isEmpty(verifyCode)) {
             ToastUtil.showToast(this, login_emptyVerification);
         } else {
-            SMSSDK.submitVerificationCode(DEFAULT_COUNTRY_CODE, mPhoneNum, verifyCode);
+            //验证验证码
+            //SMSSDK.submitVerificationCode(DEFAULT_COUNTRY_CODE, mPhoneNum, verifyCode);
+            if (verifyCode.equals(mVerification)){
+                webLogin();
+            }else {
+                ToastUtil.showToast(this, login_wrongVerification);
+            }
         }
     }
 
@@ -205,14 +235,21 @@ public class LoginActivity extends BaseActivity {
 
         @Override
         public void run() {
-            mBtVerify.setClickable(false);
-            String leftSeconds = String.format(getResources().getString(R.string.left_second), seconds);
-            mBtVerify.setText(leftSeconds);
-            mBtVerify.setTextColor(getResources().getColor(R.color.colorAccent));
-            seconds--;
-            if (seconds > 0) {
-                mHandler.postDelayed(this, 1000);
-            } else if (seconds == 0) {
+            if (mHasSentSMS){
+                mBtVerify.setClickable(false);
+                String leftSeconds = String.format(getResources().getString(R.string.left_second), seconds);
+                mBtVerify.setText(leftSeconds);
+                mBtVerify.setTextColor(getResources().getColor(R.color.colorAccent));
+                seconds--;
+                if (seconds > 0) {
+                    mHandler.postDelayed(this, 1000);
+                } else if (seconds == 0) {
+                    mVerification = String.valueOf(new Random().nextFloat());//1分钟后验证码失效
+                    mBtVerify.setClickable(true);
+                    mBtVerify.setText(login_getVerification);
+                    mBtVerify.setTextColor(getResources().getColor(R.color.black));
+                }
+            }else {                 //网络请求失败或者网络不通则重置按钮
                 mBtVerify.setClickable(true);
                 mBtVerify.setText(login_getVerification);
                 mBtVerify.setTextColor(getResources().getColor(R.color.black));
