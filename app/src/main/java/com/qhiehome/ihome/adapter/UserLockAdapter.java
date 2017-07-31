@@ -28,9 +28,8 @@ public class UserLockAdapter extends RecyclerView.Adapter<UserLockAdapter.UserLo
     }
 
     @Override
-    public void onBindViewHolder(UserLockHolder holder, int position) {
-        final int adapterPosition = holder.getAdapterPosition();
-        UserLockBean userLockBean = mUserLocks.get(adapterPosition);
+    public void onBindViewHolder(final UserLockHolder holder, int position) {
+        UserLockBean userLockBean = mUserLocks.get(position);
         holder.mTvLockName.setText(userLockBean.getLockName());
         holder.mTvLockEstateName.setText(userLockBean.getLockEstateName());
         boolean rented = userLockBean.isRented();
@@ -39,7 +38,7 @@ public class UserLockAdapter extends RecyclerView.Adapter<UserLockAdapter.UserLo
             @Override
             public void onClick(View v) {
                 if (onClickListener != null) {
-                    onClickListener.onClick(adapterPosition);
+                    onClickListener.onClick(holder.getLayoutPosition());
                 }
             }
         });

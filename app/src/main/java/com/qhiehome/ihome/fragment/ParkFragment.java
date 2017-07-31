@@ -348,6 +348,7 @@ public class ParkFragment extends Fragment {
 
     private void updateMapState() {
         mBaiduMap.removeMarkerClickListener(mOnMarkerClickListener);
+        mBaiduMap.clear();
         ParkingEmptyService parkingEmptyService = ServiceGenerator.createService(ParkingEmptyService.class);
         ParkingEmptyRequest parkingEmptyRequest = new ParkingEmptyRequest(mCurrentPt.longitude, mCurrentPt.latitude, RADIUS);
         Call<ParkingEmptyResponse> call = parkingEmptyService.parkingEmpty(parkingEmptyRequest);

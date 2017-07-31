@@ -1,6 +1,5 @@
 package com.qhiehome.ihome.activity;
 
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -18,7 +17,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.GravityEnum;
@@ -31,12 +29,8 @@ import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.base.ParkingResponse;
 import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedRequest;
 import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedResponse;
-import com.qhiehome.ihome.network.model.signin.SigninRequest;
-import com.qhiehome.ihome.network.model.signin.SigninResponse;
 import com.qhiehome.ihome.network.service.inquiry.ParkingOwnedService;
 import com.qhiehome.ihome.util.Constant;
-import com.qhiehome.ihome.util.EncryptUtil;
-import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
@@ -68,7 +62,7 @@ public class UserInfoActivity extends BaseActivity {
 
     private ArrayList<UserLockBean> mUserLocks;
 
-    private long currentTime;
+    private long mCurrentTime;
 
     private StringBuilder mParkingIds;
 
@@ -91,7 +85,7 @@ public class UserInfoActivity extends BaseActivity {
     }
 
     private void inquiryOwnedParkings() {
-        currentTime = System.currentTimeMillis();
+        mCurrentTime = System.currentTimeMillis();
         ParkingOwnedService parkingOwnedService = ServiceGenerator.createService(ParkingOwnedService.class);
         ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(Constant.TEST_PHONE_NUM);
         Call<ParkingOwnedResponse> call = parkingOwnedService.parkingOwned(parkingOwnedRequest);
@@ -162,7 +156,7 @@ public class UserInfoActivity extends BaseActivity {
                     ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean shareBean = share.get(i);
                     long startTime = shareBean.getStartTime();
                     long endTime = shareBean.getEndTime();
-                    if (currentTime >= startTime && currentTime <= endTime) {
+                    if (mCurrentTime >= startTime && mCurrentTime <= endTime) {
                         isRented = true;
                     }
                 }

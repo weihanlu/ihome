@@ -40,7 +40,7 @@ public class BindLockAdapter extends RecyclerView.Adapter<BindLockAdapter.BindLo
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onClickListener.onClick(holder.getAdapterPosition());
+                onClickListener.onClick(holder.getLayoutPosition());
             }
         });
     }

@@ -36,16 +36,15 @@ public class PublishParkingAdapter extends RecyclerView.Adapter<PublishParkingAd
     }
 
     @Override
-    public void onBindViewHolder(final PublishParkingHolder holder, int position) {
-        final int adapterPosition = holder.getAdapterPosition();
-        PublishBean requestBean = mPublishList.get(adapterPosition);
+    public void onBindViewHolder(final PublishParkingHolder holder, final int position) {
+        PublishBean requestBean = mPublishList.get(position);
         holder.mTvParkingId.setText(requestBean.getParkingId());
         holder.mTvParkingPeriod.setText("发布时间段 " + requestBean.getStartTime() + " ~ " + requestBean.getEndTime());
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                if (onClickListener != null) {
-                    onClickListener.onLongClick(adapterPosition);
+                if (onItemClickListener != null) {
+                    onItemClickListener.onItemLongClick(holder.itemView, holder.getLayoutPosition());
                 }
                 return true;
             }
@@ -55,6 +54,16 @@ public class PublishParkingAdapter extends RecyclerView.Adapter<PublishParkingAd
     @Override
     public int getItemCount() {
         return mPublishList == null? 0: mPublishList.size();
+    }
+
+    public void addItem(PublishBean publishBean, int position) {
+        mPublishList.add(position, publishBean);
+        notifyItemInserted(position);
+    }
+
+    public void removeItem(int position) {
+        mPublishList.remove(position);
+        notifyItemRemoved(position);
     }
 
     public static class PublishParkingHolder extends RecyclerView.ViewHolder {
@@ -70,13 +79,14 @@ public class PublishParkingAdapter extends RecyclerView.Adapter<PublishParkingAd
     }
 
 
-    public interface OnLongClickListener {
-        void onLongClick(int i);
+    public interface OnItemClickListener {
+        void onItemClick(View view, int position);
+        void onItemLongClick(View view, int position);
     }
 
-    public void setOnItemLongClickListener(OnLongClickListener listener) {
-        this.onClickListener = listener;
+    public void setOnItemLongClickListener(OnItemClickListener listener) {
+        this.onItemClickListener = listener;
     }
 
-    private OnLongClickListener onClickListener;
+    private OnItemClickListener onItemClickListener;
 }

@@ -24,22 +24,25 @@ import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.adapter.PublishParkingAdapter;
 import com.qhiehome.ihome.bean.PublishBean;
 import com.qhiehome.ihome.network.ServiceGenerator;
+import com.qhiehome.ihome.network.model.base.ParkingResponse;
+import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedRequest;
+import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedResponse;
 import com.qhiehome.ihome.network.model.park.publish.PublishparkRequest;
 import com.qhiehome.ihome.network.model.park.publish.PublishparkResponse;
 import com.qhiehome.ihome.network.model.park.publishcancel.PublishCancelRequest;
 import com.qhiehome.ihome.network.model.park.publishcancel.PublishCancelResponse;
+import com.qhiehome.ihome.network.service.inquiry.ParkingOwnedService;
 import com.qhiehome.ihome.network.service.park.PublishCallbackService;
 import com.qhiehome.ihome.network.service.park.PublishParkService;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
-import com.qhiehome.ihome.util.SharedPreferenceUtil;
+import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.TimeUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 import com.qhiehome.ihome.view.RecyclerViewEmptySupport;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -50,7 +53,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class PublishParkingActivity extends BaseActivity {
+public class PublishParkingActivity extends BaseActivity implements SwipeRefreshLayout.OnRefreshListener {
 
     private static final String TAG = PublishParkingActivity.class.getSimpleName();
 
@@ -66,9 +69,7 @@ public class PublishParkingActivity extends BaseActivity {
     @BindView(R.id.rv_publish)
     RecyclerViewEmptySupport mRvPublish;
 
-    private boolean hasParkingId;
-
-    private List<String> parkingIdList;
+    private List<String> mParkingIdList;
 
     private Context mContext;
 
@@ -89,34 +90,71 @@ public class PublishParkingActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_publish_parking);
         ButterKnife.bind(this);
+        initSwiperRefreshLayout();
         initData();
         initView();
         mContext = this;
     }
 
-    private void initData() {
-        hasParkingId = true;
-        parkingIdList = new ArrayList<>();
-        String parkingIds = SharedPreferenceUtil.getString(this, Constant.OWNED_PARKING_KEY, "");
-        if (parkingIds.isEmpty()) {
-            new MaterialDialog.Builder(this)
-                    .title("Tip")
-                    .content("请确认您有车位")
-                    .positiveText("确定")
-                    .negativeText("取消")
-                    .onPositive(new MaterialDialog.SingleButtonCallback() {
-                        @Override
-                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                            finish();
-                        }
-                    })
-                    .show();
-        } else {
-            parkingIdList.addAll(Arrays.asList(parkingIds.split(",")));
-        }
+    private void initSwiperRefreshLayout() {
+        mSrfPublish.setOnRefreshListener(this);
+        mSrfPublish.setColorSchemeResources(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light, android.R.color.holo_orange_light, android.R.color.holo_red_light);
+        mSrfPublish.setRefreshing(true);
+    }
 
+    private void initData() {
+        mParkingIdList = new ArrayList<>();
         mPublishList = new ArrayList<>();
         mTimePeriods = new ArrayList<>();
+        inquiryParkingInfo();
+    }
+
+    private void inquiryParkingInfo() {
+        mParkingIdList.clear();
+        mPublishList.clear();
+        ParkingOwnedService parkingOwnedService = ServiceGenerator.createService(ParkingOwnedService.class);
+        ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(Constant.TEST_PHONE_NUM);
+        Call<ParkingOwnedResponse> call = parkingOwnedService.parkingOwned(parkingOwnedRequest);
+        call.enqueue(new Callback<ParkingOwnedResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<ParkingOwnedResponse> call, @NonNull Response<ParkingOwnedResponse> response) {
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                    // first step get the parking ids, then get share info
+                    List<ParkingResponse.DataBean.EstateBean> estateList = response.body().getData().getEstate();
+                    for (ParkingResponse.DataBean.EstateBean estateBean: estateList) {
+                        List<ParkingResponse.DataBean.EstateBean.ParkingBean> parkingList = estateBean.getParking();
+                        for (ParkingResponse.DataBean.EstateBean.ParkingBean parkingBean: parkingList) {
+                            mParkingIdList.add(parkingBean.getId());
+                            List<ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean> shareList = parkingBean.getShare();
+                            for (ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean shareBean: shareList) {
+                                SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.CHINA);
+                                PublishBean publishBean = new PublishBean(parkingBean.getId() + "",
+                                        timeFormat.format(TimeUtil.getInstance().millis2Date(shareBean.getStartTime())),
+                                        timeFormat.format(TimeUtil.getInstance().millis2Date(shareBean.getEndTime())));
+                                publishBean.setShareId(shareBean.getId());
+                                mPublishList.add(publishBean);
+                                if (mPublishAdapter != null) {
+                                    mPublishAdapter.notifyDataSetChanged();
+                                }
+                            }
+                        }
+                    }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mSrfPublish.setRefreshing(false);
+                            mFab.setClickable(true);
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ParkingOwnedResponse> call, @NonNull Throwable t) {
+                LogUtil.d(TAG, "request failure");
+            }
+        });
     }
 
     private void initView() {
@@ -137,10 +175,15 @@ public class PublishParkingActivity extends BaseActivity {
     }
 
     private void initListener(final PublishParkingAdapter mPublishAdapter) {
-       mPublishAdapter.setOnItemLongClickListener(new PublishParkingAdapter.OnLongClickListener() {
+       mPublishAdapter.setOnItemLongClickListener(new PublishParkingAdapter.OnItemClickListener() {
            @Override
-           public void onLongClick(final int i) {
-               final PublishBean publishBean = mPublishList.get(i);
+           public void onItemClick(View view, int position) {
+               ToastUtil.showToast(PublishParkingActivity.this, "click this");
+           }
+
+           @Override
+           public void onItemLongClick(View view, final int position) {
+               final PublishBean publishBean = mPublishList.get(position);
                final int shareId = publishBean.getShareId();
                new MaterialDialog.Builder(mContext)
                        .title("Warning")
@@ -158,8 +201,10 @@ public class PublishParkingActivity extends BaseActivity {
                                    @Override
                                    public void onResponse(@NonNull Call<PublishCancelResponse> call,@NonNull Response<PublishCancelResponse> response) {
                                        if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                                           mPublishList.remove(publishBean);
-                                           mPublishAdapter.notifyItemRemoved(i);
+                                           mPublishAdapter.removeItem(position);
+                                           if (mPublishList.size() == 0) {
+                                               mPublishAdapter.notifyDataSetChanged();
+                                           }
                                        } else {
                                            ToastUtil.showToast(mContext, "取消失败");
                                        }
@@ -198,56 +243,52 @@ public class PublishParkingActivity extends BaseActivity {
     }
 
     private void showPublishDialog() {
-        if (hasParkingId) {
-            mPeriodTimes = 0;
-            MaterialDialog.Builder dialogBuilder = new MaterialDialog.Builder(this);
-            dialogBuilder.title("发布车位").customView(R.layout.dialog_publish_parking, true)
-                    .positiveText("确定").negativeText("取消");
-            MaterialDialog dialog = dialogBuilder.build();
-            View customView = dialog.getCustomView();
-            if (customView != null) {
-                mParkSpinner = (AppCompatSpinner) customView.findViewById(R.id.spinner_dialog);
-                ArrayAdapter<String> parkAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, parkingIdList);
-                parkAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                mParkSpinner.setAdapter(parkAdapter);
-                mContainer = (LinearLayout) customView.findViewById(R.id.container_period);
-                final Button addBtn = (Button) customView.findViewById(R.id.btn_add);
-                addBtn.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        View itemContainer = LayoutInflater.from(mContext).inflate(R.layout.item_publish_parking, null);
-                        AppCompatSpinner startSpinner = (AppCompatSpinner) itemContainer.findViewById(R.id.spinner_start);
-                        ArrayAdapter<String> startAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, TimeUtil.getInstance().getOnedayTime());
-                        startAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                        startSpinner.setAdapter(startAdapter);
-                        AppCompatSpinner endSpinner = (AppCompatSpinner) itemContainer.findViewById(R.id.spinner_end);
-                        ArrayAdapter<String> endAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, TimeUtil.getInstance().getOnedayTime());
-                        endAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                        endSpinner.setAdapter(endAdapter);
-                        mContainer.addView(itemContainer);
-                        mPeriodTimes++;
-                        if (mPeriodTimes == Constant.TIME_PERIOD_LIMIT) {
-                            addBtn.setVisibility(View.GONE);
-                        }
+        mPeriodTimes = 0;
+        MaterialDialog.Builder dialogBuilder = new MaterialDialog.Builder(this);
+        dialogBuilder.title("发布车位").customView(R.layout.dialog_publish_parking, true)
+                .positiveText("确定").negativeText("取消");
+        MaterialDialog dialog = dialogBuilder.build();
+        View customView = dialog.getCustomView();
+        if (customView != null) {
+            mParkSpinner = (AppCompatSpinner) customView.findViewById(R.id.spinner_dialog);
+            ArrayAdapter<String> parkAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, mParkingIdList);
+            parkAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            mParkSpinner.setAdapter(parkAdapter);
+            mContainer = (LinearLayout) customView.findViewById(R.id.container_period);
+            final Button addBtn = (Button) customView.findViewById(R.id.btn_add);
+            addBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    View itemContainer = LayoutInflater.from(mContext).inflate(R.layout.item_publish_parking, null);
+                    AppCompatSpinner startSpinner = (AppCompatSpinner) itemContainer.findViewById(R.id.spinner_start);
+                    ArrayAdapter<String> startAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, TimeUtil.getInstance().getOnedayTime());
+                    startAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    startSpinner.setAdapter(startAdapter);
+                    AppCompatSpinner endSpinner = (AppCompatSpinner) itemContainer.findViewById(R.id.spinner_end);
+                    ArrayAdapter<String> endAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, TimeUtil.getInstance().getOnedayTime());
+                    endAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    endSpinner.setAdapter(endAdapter);
+                    mContainer.addView(itemContainer);
+                    mPeriodTimes++;
+                    if (mPeriodTimes == Constant.TIME_PERIOD_LIMIT) {
+                        addBtn.setVisibility(View.GONE);
                     }
-                });
-            }
-            dialog.getBuilder().onPositive(new MaterialDialog.SingleButtonCallback() {
-                @Override
-                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                    getSelectedPeriod();
-                    publishParking();
                 }
-            }).onNegative(new MaterialDialog.SingleButtonCallback() {
-                @Override
-                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                    // do nothing
-                }
-            }).canceledOnTouchOutside(false)
-                    .show();
-        } else {
-            // TODO: 2017/7/21 跳转到设置车位的页面
+            });
         }
+        dialog.getBuilder().onPositive(new MaterialDialog.SingleButtonCallback() {
+            @Override
+            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                getSelectedPeriod();
+                publishParking();
+            }
+        }).onNegative(new MaterialDialog.SingleButtonCallback() {
+            @Override
+            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                // do nothing
+            }
+        }).canceledOnTouchOutside(false)
+                .show();
     }
 
     private void getSelectedPeriod() {
@@ -318,6 +359,11 @@ public class PublishParkingActivity extends BaseActivity {
     public static void start(Context context) {
         Intent intent = new Intent(context, PublishParkingActivity.class);
         context.startActivity(intent);
+    }
+
+    @Override
+    public void onRefresh() {
+        inquiryParkingInfo();
     }
 
     private class TimePeriod {

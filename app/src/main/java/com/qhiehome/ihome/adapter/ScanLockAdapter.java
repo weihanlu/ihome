@@ -32,13 +32,12 @@ public class ScanLockAdapter extends RecyclerView.Adapter<ScanLockAdapter.ScanLo
     }
 
     @Override
-    public void onBindViewHolder(ScanLockHolder holder, int position) {
-        final int adapterPosition = holder.getAdapterPosition();
-        holder.mTvLeDevice.setText(mLeDevices.get(adapterPosition).getName());
+    public void onBindViewHolder(final ScanLockHolder holder, int position) {
+        holder.mTvLeDevice.setText(mLeDevices.get(position).getName());
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onClickListener.onClick(adapterPosition);
+                onClickListener.onClick(holder.getLayoutPosition());
             }
         });
     }

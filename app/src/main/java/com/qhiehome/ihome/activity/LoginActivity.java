@@ -126,7 +126,7 @@ public class LoginActivity extends BaseActivity {
     private static class SMSObserverHandler extends Handler{
         private final WeakReference<LoginActivity> mActivity;
         private SMSObserverHandler(LoginActivity loginActivity){
-            mActivity = new WeakReference<LoginActivity>(loginActivity);
+            mActivity = new WeakReference<>(loginActivity);
         }
         @Override
         public void handleMessage(Message msg) {
