@@ -5,14 +5,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.Settings;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -25,18 +23,12 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.baidu.mapapi.map.BitmapDescriptorFactory;
-import com.baidu.mapapi.map.MarkerOptions;
-import com.baidu.mapapi.map.OverlayOptions;
-import com.baidu.mapapi.model.LatLng;
 import com.baidu.navisdk.adapter.BNCommonSettingParam;
 import com.baidu.navisdk.adapter.BNOuterTTSPlayerCallback;
 import com.baidu.navisdk.adapter.BNRoutePlanNode;
 import com.baidu.navisdk.adapter.BNaviSettingManager;
 import com.baidu.navisdk.adapter.BaiduNaviManager;
 import com.qhiehome.ihome.R;
-import com.qhiehome.ihome.fragment.ParkFragment;
-import com.qhiehome.ihome.persistence.ParkingSQLHelper;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 
@@ -51,13 +43,12 @@ import butterknife.OnClick;
 
 public class ReserveListActivity extends BaseActivity {
 
-//    @BindView(R.id.tb_reserve)
+    //    @BindView(R.id.tb_reserve)
 //    Toolbar mTbReserve;
 //    @BindView(R.id.rv_reserve)
 //    RecyclerView mRvReserve;
     private ReserveAdapter mReserveAdapter;
-//    private ParkingSQLHelper mParkingSQLHelper;
-//    private SQLiteDatabase mParkingDatabase;
+
     private BNRoutePlanNode.CoordinateType mCoordinateType;
     private String mSDCardPath = null;
     private static final String APP_FOLDER_NAME = "ihome";
@@ -76,6 +67,8 @@ public class ReserveListActivity extends BaseActivity {
 
     private RecyclerView mRvReserve;
     private Toolbar mTbReserve;
+    private SwipeRefreshLayout mSrlReserve;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,9 +76,17 @@ public class ReserveListActivity extends BaseActivity {
 //        ButterKnife.bind(this);
         mRvReserve = (RecyclerView) findViewById(R.id.rv_reserve);
         mTbReserve = (Toolbar) findViewById(R.id.tb_reserve);
+        mSrlReserve = (SwipeRefreshLayout) findViewById(R.id.srl_reserve);
         mContext = this;
         initToolbar();
         initRecyclerView();
+        mSrlReserve.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                // TODO: 2017/8/1 重新网络请求以刷新数据 
+            }
+        });
+        //mSrlReserve.setRefreshing(true);
         if (initDirs()) {
             initNavi();
         }
@@ -100,6 +101,7 @@ public class ReserveListActivity extends BaseActivity {
         Intent intent = new Intent(context, ReserveListActivity.class);
         context.startActivity(intent);
     }
+    
 
     private void initToolbar() {
         setSupportActionBar(mTbReserve);

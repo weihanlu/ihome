@@ -16,7 +16,8 @@
         android:layout_marginTop="0dp"
         android:background="?attr/colorPrimary"
         android:minHeight="?attr/actionBarSize"
-        android:theme="?attr/actionBarTheme" />
+        android:theme="?attr/actionBarTheme"
+        android:weightSum="1"/>
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/srl_order_list"

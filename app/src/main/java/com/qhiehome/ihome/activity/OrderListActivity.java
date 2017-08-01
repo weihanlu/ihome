@@ -135,7 +135,8 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setDisplayShowTitleEnabled(false);
+            actionBar.setDisplayShowTitleEnabled(true);
+            actionBar.setTitle("历史订单");
         }
         mTbOrder.setNavigationOnClickListener(new View.OnClickListener() {
             @Override

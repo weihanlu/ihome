@@ -232,6 +232,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
         }
+
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
