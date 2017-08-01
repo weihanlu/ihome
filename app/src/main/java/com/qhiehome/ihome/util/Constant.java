@@ -20,7 +20,7 @@ public class Constant {
 
     public static final int ERROR_SUCCESS_CODE = 1;
 
-    public static final int VERIFY_NUM = 4;
+    public static final int VERIFY_NUM = 6;
 
     public static final String CURRENT_LONGITUDE= "CURRENT_LONGITUDE";
 

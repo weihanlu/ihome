@@ -1,6 +1,7 @@
 package com.qhiehome.ihome.application;
 
-import com.mob.MobApplication;
+import android.app.Application;
+
 
 /**
  * This is the global entrance of the app
@@ -11,7 +12,7 @@ import com.mob.MobApplication;
  *     3. ORM structure interact with database: Active Android
  */
 
-public class IhomeApplication extends MobApplication {
+public class IhomeApplication extends Application {
 
     private static final String TAG = "IhomeApplication";
 

@@ -1,22 +1,17 @@
-package com.qhiehome.ihome.network;
-
-import android.app.Service;
-
-import com.qhiehome.ihome.network.service.signin.SigninService;
+package com.qhiehome.ihome.network.service.SMS;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
-import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.http.Body;
-import retrofit2.http.GET;
-import retrofit2.http.Headers;
-import retrofit2.http.POST;
 
-public class ServiceGenerator {
+/**
+ * Created by YueMa on 2017/7/31.
+ */
 
-    private static final String BASE_URL = "http://10.103.93.25:8080/";
+public class SMSServiceGenerator {
+
+    private static final String BASE_URL = "http://v.juhe.cn/sms/";
 
     private static Retrofit.Builder retrofitBuilder
             = new Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(GsonConverterFactory.create());
