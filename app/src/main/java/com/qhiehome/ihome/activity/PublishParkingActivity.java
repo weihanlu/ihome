@@ -1,5 +1,6 @@
 package com.qhiehome.ihome.activity;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
@@ -13,9 +14,11 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
@@ -84,6 +87,8 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
     private ArrayList<PublishBean> mPublishList;
 
     private PublishParkingAdapter mPublishAdapter;
+
+    private AppCompatSpinner mEndSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -261,16 +266,33 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                 public void onClick(View v) {
                     View itemContainer = LayoutInflater.from(mContext).inflate(R.layout.item_publish_parking, null);
                     AppCompatSpinner startSpinner = (AppCompatSpinner) itemContainer.findViewById(R.id.spinner_start);
-                    ArrayAdapter<String> startAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, TimeUtil.getInstance().getOnedayTime());
+                    List<String> startData = TimeUtil.getInstance().getOnedayTime();
+                    startData.remove(startData.size()-1);
+                    ArrayAdapter<String> startAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, startData);
                     startAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     startSpinner.setAdapter(startAdapter);
-                    AppCompatSpinner endSpinner = (AppCompatSpinner) itemContainer.findViewById(R.id.spinner_end);
-                    ArrayAdapter<String> endAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, TimeUtil.getInstance().getOnedayTime());
-                    endAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    endSpinner.setAdapter(endAdapter);
+                    mEndSpinner = (AppCompatSpinner) itemContainer.findViewById(R.id.spinner_end);
                     mContainer.addView(itemContainer);
-                    startSpinner.setSelection(TimeUtil.getInstance().getPassedHour(System.currentTimeMillis()));
-                    endSpinner.setSelection(TimeUtil.getInstance().getPassedHour(System.currentTimeMillis()) + 1);
+                    startSpinner.setSelection(0);
+                    startSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                        @Override
+                        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                            List<String> endData = TimeUtil.getInstance().getOnedayTime();
+                            endData.remove(0);
+                            ArrayAdapter<String> endAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, endData);
+                            endAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                            mEndSpinner.setAdapter(endAdapter);
+                            for (int j = 0; j < i; j++){
+                                endData.remove(0);
+                            }
+                            endAdapter.notifyDataSetChanged();
+                            mEndSpinner.setSelection(0);
+                        }
+                        @Override
+                        public void onNothingSelected(AdapterView<?> adapterView) {
+
+                        }
+                    });
                     mPeriodTimes++;
                     if (mPeriodTimes == Constant.TIME_PERIOD_LIMIT) {
                         addBtn.setVisibility(View.GONE);
