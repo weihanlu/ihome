@@ -306,13 +306,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                 getSelectedPeriod();
                 publishParking();
             }
-        }).onNegative(new MaterialDialog.SingleButtonCallback() {
-            @Override
-            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                // do nothing
-            }
-        }).canceledOnTouchOutside(false)
-                .show();
+        }).canceledOnTouchOutside(false).show();
     }
 
     private void getSelectedPeriod() {

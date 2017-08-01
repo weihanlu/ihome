@@ -14,6 +14,6 @@ public interface UpdateLockPwdService {
             "Content-Type: application/json",
             "Accept: application/json"
     })
-    @POST("lock/pwd")
+    @POST("parking/pwd")
     Call<UpdateLockPwdResponse> updateLockPwd(@Body UpdateLockPwdRequest updateLockPwdRequest);
 }

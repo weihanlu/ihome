@@ -21,6 +21,6 @@ public interface SMSService {
             "Accept: application/json"
     })
     @POST("send")
-    Call<SMSResponse> sendSMS(@QueryMap Map<String, String> option);
+    Call<SMSResponse> sendSMS(@QueryMap Map<String, Object> option);
 
 }

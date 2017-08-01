@@ -9,16 +9,22 @@ public class UpdateLockPwdRequest {
      * newpwd : xxxxxx
      */
 
-    private int lock_id;
+    private int parkingId;
     private String oldpwd;
     private String newpwd;
 
-    public int getLock_id() {
-        return lock_id;
+    public UpdateLockPwdRequest(int parkingId, String oldpwd, String newpwd) {
+        this.parkingId = parkingId;
+        this.oldpwd = oldpwd;
+        this.newpwd = newpwd;
     }
 
-    public void setLock_id(int lock_id) {
-        this.lock_id = lock_id;
+    public int getParkingId() {
+        return parkingId;
+    }
+
+    public void setParkingId(int parkingId) {
+        this.parkingId = parkingId;
     }
 
     public String getOldpwd() {

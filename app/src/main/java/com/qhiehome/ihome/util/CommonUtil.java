@@ -14,4 +14,13 @@ public class CommonUtil {
         }
     }
 
+    /**
+     * if softkey is visible, make it invisible and vice versa.
+     * @param context context
+     */
+    public static void toggleKeyboard(Context context) {
+        InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
+    }
+
 }

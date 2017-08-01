@@ -15,6 +15,7 @@ import android.widget.EditText;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.SMS.SMSResponse;
+import com.qhiehome.ihome.network.model.lock.updatepwd.UpdateLockPwdResponse;
 import com.qhiehome.ihome.network.model.signin.SigninRequest;
 import com.qhiehome.ihome.network.model.signin.SigninResponse;
 import com.qhiehome.ihome.network.service.SMS.SMSService;
@@ -33,6 +34,7 @@ import java.lang.ref.WeakReference;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 
 import butterknife.BindView;
@@ -99,24 +101,25 @@ public class LoginActivity extends BaseActivity {
                 Uri.parse("content://sms/"), true, sco);
     }
 
-    private class SMSObserverHandler extends Handler{
+    private static class SMSObserverHandler extends Handler{
         private final WeakReference<LoginActivity> mActivity;
         private SMSObserverHandler(LoginActivity loginActivity){
             mActivity = new WeakReference<>(loginActivity);
         }
         @Override
         public void handleMessage(Message msg) {
-            LoginActivity loginActivity = mActivity.get();
+            final LoginActivity loginActivity = mActivity.get();
             if(msg.what == GET_VERIFICATION){
                 loginActivity.mEtVerify.setText(msg.obj.toString());
+                loginActivity.login();
             }
             if (msg.what == COUNT_DOWN_START){
-                runOnUiThread(new Runnable() {
+                loginActivity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        CountDownTask countDownTask = new CountDownTask(UPPER_SECOND);
+                        CountDownTask countDownTask = loginActivity.new CountDownTask(UPPER_SECOND);
                         countDownTask.run();
-                        CommonUtil.hideKeyboard(LoginActivity.this);
+                        CommonUtil.hideKeyboard(loginActivity);
                     }
                 });
             }
@@ -169,7 +172,7 @@ public class LoginActivity extends BaseActivity {
             mHasSentSMS = true;
             mHandler.sendEmptyMessage(COUNT_DOWN_START);
             //请求参数
-            Map options = new HashMap();
+            Map<String, Object> options = new HashMap<>();
             options.put("mobile",mPhoneNum);
             options.put("tpl_id",41356);
             float rand = new Random().nextFloat();

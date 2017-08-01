@@ -1,10 +1,12 @@
 package com.qhiehome.ihome.activity;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.DividerItemDecoration;
@@ -12,13 +14,18 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
+import android.view.inputmethod.InputMethod;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.GravityEnum;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.qhiehome.ihome.R;
@@ -29,8 +36,17 @@ import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.base.ParkingResponse;
 import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedRequest;
 import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedResponse;
+import com.qhiehome.ihome.network.model.lock.updatepwd.UpdateLockPwdRequest;
+import com.qhiehome.ihome.network.model.lock.updatepwd.UpdateLockPwdResponse;
+import com.qhiehome.ihome.network.model.signin.SigninRequest;
+import com.qhiehome.ihome.network.model.signin.SigninResponse;
 import com.qhiehome.ihome.network.service.inquiry.ParkingOwnedService;
+import com.qhiehome.ihome.network.service.lock.UpdateLockPwdService;
+import com.qhiehome.ihome.network.service.signin.SigninService;
+import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
+import com.qhiehome.ihome.util.EncryptUtil;
+import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
@@ -117,9 +133,9 @@ public class UserInfoActivity extends BaseActivity {
     }
 
     private void initListener(final UserLockAdapter userLockAdapter) {
-        userLockAdapter.setOnItemClickListener(new ScanLockAdapter.OnClickListener() {
+        userLockAdapter.setOnItemClickListener(new UserLockAdapter.OnItemClickListener() {
             @Override
-            public void onClick(int i) {
+            public void onClick(View view, int i) {
                 UserLockBean userLockBean = mUserLocks.get(i);
                 View controllLock = LayoutInflater.from(mContext).inflate(R.layout.dialog_controll_lock, null);
                 ImageView imgUpLock = (ImageView) controllLock.findViewById(R.id.img_up_lock);
@@ -141,6 +157,54 @@ public class UserInfoActivity extends BaseActivity {
                         .customView(controllLock ,false)
                         .show();
             }
+
+            @Override
+            public void onButtonClick(View view, int i) {
+                final UserLockBean userLockBean = mUserLocks.get(i);
+                new MaterialDialog.Builder(mContext)
+                        .customView(R.layout.dialog_modify_pwd, false)
+                        .positiveText("确定")
+                        .onPositive(new MaterialDialog.SingleButtonCallback() {
+                            @Override
+                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                View customView = dialog.getCustomView();
+                                if (customView != null) {
+                                    EditText etOldPwd = (EditText) customView.findViewById(R.id.et_old_pwd);
+                                    EditText etNewPwd = (EditText) customView.findViewById(R.id.et_new_pwd);
+                                    int parkingId = userLockBean.getParkingId();
+                                    modifyLockPwd(parkingId, etOldPwd.getText().toString(), etNewPwd.getText().toString());
+                                }
+                                CommonUtil.toggleKeyboard(mContext);
+                            }
+                        })
+                        .showListener(new DialogInterface.OnShowListener() {
+                            @Override
+                            public void onShow(DialogInterface dialog) {
+                                CommonUtil.toggleKeyboard(mContext);
+                            }
+                        })
+                        .canceledOnTouchOutside(false)
+                        .show();
+            }
+        });
+    }
+
+    private void modifyLockPwd(int parkingId, String oldPwd, String newPwd) {
+        UpdateLockPwdService updateLockPwdService = ServiceGenerator.createService(UpdateLockPwdService.class);
+        UpdateLockPwdRequest updateLockPwdRequest = new UpdateLockPwdRequest(parkingId, oldPwd, newPwd);
+        Call<UpdateLockPwdResponse> call = updateLockPwdService.updateLockPwd(updateLockPwdRequest);
+        call.enqueue(new Callback<UpdateLockPwdResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<UpdateLockPwdResponse> call, @NonNull Response<UpdateLockPwdResponse> response) {
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                    ToastUtil.showToast(mContext, "modify password successfully");
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<UpdateLockPwdResponse> call, @NonNull Throwable t) {
+
+            }
         });
     }
 
@@ -160,7 +224,7 @@ public class UserInfoActivity extends BaseActivity {
                         isRented = true;
                     }
                 }
-                userLockBean = new UserLockBean(estate.getName(), parkingBean.getName(), parkingBean.getGatewayId(),
+                userLockBean = new UserLockBean(estate.getName(), parkingBean.getName(), Integer.valueOf(parkingBean.getId()), parkingBean.getGatewayId(),
                         parkingBean.getLockMac(), isRented);
                 mUserLocks.add(userLockBean);
                 mParkingIds.append(parkingBean.getId()).append(",");
@@ -205,7 +269,7 @@ public class UserInfoActivity extends BaseActivity {
     }
 
     private void initUserInfo(){
-        userInfo = new ArrayList<String>();
+        userInfo = new ArrayList<>();
         userInfo.add("img_profile.jpg");
         userInfo.add(SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, Constant.TEST_PHONE_NUM));
         userInfo.add("铁锤");

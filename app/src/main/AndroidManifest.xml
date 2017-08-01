@@ -63,7 +63,8 @@
         <activity
             android:name=".activity.SplashActivity"
             android:theme="@style/SplashTheme" />
-        <activity android:name=".activity.LoginActivity"></activity>
+        <activity android:name=".activity.LoginActivity">
+        </activity>
         <activity
             android:name=".activity.MainActivity"
             android:launchMode="singleTask">
@@ -98,7 +99,8 @@
         <activity
             android:name=".activity.LockDetailActivity"
             android:launchMode="singleTop" />
-        <activity android:name=".activity.UserInfoActivity" />
+        <activity android:name=".activity.UserInfoActivity"
+            android:windowSoftInputMode="adjustPan|stateHidden"/>
         <activity android:name=".activity.ParkingListActivity" />
         <activity android:name=".activity.PublishParkingActivity" />
         <activity android:name=".activity.OrderListActivity" />

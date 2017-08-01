@@ -4,7 +4,9 @@ public class UserLockBean {
 
     private String lockEstateName;
 
-    private String lockName;
+    private String parkingName;
+
+    private int parkingId;
 
     private String gatewayId;
 
@@ -12,20 +14,29 @@ public class UserLockBean {
 
     private boolean isRented;
 
-    public UserLockBean(String lockEstateName, String lockName, String gatewayId, String lockMac, boolean isRented) {
-        this.lockName = lockName;
+    public UserLockBean(String lockEstateName, String parkingName, int parkingId, String gatewayId, String lockMac, boolean isRented) {
+        this.parkingName = parkingName;
+        this.parkingId = parkingId;
         this.lockEstateName = lockEstateName;
         this.gatewayId = gatewayId;
         this.lockMac = lockMac;
         this.isRented = isRented;
     }
 
-    public String getLockName() {
-        return lockName;
+    public String getParkingName() {
+        return parkingName;
     }
 
-    public void setLockName(String lockName) {
-        this.lockName = lockName;
+    public void setParkingName(String parkingName) {
+        this.parkingName = parkingName;
+    }
+
+    public int getParkingId() {
+        return parkingId;
+    }
+
+    public void setParkingId(int parkingId) {
+        this.parkingId = parkingId;
     }
 
     public String getLockEstateName() {
