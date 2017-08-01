@@ -1,6 +1,8 @@
 package com.qhiehome.ihome.util;
 
 import android.util.ArrayMap;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -12,7 +14,7 @@ public class TimeUtil {
 
     private TimeUtil(){
         timeMap = new ArrayMap<>();
-        for (int i = 0; i < 24; i++) {
+        for (int i = getPassedHour(System.currentTimeMillis()); i <= 24; i++) {
             timeMap.put(i + ":00", i);
         }
     }
