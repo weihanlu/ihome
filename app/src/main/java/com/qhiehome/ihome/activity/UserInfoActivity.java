@@ -14,13 +14,11 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
-import android.view.inputmethod.InputMethod;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -81,6 +79,10 @@ public class UserInfoActivity extends BaseActivity {
     private long mCurrentTime;
 
     private StringBuilder mParkingIds;
+
+    EditText mEtOldPwd;
+
+    EditText mEtNewPwd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -161,26 +163,32 @@ public class UserInfoActivity extends BaseActivity {
             @Override
             public void onButtonClick(View view, int i) {
                 final UserLockBean userLockBean = mUserLocks.get(i);
-                new MaterialDialog.Builder(mContext)
+                MaterialDialog dialog = new MaterialDialog.Builder(mContext)
                         .customView(R.layout.dialog_modify_pwd, false)
                         .positiveText("确定")
-                        .onPositive(new MaterialDialog.SingleButtonCallback() {
-                            @Override
-                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                View customView = dialog.getCustomView();
-                                if (customView != null) {
-                                    EditText etOldPwd = (EditText) customView.findViewById(R.id.et_old_pwd);
-                                    EditText etNewPwd = (EditText) customView.findViewById(R.id.et_new_pwd);
-                                    int parkingId = userLockBean.getParkingId();
-                                    modifyLockPwd(parkingId, etOldPwd.getText().toString(), etNewPwd.getText().toString());
-                                }
-                                CommonUtil.toggleKeyboard(mContext);
-                            }
-                        })
+                        .negativeText("取消")
+                        .build();
+                View customView = dialog.getCustomView();
+                if (customView != null) {
+                    mEtOldPwd = (EditText) customView.findViewById(R.id.et_old_pwd);
+                    mEtNewPwd = (EditText) customView.findViewById(R.id.et_new_pwd);
+                }
+                dialog.getBuilder()
                         .showListener(new DialogInterface.OnShowListener() {
                             @Override
                             public void onShow(DialogInterface dialog) {
-                                CommonUtil.toggleKeyboard(mContext);
+                                CommonUtil.showSoftKeyboard(mEtOldPwd, mContext);
+                            }
+                        })
+                        .onPositive(new MaterialDialog.SingleButtonCallback() {
+                            @Override
+                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                int parkingId = userLockBean.getParkingId();
+                                String oldPwd = mEtOldPwd.getText().toString();
+                                String newPwd = mEtNewPwd.getText().toString();
+                                if (!(TextUtils.isEmpty(oldPwd) || TextUtils.isEmpty(newPwd))) {
+                                    modifyLockPwd(parkingId, mEtOldPwd.getText().toString(), mEtNewPwd.getText().toString());
+                                }
                             }
                         })
                         .canceledOnTouchOutside(false)

@@ -3,6 +3,9 @@ package com.qhiehome.ihome.util;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Rect;
+import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 
 public class CommonUtil {
@@ -12,6 +15,12 @@ public class CommonUtil {
         if (activity.getCurrentFocus() != null) {
             inputMethodManager.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(), 0);
         }
+    }
+
+    public static void showSoftKeyboard(View view, Context context) {
+        InputMethodManager inputMethodManager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        view.requestFocus();
+        inputMethodManager.showSoftInput(view, 0);
     }
 
     /**
