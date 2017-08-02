@@ -3,10 +3,12 @@ package com.qhiehome.ihome.util;
 import android.util.ArrayMap;
 
 import java.lang.reflect.Array;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class TimeUtil {
 
@@ -14,8 +16,11 @@ public class TimeUtil {
 
     private TimeUtil(){
         timeMap = new ArrayMap<>();
-        for (int i = getPassedHour(System.currentTimeMillis()); i <= 24; i++) {
-            timeMap.put(i + ":00", i);
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm", Locale.CHINA);
+        for (int i = getPassedHalfHour(System.currentTimeMillis()); i <= 47; i++) {
+            Date current = new Date(getTimeStamp(i));
+            timeMap.put(format.format(current), i);
+            LogUtil.d("TimeUtil", format.format(current));
         }
     }
 
@@ -49,16 +54,16 @@ public class TimeUtil {
     }
 
     public long getTimeStamp(String str) {
-        int passedHour = timeMap.get(str);
-        return getTimeStamp(passedHour);
+        int passHalfHour = timeMap.get(str);
+        return getTimeStamp(passHalfHour);
     }
 
-    public int getPassedHour(long timeStamp) {
-        return (int)(timeStamp - getTimesmorning()) / (3600 * 1000) + 1;
+    public int getPassedHalfHour(long timeStamp) {
+        return (int)(timeStamp - getTimesmorning()) / (1800 * 1000) + 1;
     }
 
-    public long getTimeStamp(int passHours) {
-        return getTimesmorning() + passHours * 3600 * 1000;
+    public long getTimeStamp(int passHalfHour) {
+        return getTimesmorning() + passHalfHour * 1800 * 1000;
     }
 
     public Date millis2Date(final long millis) {

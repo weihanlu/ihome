@@ -17,7 +17,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
@@ -266,7 +265,6 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                     View itemContainer = LayoutInflater.from(mContext).inflate(R.layout.item_publish_parking, null);
                     AppCompatSpinner startSpinner = (AppCompatSpinner) itemContainer.findViewById(R.id.spinner_start);
                     List<String> startData = TimeUtil.getInstance().getOnedayTime();
-                    startData.remove(startData.size()-1);
                     ArrayAdapter<String> startAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, startData);
                     startAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     startSpinner.setAdapter(startAdapter);
