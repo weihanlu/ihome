@@ -128,7 +128,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                     for (ParkingResponse.DataBean.EstateBean estateBean: estateList) {
                         List<ParkingResponse.DataBean.EstateBean.ParkingBean> parkingList = estateBean.getParking();
                         for (ParkingResponse.DataBean.EstateBean.ParkingBean parkingBean: parkingList) {
-                            mParkingIdList.add(parkingBean.getName());
+                            mParkingIdList.add(parkingBean.getId() + "");
                             List<ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean> shareList = parkingBean.getShare();
                             for (ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean shareBean: shareList) {
                                 SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.CHINA);
