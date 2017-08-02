@@ -17,6 +17,6 @@ public interface ReserveService {
             "Content-Type: application/json",
             "Accept: application/json"
     })
-    @POST("share/bind")
+    @POST("parking/reserve")
     Call<ReserveResponse> reserve(@Body ReserveRequest reserveRequest);
 }

@@ -641,7 +641,7 @@ public class ParkFragment extends Fragment {
                         if (cb_all.get(i).isChecked()) {
 
                             ReserveService reserveService = ServiceGenerator.createService(ReserveService.class);
-                            final ReserveRequest reserveRequest = new ReserveRequest(shareBeanList.get(i).getId());
+                            final ReserveRequest reserveRequest = new ReserveRequest(shareBeanList.get(i).getId(), "", 0, 0);
                             Call<ReserveResponse> call = reserveService.reserve(reserveRequest);
                             call.enqueue(new Callback<ReserveResponse>() {
                                 @Override

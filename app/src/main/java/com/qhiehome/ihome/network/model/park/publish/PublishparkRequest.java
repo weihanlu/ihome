@@ -4,17 +4,6 @@ import java.util.List;
 
 public class PublishparkRequest {
 
-    /**
-     * parking_id : 123456789
-     * password : xxxx...xxxx
-     * "share":[
-     *     {
-     *         "start_time": 1499826000000,
-     *         "end_time": 1499828000000
-     *     }
-     * ]
-     */
-
     private long parkingId;
     private String password;
     private List<ShareBean> share;
@@ -44,10 +33,6 @@ public class PublishparkRequest {
     }
 
     public static class ShareBean {
-        /**
-         * start_time : 1499826000000
-         * end_time : 1499828000000
-         */
 
         private long startTime;
         private long endTime;

@@ -6,17 +6,48 @@ package com.qhiehome.ihome.network.model.pay;
 
 public class PayRequest {
 
+
     /**
-     * order_id : 123456789
+     * orderId : 123456789
+     * enterTime : 1499826000000
+     * leaveTime : 1499826000000
+     * paymentTime : 1499826000000
      */
 
-    private int order_id;
+    private int orderId;
+    private long enterTime;
+    private long leaveTime;
+    private long paymentTime;
 
-    public int getOrder_id() {
-        return order_id;
+    public int getOrderId() {
+        return orderId;
     }
 
-    public void setOrder_id(int order_id) {
-        this.order_id = order_id;
+    public void setOrderId(int orderId) {
+        this.orderId = orderId;
+    }
+
+    public long getEnterTime() {
+        return enterTime;
+    }
+
+    public void setEnterTime(long enterTime) {
+        this.enterTime = enterTime;
+    }
+
+    public long getLeaveTime() {
+        return leaveTime;
+    }
+
+    public void setLeaveTime(long leaveTime) {
+        this.leaveTime = leaveTime;
+    }
+
+    public long getPaymentTime() {
+        return paymentTime;
+    }
+
+    public void setPaymentTime(long paymentTime) {
+        this.paymentTime = paymentTime;
     }
 }

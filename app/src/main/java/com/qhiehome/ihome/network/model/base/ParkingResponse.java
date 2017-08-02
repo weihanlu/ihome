@@ -9,8 +9,9 @@ import java.util.List;
 
 public class ParkingResponse extends Response {
 
+
     /**
-     * data : {"estate":[{"name":"xxxxxx","x":12.345678,"y":87.654321,"parking":[{"id":"xxxx...xxxx","name":"xxxxxx","gatewayId":"xxxxxx","lockMac":"xxxxxx","share":[{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]}]}]}
+     * data : {"estate":[{"id":123456789,"name":"xxxxxx","x":12.345678,"y":87.654321,"unitPrice":10,"guaranteeFee":10,"parking":[{"id":123456789,"name":"xxxxxx","gatewayId":"xxxxxx","lockMac":"xxxxxx","share":[{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]}]}]}
      */
 
     private DataBean data;
@@ -36,16 +37,30 @@ public class ParkingResponse extends Response {
 
         public static class EstateBean implements Serializable{
             /**
+             * id : 123456789
              * name : xxxxxx
              * x : 12.345678
              * y : 87.654321
-             * parking : [{"id":"xxxx...xxxx","name":"xxxxxx","gatewayId":"xxxxxx","lockMac":"xxxxxx","share":[{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]}]
+             * unitPrice : 10
+             * guaranteeFee : 10
+             * parking : [{"id":123456789,"name":"xxxxxx","gatewayId":"xxxxxx","lockMac":"xxxxxx","share":[{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]}]
              */
 
+            private int id;
             private String name;
             private double x;
             private double y;
+            private int unitPrice;
+            private int guaranteeFee;
             private List<ParkingBean> parking;
+
+            public int getId() {
+                return id;
+            }
+
+            public void setId(int id) {
+                this.id = id;
+            }
 
             public String getName() {
                 return name;
@@ -71,6 +86,22 @@ public class ParkingResponse extends Response {
                 this.y = y;
             }
 
+            public int getUnitPrice() {
+                return unitPrice;
+            }
+
+            public void setUnitPrice(int unitPrice) {
+                this.unitPrice = unitPrice;
+            }
+
+            public int getGuaranteeFee() {
+                return guaranteeFee;
+            }
+
+            public void setGuaranteeFee(int guaranteeFee) {
+                this.guaranteeFee = guaranteeFee;
+            }
+
             public List<ParkingBean> getParking() {
                 return parking;
             }
@@ -81,25 +112,24 @@ public class ParkingResponse extends Response {
 
             public static class ParkingBean {
                 /**
-                 * id : xxxx...xxxx
+                 * id : 123456789
                  * name : xxxxxx
                  * gatewayId : xxxxxx
                  * lockMac : xxxxxx
                  * share : [{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]
                  */
 
-                private String id;
+                private int id;
                 private String name;
                 private String gatewayId;
                 private String lockMac;
-
                 private List<ShareBean> share;
 
-                public String getId() {
+                public int getId() {
                     return id;
                 }
 
-                public void setId(String id) {
+                public void setId(int id) {
                     this.id = id;
                 }
 
