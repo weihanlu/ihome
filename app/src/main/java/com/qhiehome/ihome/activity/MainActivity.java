@@ -30,7 +30,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
 
     private List<TextView> mTabTextIndicators = new ArrayList<>();
 
-    Toolbar mToolbar;
+//    Toolbar mToolbar;
 
     Fragment mParkFragment;
     Fragment mMeFragment;
@@ -51,7 +51,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
     }
 
     private void initView() {
-        initToolbar();
+//        initToolbar();
         mTvPark = (TextView) findViewById(R.id.tv_park);
         mTvMe = (TextView) findViewById(R.id.tv_me);
         mTabTextIndicators.add(mTvPark);
@@ -64,12 +64,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
         mRlMe.setOnClickListener(this);
     }
 
-    private void initToolbar() {
-        mToolbar = (Toolbar) findViewById(R.id.toolbar);
-        mToolbar.setTitle("Ihome");
-        setSupportActionBar(mToolbar);
-
-    }
+//    private void initToolbar() {
+//        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+//        mToolbar.setTitle("Ihome");
+//        setSupportActionBar(mToolbar);
+//
+//    }
 
     private void initFragments(Bundle savedInstanceState) {
         mFragmentManager = getSupportFragmentManager();
