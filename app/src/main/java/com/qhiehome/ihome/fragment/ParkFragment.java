@@ -55,6 +55,7 @@ import com.baidu.navisdk.adapter.BNaviSettingManager;
 import com.baidu.navisdk.adapter.BaiduNaviManager;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.activity.NaviGuideActivity;
+import com.qhiehome.ihome.activity.ParkingListActivity;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.base.ParkingResponse;
 import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyRequest;
@@ -119,7 +120,7 @@ public class ParkFragment extends Fragment {
     private boolean mRefreshEstate;
     private LocationClient mLocationClient;
     private BDLocationListener mBDLocationListener;
-    private Intent mIntent;
+
 
     /******百度地图导航******/
     private String mSDCardPath = null;
@@ -388,6 +389,7 @@ public class ParkFragment extends Fragment {
                             OverlayOptions options;
                             options = new MarkerOptions()
                                     .position(newPT)//设置位置
+                                    .animateType(MarkerOptions.MarkerAnimateType.grow)
                                     .icon(arrow);//设置图标样式
                             Bundle bundle = new Bundle();
                             bundle.putSerializable("estate", mEstateBeanList.get(i));
@@ -409,7 +411,11 @@ public class ParkFragment extends Fragment {
             @Override
             public boolean onMarkerClick(Marker marker1) {
                 mClickedMarker = marker1;
-                showParkingDialog();
+                Intent intent = new Intent(getActivity(), ParkingListActivity.class);
+                Bundle bundle = marker1.getExtraInfo();
+                intent.putExtras(bundle);
+                startActivity(intent);
+                //showParkingDialog();
                 return false;
             }
         };
@@ -594,7 +600,7 @@ public class ParkFragment extends Fragment {
 
 
     /*********显示小区的停车位***********/
-    private void showParkingDialog() {
+    /*private void showParkingDialog() {
         final List<CheckBox> cb_all = new ArrayList<>();
         Bundle bundle = mClickedMarker.getExtraInfo();
         final ParkingResponse.DataBean.EstateBean estateBean = (ParkingResponse.DataBean.EstateBean) bundle.getSerializable("estate");
@@ -691,6 +697,8 @@ public class ParkFragment extends Fragment {
             dialog.show();
         }
     }
+
+    */
 
     @OnClick(R.id.btn_map_refresh)
     public void onViewClicked() {

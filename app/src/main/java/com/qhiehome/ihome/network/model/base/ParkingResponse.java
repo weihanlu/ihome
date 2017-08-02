@@ -7,7 +7,7 @@ import java.util.List;
  * Created by YueMa on 2017/7/21.
  */
 
-public class ParkingResponse extends Response {
+public class ParkingResponse extends Response implements Serializable{
 
 
     /**
@@ -110,7 +110,7 @@ public class ParkingResponse extends Response {
                 this.parking = parking;
             }
 
-            public static class ParkingBean {
+            public static class ParkingBean implements Serializable{
                 /**
                  * id : 123456789
                  * name : xxxxxx
@@ -165,7 +165,7 @@ public class ParkingResponse extends Response {
                     this.share = share;
                 }
 
-                public static class ShareBean {
+                public static class ShareBean implements Serializable{
                     /**
                      * id : 123456789
                      * startTime : 1499826000000
