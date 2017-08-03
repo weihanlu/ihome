@@ -63,8 +63,7 @@
         <activity
             android:name=".activity.SplashActivity"
             android:theme="@style/SplashTheme" />
-        <activity android:name=".activity.LoginActivity">
-        </activity>
+        <activity android:name=".activity.LoginActivity"></activity>
         <activity
             android:name=".activity.MainActivity"
             android:launchMode="singleTask">
@@ -74,7 +73,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
 
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
@@ -115,7 +113,14 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name=".activity.ReserveListActivity"></activity>
+        <activity android:name=".activity.ReserveListActivity" />
+
+        <service
+            android:name=".lock.ConnectLockService"
+            android:exported="false"></service>
+
+        <service android:name="org.eclipse.paho.android.service.MqttService"/>
+
     </application>
 
 </manifest>

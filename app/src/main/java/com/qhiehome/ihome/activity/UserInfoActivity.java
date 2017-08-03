@@ -1,8 +1,10 @@
 package com.qhiehome.ihome.activity;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -30,6 +32,7 @@ import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.adapter.ScanLockAdapter;
 import com.qhiehome.ihome.adapter.UserLockAdapter;
 import com.qhiehome.ihome.bean.UserLockBean;
+import com.qhiehome.ihome.lock.ConnectLockService;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.base.ParkingResponse;
 import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedRequest;
@@ -80,9 +83,15 @@ public class UserInfoActivity extends BaseActivity {
 
     private StringBuilder mParkingIds;
 
+    private ConnectLockReceiver mRecevier;
+
     EditText mEtOldPwd;
 
     EditText mEtNewPwd;
+
+    MaterialDialog mProgressDialog;
+
+    MaterialDialog mControlLockDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +102,21 @@ public class UserInfoActivity extends BaseActivity {
         initData();
         initView();
         initUserInfo();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mRecevier = new ConnectLockReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ConnectLockService.BROADCAST_CONNECT);
+        registerReceiver(mRecevier, intentFilter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(mRecevier);
     }
 
     private void initData() {
@@ -139,25 +163,53 @@ public class UserInfoActivity extends BaseActivity {
             @Override
             public void onClick(View view, int i) {
                 UserLockBean userLockBean = mUserLocks.get(i);
-                View controllLock = LayoutInflater.from(mContext).inflate(R.layout.dialog_controll_lock, null);
-                ImageView imgUpLock = (ImageView) controllLock.findViewById(R.id.img_up_lock);
-                ImageView imgDownLock = (ImageView) controllLock.findViewById(R.id.img_down_Lock);
+                final String gatewayId = userLockBean.getGatewayId();
+                final String lockMac = userLockBean.getLockMac();
+                if (mProgressDialog == null) {
+                    mProgressDialog = new MaterialDialog.Builder(mContext)
+                            .title("Progress Dialog")
+                            .content("Please wait...")
+                            .progress(true, 0)
+                            .showListener(new DialogInterface.OnShowListener() {
+                                @Override
+                                public void onShow(DialogInterface dialog) {
+                                    Intent connectLock = new Intent(mContext, ConnectLockService.class);
+                                    connectLock.setAction(ConnectLockService.ACTION_CONNECT);
+                                    connectLock.putExtra(ConnectLockService.EXTRA_GATEWAY_ID, gatewayId);
+                                    connectLock.putExtra(ConnectLockService.EXTRA_LOCK_MAC, lockMac);
+                                    connectLock.putExtra(ConnectLockService.EXTRA_LOCK_PWD, Constant.DEFAULT_PASSWORD);
+                                    startService(connectLock);
+                                }
+                            }).build();
+                }
+                mProgressDialog.show();
+
+
+                View controlLock = LayoutInflater.from(mContext).inflate(R.layout.dialog_control_lock, null);
+                ImageView imgUpLock = (ImageView) controlLock.findViewById(R.id.img_up_lock);
+                ImageView imgDownLock = (ImageView) controlLock.findViewById(R.id.img_down_Lock);
                 imgUpLock.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        ToastUtil.showToast(mContext, "raise up the lock");
+                        Intent upLock = new Intent(mContext, ConnectLockService.class);
+                        upLock.setAction(ConnectLockService.ACTION_UP_LOCK);
+                        startService(upLock);
                     }
                 });
                 imgDownLock.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        ToastUtil.showToast(mContext, "lower the lock");
+                        Intent downLock = new Intent(mContext, ConnectLockService.class);
+                        downLock.setAction(ConnectLockService.ACTION_DOWN_LOCK);
+                        startService(downLock);
                     }
                 });
-                new MaterialDialog.Builder(mContext)
-                        .title("连接中").titleGravity(GravityEnum.CENTER)
-                        .customView(controllLock ,false)
-                        .show();
+                if (mControlLockDialog == null) {
+                    mControlLockDialog = new MaterialDialog.Builder(mContext)
+                            .title("已连接").titleGravity(GravityEnum.CENTER)
+                            .customView(controlLock ,false)
+                            .build();
+                }
             }
 
             @Override
@@ -318,6 +370,20 @@ public class UserInfoActivity extends BaseActivity {
                 tv_userinfo = (TextView) view.findViewById(R.id.tv_userinfo);
                 tv_usercontent = (TextView) view.findViewById(R.id.tv_usercontent);
                 iv_userimg = (ImageView) view.findViewById(R.id.iv_userimg);
+            }
+
+        }
+    }
+
+    private class ConnectLockReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (mProgressDialog != null && mProgressDialog.isShowing()) {
+                mProgressDialog.dismiss();
+                if (mControlLockDialog != null && !mControlLockDialog.isShowing()) {
+                    mControlLockDialog.show();
+                }
             }
 
         }

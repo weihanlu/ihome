@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +25,7 @@ import com.qhiehome.ihome.manager.ActivityManager;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.ToastUtil;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.BindArray;
 
@@ -44,6 +46,9 @@ public class MeFragment extends Fragment {
     public MeFragment() {
         // Required empty public constructor
     }
+
+    @BindView(R.id.toolbar)
+    Toolbar mToolbar;
 
     /**
      * Use this factory method to create a new instance of
@@ -74,7 +79,12 @@ public class MeFragment extends Fragment {
         View view =  inflater.inflate(R.layout.fragment_me, container, false);
         ButterKnife.bind(this, view);
         initRecyclerView(view);
+        initToolbar();
         return view;
+    }
+
+    private void initToolbar() {
+        mToolbar.setTitle("Ihome");
     }
 
     private void initRecyclerView(View view) {

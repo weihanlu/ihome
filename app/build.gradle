@@ -24,6 +24,9 @@ repositories {
     flatDir {
         dirs 'libs' //就是你放aar的目录地址
     }
+    maven {
+        url "http://repo.eclipse.org/content/repositories/paho-snapshots/"
+    }
 }
 
 dependencies {
@@ -49,4 +52,6 @@ dependencies {
     testCompile 'junit:junit:4.12'
     apt 'com.jakewharton:butterknife-compiler:8.7.0'
     compile 'com.contrarywind:Android-PickerView:3.2.5'
+    compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2'
+    compile 'org.eclipse.paho:org.eclipse.paho.android.service:1.0.2'
 }

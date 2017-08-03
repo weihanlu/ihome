@@ -34,13 +34,17 @@ public class UserLockAdapter extends RecyclerView.Adapter<UserLockAdapter.UserLo
         UserLockBean userLockBean = mUserLocks.get(position);
         holder.mTvLockName.setText(userLockBean.getParkingName());
         holder.mTvLockEstateName.setText(userLockBean.getLockEstateName());
-        boolean isRented = userLockBean.isRented();
+        final boolean isRented = userLockBean.isRented();
         holder.mTvRentalStatus.setText(isRented? "已租用": "可使用");
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (onItemClickListener != null) {
-                    onItemClickListener.onClick(holder.itemView, holder.getLayoutPosition());
+                    if (!isRented) {
+                        onItemClickListener.onClick(holder.itemView, holder.getLayoutPosition());
+                    } else {
+                        ToastUtil.showToast(mContext, "正在有人使用");
+                    }
                 }
             }
         });
@@ -48,7 +52,11 @@ public class UserLockAdapter extends RecyclerView.Adapter<UserLockAdapter.UserLo
             @Override
             public void onClick(View v) {
                 if (onItemClickListener != null) {
-                    onItemClickListener.onButtonClick(holder.mBtModifyPwd, holder.getLayoutPosition());
+                    if (!isRented) {
+                        onItemClickListener.onButtonClick(holder.mBtModifyPwd, holder.getLayoutPosition());
+                    } else {
+                        ToastUtil.showToast(mContext, "正在有人使用");
+                    }
                 }
             }
         });
