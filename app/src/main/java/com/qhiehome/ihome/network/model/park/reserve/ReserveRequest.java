@@ -8,30 +8,19 @@ public class ReserveRequest {
 
 
     /**
-     * shareId : 123456789
      * phone : xxxx...xxxx
-     * startTime : 1499826000000
-     * endTime : 1499828000000
+     * start_time : 1499826000000
+     * end_time : 1499828000000
      */
 
-    private int shareId;
     private String phone;
-    private long startTime;
-    private long endTime;
+    private long start_time;
+    private long end_time;
 
-    public ReserveRequest(int shareId, String phone, long startTime, long endTime) {
-        this.shareId = shareId;
+    public ReserveRequest(String phone, long start_time, long end_time) {
         this.phone = phone;
-        this.startTime = startTime;
-        this.endTime = endTime;
-    }
-
-    public int getShareId() {
-        return shareId;
-    }
-
-    public void setShareId(int shareId) {
-        this.shareId = shareId;
+        this.start_time = start_time;
+        this.end_time = end_time;
     }
 
     public String getPhone() {
@@ -42,19 +31,19 @@ public class ReserveRequest {
         this.phone = phone;
     }
 
-    public long getStartTime() {
-        return startTime;
+    public long getStart_time() {
+        return start_time;
     }
 
-    public void setStartTime(long startTime) {
-        this.startTime = startTime;
+    public void setStart_time(long start_time) {
+        this.start_time = start_time;
     }
 
-    public long getEndTime() {
-        return endTime;
+    public long getEnd_time() {
+        return end_time;
     }
 
-    public void setEndTime(long endTime) {
-        this.endTime = endTime;
+    public void setEnd_time(long end_time) {
+        this.end_time = end_time;
     }
 }

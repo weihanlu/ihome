@@ -2,34 +2,25 @@ package com.qhiehome.ihome.fragment;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlarmManager;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
@@ -60,24 +51,16 @@ import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.base.ParkingResponse;
 import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyRequest;
 import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyResponse;
-import com.qhiehome.ihome.network.model.park.reserve.ReserveRequest;
-import com.qhiehome.ihome.network.model.park.reserve.ReserveResponse;
 import com.qhiehome.ihome.network.service.inquiry.ParkingEmptyService;
-import com.qhiehome.ihome.network.service.park.ReserveService;
-import com.qhiehome.ihome.persistence.AlarmTimer;
-import com.qhiehome.ihome.persistence.ParkingSQLHelper;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
-import com.qhiehome.ihome.util.TimeUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -105,6 +88,8 @@ public class ParkFragment extends Fragment {
     Button mBtnMapNavi;
     @BindView(R.id.btn_map_refresh)
     Button mBtnMapRefresh;
+    @BindView(R.id.btn_map_marker)
+    Button mBtnMapMarker;
 
 
     private Context mContext;
@@ -154,6 +139,8 @@ public class ParkFragment extends Fragment {
     //private SQLiteDatabase mParkingReadDB;
     //private SQLiteDatabase mParkingWriteDB;
     private int mChosenCount;
+
+    private boolean mMapStateParkingNum = true;
 
     @Override
     public void onAttach(Context context) {
@@ -284,7 +271,7 @@ public class ParkFragment extends Fragment {
                 LatLng xy = new LatLng(bdLocation.getLatitude(),
                         bdLocation.getLongitude());
                 SharedPreferenceUtil.setFloat(mContext, Constant.CURRENT_LATITUDE, (float) bdLocation.getLatitude());
-                SharedPreferenceUtil.setFloat(mContext, Constant.CURRENT_LONGITUDE, (float)bdLocation.getLongitude());
+                SharedPreferenceUtil.setFloat(mContext, Constant.CURRENT_LONGITUDE, (float) bdLocation.getLongitude());
                 // 设置定位数据
                 mBaiduMap.setMyLocationData(locData);
                 if (mRefreshEstate) {
@@ -349,7 +336,6 @@ public class ParkFragment extends Fragment {
 
     private void updateMapState() {
         mBaiduMap.removeMarkerClickListener(mOnMarkerClickListener);
-        mBaiduMap.clear();
         ParkingEmptyService parkingEmptyService = ServiceGenerator.createService(ParkingEmptyService.class);
         ParkingEmptyRequest parkingEmptyRequest = new ParkingEmptyRequest(mCurrentPt.longitude, mCurrentPt.latitude, RADIUS);
         Call<ParkingEmptyResponse> call = parkingEmptyService.parkingEmpty(parkingEmptyRequest);
@@ -358,46 +344,25 @@ public class ParkFragment extends Fragment {
             public void onResponse(Call<ParkingEmptyResponse> call, Response<ParkingEmptyResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     mEstateBeanList = response.body().getData().getEstate();
-                    Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.img_park);
-                    // 获得图片的宽高
-                    int width = bm.getWidth();
-                    int height = bm.getHeight();
-                    // 设置想要的大小
-                    int newWidth = 60;
-                    int newHeight = 60;
-                    // 计算缩放比例
-                    float scaleWidth = ((float) newWidth) / width;
-                    float scaleHeight = ((float) newHeight) / height;
-                    // 取得想要缩放的matrix参数
-                    Matrix matrix = new Matrix();
-                    matrix.postScale(scaleWidth, scaleHeight);
-                    // 得到新的图片
-                    Bitmap newbm = Bitmap.createBitmap(bm, 0, 0, width, height, matrix,
-                            true);
-                    BitmapDescriptor arrow = BitmapDescriptorFactory.fromBitmap(newbm);
+//                    Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.img_park);
+//                    // 获得图片的宽高
+//                    int width = bm.getWidth();
+//                    int height = bm.getHeight();
+//                    // 设置想要的大小
+//                    int newWidth = 60;
+//                    int newHeight = 60;
+//                    // 计算缩放比例
+//                    float scaleWidth = ((float) newWidth) / width;
+//                    float scaleHeight = ((float) newHeight) / height;
+//                    // 取得想要缩放的matrix参数
+//                    Matrix matrix = new Matrix();
+//                    matrix.postScale(scaleWidth, scaleHeight);
+//                    // 得到新的图片
+//                    Bitmap newbm = Bitmap.createBitmap(bm, 0, 0, width, height, matrix,
+//                            true);
+//                    BitmapDescriptor arrow = BitmapDescriptorFactory.fromBitmap(newbm);
 
-                    for (int i = 0; i < mEstateBeanList.size(); i++) {
-                        boolean hasShare = false;
-                        for (int j = 0; j < mEstateBeanList.get(i).getParking().size(); j++) {
-                            if (mEstateBeanList.get(i).getParking().get(j).getShare().size() != 0) {
-                                hasShare = true;
-                                break;
-                            }
-                        }
-                        if (hasShare) {
-                            LatLng newPT = new LatLng(mEstateBeanList.get(i).getY(), mEstateBeanList.get(i).getX());
-                            OverlayOptions options;
-                            options = new MarkerOptions()
-                                    .position(newPT)//设置位置
-                                    .animateType(MarkerOptions.MarkerAnimateType.grow)
-                                    .icon(arrow);//设置图标样式
-                            Bundle bundle = new Bundle();
-                            bundle.putSerializable("estate", mEstateBeanList.get(i));
-                            //bundle.putString("name", mEstateBeanList.get(i).getName());
-                            mMarker = (Marker) mBaiduMap.addOverlay(options);
-                            mMarker.setExtraInfo(bundle);
-                        }
-                    }
+                    addMarkers();
                 }
             }
 
@@ -422,169 +387,56 @@ public class ParkFragment extends Fragment {
         mBaiduMap.setOnMarkerClickListener(mOnMarkerClickListener);
     }
 
-/*******归位、点击、搜索:待删除*******/
-/*    private void updateMapState() {
-        //BitmapDescriptor bitmap = BitmapDescriptorFactory.fromResource(R.drawable.flag);
-        if (!mFirstLocation) {
-            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.img_target);
-            // 获得图片的宽高
-            int width = bm.getWidth();
-            int height = bm.getHeight();
-            // 设置想要的大小
-            int newWidth = 60;
-            int newHeight = 60;
-            // 计算缩放比例
-            float scaleWidth = ((float) newWidth) / width;
-            float scaleHeight = ((float) newHeight) / height;
-            // 取得想要缩放的matrix参数
-            Matrix matrix = new Matrix();
-            matrix.postScale(scaleWidth, scaleHeight);
-            // 得到新的图片
-            Bitmap newbm = Bitmap.createBitmap(bm, 0, 0, width, height, matrix,
-                    true);
-            BitmapDescriptor newbmd = BitmapDescriptorFactory.fromBitmap(newbm);
 
-            // 设置覆盖物
-            final Marker marker;
-            OverlayOptions options;
-            options = new MarkerOptions()
-                    .position(mCurrentPt)//设置位置
-                    .icon(newbmd)//设置图标样式
-                    .zIndex(9) // 设置marker所在层级
-                    .draggable(true); // 设置手势拖拽;
-            marker = (Marker) mBaiduMap.addOverlay(options);
-
-            mBaiduMap.setOnMarkerDragListener(new BaiduMap.OnMarkerDragListener() {
-                @Override
-                public void onMarkerDrag(Marker marker) {
-
+    private void addMarkers(){
+        mBaiduMap.clear();
+        for (int i = 0; i < mEstateBeanList.size(); i++) {
+            boolean hasShare = false;
+            for (int j = 0; j < mEstateBeanList.get(i).getParking().size(); j++) {
+                if (mEstateBeanList.get(i).getParking().get(j).getShare().size() != 0) {
+                    hasShare = true;
+                    break;
                 }
+            }
+            if (hasShare) {
+                LatLng newPT = new LatLng(mEstateBeanList.get(i).getY(), mEstateBeanList.get(i).getX());
+                OverlayOptions options;
 
-                @Override
-                public void onMarkerDragEnd(Marker marker) {
-                    mCurrentPt = marker.getPosition();
-                    mBaiduMap.clear();
-                    updateMapState();
+                View customMarker = View.inflate(mContext, R.layout.custom_map_marker, null);
+                TextView tv_marker = (TextView) customMarker.findViewById(R.id.tv_marker);
+                if (mMapStateParkingNum){
+                    tv_marker.setText(String.valueOf(mEstateBeanList.get(i).getParking().size()));
+                    tv_marker.setTextColor(Resources.getSystem().getColor(android.R.color.holo_green_light));
+                }else {
+                    tv_marker.setText(String.format("%d",mEstateBeanList.get(i).getUnitPrice()));
+                    tv_marker.setTextColor(Resources.getSystem().getColor(android.R.color.holo_red_light));
                 }
+                customMarker.setDrawingCacheEnabled(true);
+                customMarker.measure(
+                        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+                customMarker.layout(0, 0,
+                        customMarker.getMeasuredWidth(),
+                        customMarker.getMeasuredHeight());
 
-                @Override
-                public void onMarkerDragStart(Marker marker) {
-                }
-            });
+                customMarker.buildDrawingCache();
+                Bitmap cacheBitmap = customMarker.getDrawingCache();
+                Bitmap bitmap = Bitmap.createBitmap(cacheBitmap);
+                BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap);
 
-        } else {
-            mFirstLocation = false;
+                options = new MarkerOptions()
+                        .position(newPT)//设置位置
+                        .animateType(MarkerOptions.MarkerAnimateType.grow)
+                        .icon(bitmapDescriptor);//设置图标样式
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("estate", mEstateBeanList.get(i));
+                //bundle.putString("name", mEstateBeanList.get(i).getName());
+                mMarker = (Marker) mBaiduMap.addOverlay(options);
+                mMarker.setExtraInfo(bundle);
+            }
         }
-        // 搜索POI
-        PoiSearch ps = PoiSearch.newInstance();
-        ps.setOnGetPoiSearchResultListener(new OnGetPoiSearchResultListener() {
-            @Override
-            public void onGetPoiResult(PoiResult poiResult) {
-                if (poiResult == null) {
-                    return;
-                }
-                int resultNum = poiResult.getTotalPoiNum();
-                mBaiduMap.removeMarkerClickListener(mOnMarkerClickListener);
-
-                int count = 0;
-                Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.img_park);
-                // 获得图片的宽高
-                int width = bm.getWidth();
-                int height = bm.getHeight();
-                // 设置想要的大小
-                int newWidth = 60;
-                int newHeight = 60;
-                // 计算缩放比例
-                float scaleWidth = ((float) newWidth) / width;
-                float scaleHeight = ((float) newHeight) / height;
-                // 取得想要缩放的matrix参数
-                Matrix matrix = new Matrix();
-                matrix.postScale(scaleWidth, scaleHeight);
-                // 得到新的图片
-                Bitmap newbm = Bitmap.createBitmap(bm, 0, 0, width, height, matrix,
-                        true);
-                BitmapDescriptor arrow = BitmapDescriptorFactory.fromBitmap(newbm);
-
-
-                while (count < 10 && count < resultNum) {   //选择附近最多10个停车场
-                    //while (count < resultNum){      //选择附近所有停车场
-                    final PoiInfo pif = poiResult.getAllPoi().get(count);
-                    LatLng newPT = pif.location;
-
-                    OverlayOptions options;
-                    options = new MarkerOptions()
-                            .position(newPT)//设置位置
-                            .icon(arrow);//设置图标样式
-                    Bundle bundle = new Bundle();
-                    bundle.putString("name", pif.name);
-                    mMarker = (Marker) mBaiduMap.addOverlay(options);
-                    mMarker.setExtraInfo(bundle);
-
-                    count++;
-                }
-
-                // 跳转、传递参数
-                mOnMarkerClickListener = new BaiduMap.OnMarkerClickListener() {
-                    @Override
-                    public boolean onMarkerClick(Marker marker1) {
-//                        mIntent = new Intent(getActivity(), ParkingListActivity.class);
-//                        //bundle1 = marker1.getExtraInfo();
-//                        String currentStr = marker1.getExtraInfo().getString("name");
-//                        mIntent.putExtra("name", currentStr);
-//                        startActivity(mIntent);
-                        mClickedMarker = marker1;
-                        showParkingDialog();
-                        return false;
-                    }
-                };
-                mBaiduMap.setOnMarkerClickListener(mOnMarkerClickListener);
-
-            }
-
-            @Override
-            public void onGetPoiDetailResult(PoiDetailResult poiDetailResult) {
-
-            }
-
-            @Override
-            public void onGetPoiIndoorResult(PoiIndoorResult poiIndoorResult) {
-
-            }
-        });
-
-        PoiNearbySearchOption nearbySearchOption = new PoiNearbySearchOption();
-        nearbySearchOption.location(mCurrentPt);
-        nearbySearchOption.keyword("停车场");
-        nearbySearchOption.radius(1000);// 检索半径，单位是米
-        nearbySearchOption.pageNum(10);
-        ps.searchNearby(nearbySearchOption);// 发起附近检索请求
-
-    }
-    private void initListener() {
-        mBaiduMap.setOnMapClickListener(new BaiduMap.OnMapClickListener() {
-            @Override
-            public void onMapClick(LatLng latLng) {
-                mCurrentPt = latLng;
-                mBaiduMap.clear();
-                updateMapState();
-            }
-
-            @Override
-            public boolean onMapPoiClick(MapPoi mapPoi) {
-                return false;
-            }
-        });
     }
 
-    @OnClick(R.id.btn_map_location)
-    public void onViewClicked() {
-        MapStatusUpdate status = MapStatusUpdateFactory.newLatLng(mMyPt);
-        mBaiduMap.animateMapStatus(status);
-    }
-
-*/
-
-    /*******归位、点击、搜索:待删除*******/
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
@@ -599,110 +451,21 @@ public class ParkFragment extends Fragment {
     }
 
 
-    /*********显示小区的停车位***********/
-    /*private void showParkingDialog() {
-        final List<CheckBox> cb_all = new ArrayList<>();
-        Bundle bundle = mClickedMarker.getExtraInfo();
-        final ParkingResponse.DataBean.EstateBean estateBean = (ParkingResponse.DataBean.EstateBean) bundle.getSerializable("estate");
-        LatLng estateLocation = new LatLng(estateBean.getY(), estateBean.getX());
-        List<ParkingResponse.DataBean.EstateBean.ParkingBean> parking_data = estateBean.getParking();
-
-        //对startTime排序
-        final List<ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean> shareBeanList = new ArrayList<>();
-        for (int i = 0; i < parking_data.size(); i++) {
-            shareBeanList.addAll(parking_data.get(i).getShare());
-        }
-        Collections.sort(shareBeanList, new startTimeComparator());
-
-
-        final int size = shareBeanList.size();
-        int count = 0;
-        if (size != 0) {
-            MaterialDialog.Builder dialogBuilder = new MaterialDialog.Builder(this.getContext())
-                    .positiveText("确定").negativeText("取消");
-            dialogBuilder.title(estateBean.getName()).customView(R.layout.dialog_parking_list, true);
-            MaterialDialog dialog = dialogBuilder.build();
-            View customView = dialog.getCustomView();
-            while (customView != null && count < size) {
-                final LinearLayout container = (LinearLayout) customView.findViewById(R.id.parking_list_container);
-                View itemContainer = LayoutInflater.from(mContext).inflate(R.layout.item_parking_list, null);
-                Date startTime = TimeUtil.getInstance().millis2Date(shareBeanList.get(count).getStartTime());
-                Date endTime = TimeUtil.getInstance().millis2Date(shareBeanList.get(count).getEndTime());
-                TextView tv_time = (TextView) itemContainer.findViewById(R.id.tv_parking_time);
-                tv_time.setText(START_DATE_FORMATE.format(startTime) + "~" + END_DATE_FORMATE.format(endTime));
-                CheckBox cb = (CheckBox) itemContainer.findViewById(R.id.cb_parking);
-                cb_all.add(cb);
-                container.addView(itemContainer);
-                count++;
-
-
-            }
-            dialog.getBuilder().onPositive(new MaterialDialog.SingleButtonCallback() {
-                @Override
-                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                    mChosenCount = 0;
-//                    mParkingReadDB = mParkingSQLHelper.getReadableDatabase();
-//                    mParkingWriteDB = mParkingSQLHelper.getWritableDatabase();
-                    for (int i = 0; i < size; i++) {
-                        if (cb_all.get(i).isChecked()) {
-
-                            ReserveService reserveService = ServiceGenerator.createService(ReserveService.class);
-                            final ReserveRequest reserveRequest = new ReserveRequest(shareBeanList.get(i).getId(), "", 0, 0);
-                            Call<ReserveResponse> call = reserveService.reserve(reserveRequest);
-                            call.enqueue(new Callback<ReserveResponse>() {
-                                @Override
-                                public void onResponse(Call<ReserveResponse> call, Response<ReserveResponse> response) {
-                                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                                        //预约信息不做持久化处理
-//                                        ContentValues cv = new ContentValues();
-//                                        cv.put("shareID", response.body().getData().getEstate().getSingleParking().getSingleShare().getId());
-//                                        cv.put("startTime", response.body().getData().getEstate().getSingleParking().getSingleShare().getStartTime());
-//                                        cv.put("endTime", response.body().getData().getEstate().getSingleParking().getSingleShare().getEndTime());
-//                                        cv.put("estateName", response.body().getData().getEstate().getName());
-//                                        cv.put("x", response.body().getData().getEstate().getX());
-//                                        cv.put("y", response.body().getData().getEstate().getY());
-//                                        mParkingWriteDB.insert(ParkingSQLHelper.TABLE_NAME, null, cv);
-                                        mChosenCount++;
-                                    }
-                                }
-
-                                @Override
-                                public void onFailure(Call<ReserveResponse> call, Throwable t) {
-                                    ToastUtil.showToast(mContext, "网络连接异常");
-                                }
-                            });
-                            //发出网络请求if(成功)
-                            //数据库记录预约数据
-
-                        }
-                    }
-//                    mParkingWriteDB.close();
-//                    mParkingReadDB.close();
-                    ToastUtil.showToast(mContext, "已预约" + mChosenCount + "车位");
-                    //if(失败) 显示网络访问错误
-                }
-            }).onNegative(new MaterialDialog.SingleButtonCallback() {
-                @Override
-                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                    ToastUtil.showToast(mContext, "negative");
-                }
-            });
-            dialog.show();
-        } else {
-            //没有停车位
-            MaterialDialog.Builder dialogBuilder = new MaterialDialog.Builder(this.getContext())
-                    .positiveText("确定");
-            dialogBuilder.title(estateBean.getName() + "没有可用车位").customView(R.layout.dialog_parking_list, true);
-            MaterialDialog dialog = dialogBuilder.build();
-            dialog.show();
-        }
-    }
-
-    */
 
     @OnClick(R.id.btn_map_refresh)
-    public void onViewClicked() {
+    public void onRefreshClicked() {
         updateMapState();
+    }
+
+    @OnClick(R.id.btn_map_marker)
+    public void onChangeMarkerClicked() {
+        mMapStateParkingNum = !mMapStateParkingNum;
+        if (mMapStateParkingNum){
+            mBtnMapMarker.setText("显示单价");
+        }else {
+            mBtnMapMarker.setText("显示车位");
+        }
+        addMarkers();
     }
 
     static class startTimeComparator implements Comparator {
