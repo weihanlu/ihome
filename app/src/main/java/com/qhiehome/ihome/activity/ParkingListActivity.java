@@ -70,6 +70,11 @@ public class ParkingListActivity extends BaseActivity {
     private static final String INTEGER_2 = "%02d";
     private static final String DECIMAL_2 = "%.2f";
     private static final long QUARTER_TIME = 15 * 60 * 1000;
+    private static final int LIST_PARKING_INFO = 0;
+    private static final int LIST_START_TIME = 1;
+    private static final int LIST_END_TIME = 2;
+    private static final int LIST_TOTAL_FEE = 3;
+    private static final int LIST_ITEM_COUNT = 4;
     private float mPrice = 0;
     private String mStartTime;
     private String mEndTime;
@@ -156,11 +161,11 @@ public class ParkingListActivity extends BaseActivity {
             mStartHours.add(String.valueOf(h));
         }
         //初始化结束时间数据源
-        initEndTimeDataSourse(-1, -1);
+        initEndTimeDataSourse(-1, -1, true);
 
     }
 
-    private void initEndTimeDataSourse(int startHour, int startMin){
+    private void initEndTimeDataSourse(int startHour, int startMin, boolean needChange){
         Calendar calendar = Calendar.getInstance();
         if (startHour == -1){
             calendar.setTime(TimeUtil.getInstance().millis2Date(System.currentTimeMillis() + QUARTER_TIME * 2));
@@ -171,10 +176,12 @@ public class ParkingListActivity extends BaseActivity {
             mEndMinites.clear();
             mEndHours.clear();
         }
-        mEndTimeMillis = calendar.getTimeInMillis();
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int min = calendar.get(Calendar.MINUTE);
-        mEndTime = TIME_FORMAT.format(calendar.getTimeInMillis());
+        if(needChange){
+            mEndTimeMillis = calendar.getTimeInMillis();
+            mEndTime = TIME_FORMAT.format(calendar.getTimeInMillis());
+        }
         ArrayList<String> end_minute = new ArrayList<>();
 
         end_minute.add(String.format(INTEGER_2, min));
@@ -212,11 +219,11 @@ public class ParkingListActivity extends BaseActivity {
                     mStartHourSelection = options1;
                     mStartMinSelection = options2;
                     mStartTime = mStartHours.get(options1) + ":" + mStartMinites.get(options1).get(options2);
-                    initEndTimeDataSourse(Integer.valueOf(mStartHours.get(options1)), Integer.valueOf(mStartMinites.get(options1).get(options2)));
                     Calendar calendar = Calendar.getInstance();
                     calendar.set(Calendar.HOUR_OF_DAY, Integer.valueOf(mStartHours.get(options1)));
                     calendar.set(Calendar.MINUTE, Integer.valueOf(mStartMinites.get(options1).get(options2)));
                     mStartTimeMillis = calendar.getTimeInMillis();
+                    initEndTimeDataSourse(Integer.valueOf(mStartHours.get(options1)), Integer.valueOf(mStartMinites.get(options1).get(options2)), mEndTimeMillis <= mStartTimeMillis);
                     mAdapter.notifyDataSetChanged();
                 }
             })
@@ -302,7 +309,7 @@ public class ParkingListActivity extends BaseActivity {
 
         @Override
         public int getItemViewType(int position) {
-            if (position == 1 || position == 2) {
+            if (position == LIST_START_TIME || position == LIST_END_TIME) {
                 return ITEM_TYPE.ITEM_TYPE_BTN.ordinal();
             } else {
                 return ITEM_TYPE.ITEM_TYPE_NO_BTN.ordinal();
@@ -312,20 +319,20 @@ public class ParkingListActivity extends BaseActivity {
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
             if (holder instanceof ParkingHolderNoBtn) {
-                if (position == 0) {
+                if (position == LIST_PARKING_INFO) {
                     ((ParkingHolderNoBtn) holder).tv_title.setText(mEstateBean.getName());
                     //((ParkingHolderNoBtn) holder).tv_content.setText("￥"+ String.format(DECIMAL_2, mEstateBean.getUnitPrice()) +"/小时");
                 }
-                if (position == 3) {
+                if (position == LIST_TOTAL_FEE) {
                     ((ParkingHolderNoBtn) holder).tv_title.setText("停车费");
                     ((ParkingHolderNoBtn) holder).tv_content.setText("￥" + String.format(DECIMAL_2, mPrice));
                 }
             } else if (holder instanceof ParkingHolder) {
-                if (position == 1) {
+                if (position == LIST_START_TIME) {
                     ((ParkingHolder) holder).tv_title.setText("开始时间");
                     ((ParkingHolder) holder).tv_content.setText(mStartTime);
                 }
-                if (position == 2) {
+                if (position == LIST_END_TIME) {
                     ((ParkingHolder) holder).tv_title.setText("结束时间");
                     ((ParkingHolder) holder).tv_content.setText(mEndTime);
                 }
@@ -334,7 +341,7 @@ public class ParkingListActivity extends BaseActivity {
 
         @Override
         public int getItemCount() {
-            return 4;
+            return LIST_ITEM_COUNT;
         }
 
         class ParkingHolder extends RecyclerView.ViewHolder {
