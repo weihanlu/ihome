@@ -29,17 +29,24 @@ import com.baidu.navisdk.adapter.BNRoutePlanNode;
 import com.baidu.navisdk.adapter.BNaviSettingManager;
 import com.baidu.navisdk.adapter.BaiduNaviManager;
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.network.ServiceGenerator;
+import com.qhiehome.ihome.network.model.inquiry.reserveowned.ReserveOwnedRequest;
+import com.qhiehome.ihome.network.model.inquiry.reserveowned.ReserveOwnedResponse;
+import com.qhiehome.ihome.network.service.inquiry.ReserveOwnedService;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
+import com.qhiehome.ihome.util.ToastUtil;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ReserveListActivity extends BaseActivity {
 
@@ -69,6 +76,9 @@ public class ReserveListActivity extends BaseActivity {
     private Toolbar mTbReserve;
     private SwipeRefreshLayout mSrlReserve;
 
+    private List<ReserveOwnedResponse.DataBean.ReservationBean> mReservationBeanList = new ArrayList<>();
+    private static SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm");
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,22 +89,20 @@ public class ReserveListActivity extends BaseActivity {
         mSrlReserve = (SwipeRefreshLayout) findViewById(R.id.srl_reserve);
         mContext = this;
         initToolbar();
-        initRecyclerView();
+
         mSrlReserve.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                // TODO: 2017/8/1 重新网络请求以刷新数据 
+                reserveRequest();
+                mReserveAdapter.notifyDataSetChanged();
             }
         });
-        //mSrlReserve.setRefreshing(true);
+        mSrlReserve.setRefreshing(true);
         if (initDirs()) {
             initNavi();
         }
-//        mParkingSQLHelper = new ParkingSQLHelper(this);
-//        mParkingDatabase = mParkingSQLHelper.getReadableDatabase();
-        // TODO: 2017/7/28 进行网络请求获取已预约车位数据
-
-
+        reserveRequest();
+        initRecyclerView();
     }
 
     public static void start(Context context) {
@@ -118,6 +126,7 @@ public class ReserveListActivity extends BaseActivity {
         });
     }
 
+    /******RecyclerView********/
     private void initRecyclerView() {
         mRvReserve.setLayoutManager(new LinearLayoutManager(this));
         mReserveAdapter = new ReserveAdapter();
@@ -134,15 +143,24 @@ public class ReserveListActivity extends BaseActivity {
         }
 
         @Override
-        public void onBindViewHolder(MyViewHolder holder, int position) {
-            holder.tv_estate.setText("北京天安门");
+        public void onBindViewHolder(MyViewHolder holder, final int position) {
+            holder.tv_estate.setText(mReservationBeanList.get(position).getEstate().getName());
+            holder.tv_time.setText(TIME_FORMAT.format(mReservationBeanList.get(position).getStartTime()) + "~" + TIME_FORMAT.format(mReservationBeanList.get(position).getEndTime()));
+
             holder.btn_navi.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     //导航到小区
                     if (BaiduNaviManager.isNaviInited()) {
-                        routeplanToNavi(BNRoutePlanNode.CoordinateType.BD09LL);
+                        routeplanToNavi(BNRoutePlanNode.CoordinateType.BD09LL, position);
                     }
+                }
+            });
+
+            holder.btn_cancel.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // TODO: 2017/8/3 请求取消预约
                 }
             });
         }
@@ -150,7 +168,6 @@ public class ReserveListActivity extends BaseActivity {
 
         @Override
         public int getItemCount() {
-            int num = 1;
 //            String table = ParkingSQLHelper.TABLE_NAME;
 //            String[] columns = new String[]{"count(shareID)"};
 //            String selection = "startTime>?";
@@ -160,31 +177,48 @@ public class ReserveListActivity extends BaseActivity {
 //            while(cursor.moveToNext()){
 //                num = cursor.getInt(cursor.getColumnIndex("count(shareID"));
 //            }
-            return num;
+            return mReservationBeanList.size();
         }
 
         class MyViewHolder extends RecyclerView.ViewHolder {
             TextView tv_estate;
             TextView tv_time;
             Button btn_navi;
+            Button btn_cancel;
 
             public MyViewHolder(View view) {
                 super(view);
                 tv_estate = (TextView) view.findViewById(R.id.tv_reserve_estate);
                 tv_time = (TextView) view.findViewById(R.id.tv_reserve_time);
                 btn_navi = (Button) view.findViewById(R.id.btn_reserve_navi);
+                btn_cancel = (Button) view.findViewById(R.id.btn_reserve_cancel);
             }
 
         }
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-//        mParkingDatabase.close();
+    private void reserveRequest(){
+        ReserveOwnedService reserveOwnedService = ServiceGenerator.createService(ReserveOwnedService.class);
+        ReserveOwnedRequest reserveOwnedRequest = new ReserveOwnedRequest(SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, Constant.TEST_PHONE_NUM));
+        Call<ReserveOwnedResponse> call = reserveOwnedService.reserveOwned(reserveOwnedRequest);
+        call.enqueue(new Callback<ReserveOwnedResponse>() {
+            @Override
+            public void onResponse(Call<ReserveOwnedResponse> call, Response<ReserveOwnedResponse> response) {
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
+                    mReservationBeanList = response.body().getData().getReservation();
+                }
+                mSrlReserve.setRefreshing(false);
+            }
+
+            @Override
+            public void onFailure(Call<ReserveOwnedResponse> call, Throwable t) {
+                ToastUtil.showToast(ReserveListActivity.this, "网络连接异常");
+                mSrlReserve.setRefreshing(false);
+            }
+        });
     }
 
-
+    /*********导航功能**********/
     private boolean initDirs() {
         mSDCardPath = getSdcardDir();
         if (mSDCardPath == null) {
@@ -347,7 +381,7 @@ public class ReserveListActivity extends BaseActivity {
     }
 
 
-    private void routeplanToNavi(BNRoutePlanNode.CoordinateType coType) {
+    private void routeplanToNavi(BNRoutePlanNode.CoordinateType coType, int position) {
         mCoordinateType = coType;
         if (!hasInitSuccess) {
             Toast.makeText(mContext, "还未初始化!", Toast.LENGTH_SHORT).show();
@@ -386,7 +420,12 @@ public class ReserveListActivity extends BaseActivity {
 //            }
             case BD09LL: {
                 sNode = new BNRoutePlanNode((double) SharedPreferenceUtil.getFloat(mContext, Constant.CURRENT_LONGITUDE, 0), (double) SharedPreferenceUtil.getFloat(mContext, Constant.CURRENT_LATITUDE, 0), "我的位置", null, coType);
-                eNode = new BNRoutePlanNode(116.39750, 39.90882, "北京天安门", null, coType);
+                try{
+                    eNode = new BNRoutePlanNode(mReservationBeanList.get(position).getEstate().getX(), mReservationBeanList.get(position).getEstate().getY(), mReservationBeanList.get(position).getEstate().getName(), null, coType);
+                }catch (Exception e){
+                    e.printStackTrace();
+                    ToastUtil.showToast(this, e.getMessage());
+                }
                 //查询数据库得到目的地经纬度
 //                mParkingReadDB = mParkingSQLHelper.getReadableDatabase();
 //                Cursor cursor = mParkingReadDB.query(ParkingSQLHelper.TABLE_NAME,
@@ -403,7 +442,6 @@ public class ReserveListActivity extends BaseActivity {
 //                    }
 //                }
 
-                // TODO: 2017/7/28 导航页面移至我的预约页面
 
 //                mParkingReadDB.close();
                 break;
@@ -431,12 +469,6 @@ public class ReserveListActivity extends BaseActivity {
         }
     };
 
-    @OnClick(R.id.btn_map_navi)
-    public void onNaviClicked() {
-        if (BaiduNaviManager.isNaviInited()) {
-            routeplanToNavi(BNRoutePlanNode.CoordinateType.BD09LL);
-        }
-    }
 
     public class DemoRoutePlanListener implements BaiduNaviManager.RoutePlanListener {
 
@@ -494,7 +526,7 @@ public class ReserveListActivity extends BaseActivity {
                     continue;
                 }
             }
-            routeplanToNavi(mCoordinateType);
+            routeplanToNavi(mCoordinateType, -1);
         }
 
     }

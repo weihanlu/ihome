@@ -6,9 +6,8 @@ import java.util.List;
 
 public class ReserveOwnedResponse extends Response {
 
-
     /**
-     * data : {"reservation":[{"parking":{"id":123456789,"name":"xxxxxx"},"estate":{"id":123456789,"name":"xxxxxx"},"startTime":1499826000000,"endTime":1499828000000,"cancelTime":1499827000000,"state":31}]}
+     * data : {"reservation":[{"parking":{"id":123456789,"name":"xxxxxx"},"estate":{"id":123456789,"name":"xxxxxx","x":12.345678,"y":87.654321},"startTime":1499826000000,"endTime":1499828000000,"cancelTime":1499827000000,"state":31}]}
      */
 
     private DataBean data;
@@ -35,7 +34,7 @@ public class ReserveOwnedResponse extends Response {
         public static class ReservationBean {
             /**
              * parking : {"id":123456789,"name":"xxxxxx"}
-             * estate : {"id":123456789,"name":"xxxxxx"}
+             * estate : {"id":123456789,"name":"xxxxxx","x":12.345678,"y":87.654321}
              * startTime : 1499826000000
              * endTime : 1499828000000
              * cancelTime : 1499827000000
@@ -127,10 +126,14 @@ public class ReserveOwnedResponse extends Response {
                 /**
                  * id : 123456789
                  * name : xxxxxx
+                 * x : 12.345678
+                 * y : 87.654321
                  */
 
                 private int id;
                 private String name;
+                private double x;
+                private double y;
 
                 public int getId() {
                     return id;
@@ -146,6 +149,22 @@ public class ReserveOwnedResponse extends Response {
 
                 public void setName(String name) {
                     this.name = name;
+                }
+
+                public double getX() {
+                    return x;
+                }
+
+                public void setX(double x) {
+                    this.x = x;
+                }
+
+                public double getY() {
+                    return y;
+                }
+
+                public void setY(double y) {
+                    this.y = y;
                 }
             }
         }
