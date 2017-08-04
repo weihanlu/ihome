@@ -48,8 +48,6 @@ public class GateWayClient {
 
     private GateWayClient(Context context) {
         this.mContext = context;
-        subscribeTopic += this.gateWayId;
-        publishTopic += this.gateWayId;
         failTimes = 3;
         GateWayCallback gateWayCallback = new GateWayCallback();
         mqttAndroidClient = new MqttAndroidClient(context.getApplicationContext(), HOST, MqttClient.generateClientId());
@@ -69,17 +67,12 @@ public class GateWayClient {
         return gateWayClient;
     }
 
-    public String getGateWayId() {
-        return gateWayId;
-    }
-
     public void setGateWayId(String gateWayId) {
         this.gateWayId = gateWayId;
+        publishTopic += this.gateWayId;
+        subscribeTopic += this.gateWayId;
     }
 
-    public String getLockMac() {
-        return lockMac;
-    }
 
     public void setLockMac(String lockMac) {
         this.lockMac = lockMac;
@@ -101,7 +94,6 @@ public class GateWayClient {
                         mContext.startService(intent);
                     }
                     failTimes--;
-                    connect();
                 }
             });
         } catch (MqttException e) {
@@ -120,6 +112,7 @@ public class GateWayClient {
     }
 
     private void subscribeToTopic() {
+        LogUtil.d(TAG, "subscribeTopic is " + subscribeTopic);
         try {
             mqttAndroidClient.subscribe(subscribeTopic, 0, null, new IMqttActionListener() {
                 @Override
@@ -131,7 +124,6 @@ public class GateWayClient {
 
                 @Override
                 public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                   connect();
                 }
             });
         } catch (MqttException e) {
@@ -178,6 +170,8 @@ public class GateWayClient {
         @Override
         public void connectionLost(Throwable cause) {
             LogUtil.d(TAG, "The connection was lost");
+            subscribeTopic = "/status/lock/ap/v2/";
+            publishTopic = "/set/lock/ap/v2/";
         }
 
         @Override
