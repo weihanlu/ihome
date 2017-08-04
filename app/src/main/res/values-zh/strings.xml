@@ -9,4 +9,5 @@
     <string name="login_wrongVerification">请重新输入验证码</string>
     <string name="login_getVerification">获取</string>
     <string name="login_successGetVerification">获取成功</string>
+    <string name="app_name"></string>
 </resources>
