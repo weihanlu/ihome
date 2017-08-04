@@ -11,7 +11,7 @@ import java.util.List;
 public class OrderResponse extends Response{
 
     /**
-     * data : {"order":[{"id":123456789,"parkingId":123456789,"phone":"xxxx...xxxx","enterTime":1499826992574,"leaveTime":1499826992574,"paymentTime":1499826992574,"closeTime":1499826992574,"payFee":100,"ownerFee":80,"estateFee":10,"platformFee":10,"state":2}]}
+     * data : {"order":[{"id":123456789,"parking":{"id":123456789,"name":"xxxxxx"},"estate":{"id":123456789,"name":"xxxxxx","x":12.345678,"y":87.654321},"startTime":1499826992574,"endTime":1499826992574,"cancelTime":1499826992574,"enterTime":1499826992574,"leaveTime":1499826992574,"paymentTime":1499826992574,"closeTime":1499826992574,"payFee":100,"ownerFee":80,"estateFee":10,"platformFee":10,"state":31}]}
      */
 
     private DataBean data;
@@ -38,8 +38,11 @@ public class OrderResponse extends Response{
         public static class OrderBean {
             /**
              * id : 123456789
-             * parkingId : 123456789
-             * phone : xxxx...xxxx
+             * parking : {"id":123456789,"name":"xxxxxx"}
+             * estate : {"id":123456789,"name":"xxxxxx","x":12.345678,"y":87.654321}
+             * startTime : 1499826992574
+             * endTime : 1499826992574
+             * cancelTime : 1499826992574
              * enterTime : 1499826992574
              * leaveTime : 1499826992574
              * paymentTime : 1499826992574
@@ -48,12 +51,15 @@ public class OrderResponse extends Response{
              * ownerFee : 80
              * estateFee : 10
              * platformFee : 10
-             * state : 2
+             * state : 31
              */
 
             private int id;
-            private int parkingId;
-            private String phone;
+            private ParkingBean parking;
+            private EstateBean estate;
+            private long startTime;
+            private long endTime;
+            private long cancelTime;
             private long enterTime;
             private long leaveTime;
             private long paymentTime;
@@ -72,20 +78,44 @@ public class OrderResponse extends Response{
                 this.id = id;
             }
 
-            public int getParkingId() {
-                return parkingId;
+            public ParkingBean getParking() {
+                return parking;
             }
 
-            public void setParkingId(int parkingId) {
-                this.parkingId = parkingId;
+            public void setParking(ParkingBean parking) {
+                this.parking = parking;
             }
 
-            public String getPhone() {
-                return phone;
+            public EstateBean getEstate() {
+                return estate;
             }
 
-            public void setPhone(String phone) {
-                this.phone = phone;
+            public void setEstate(EstateBean estate) {
+                this.estate = estate;
+            }
+
+            public long getStartTime() {
+                return startTime;
+            }
+
+            public void setStartTime(long startTime) {
+                this.startTime = startTime;
+            }
+
+            public long getEndTime() {
+                return endTime;
+            }
+
+            public void setEndTime(long endTime) {
+                this.endTime = endTime;
+            }
+
+            public long getCancelTime() {
+                return cancelTime;
+            }
+
+            public void setCancelTime(long cancelTime) {
+                this.cancelTime = cancelTime;
             }
 
             public long getEnterTime() {
@@ -158,6 +188,78 @@ public class OrderResponse extends Response{
 
             public void setState(int state) {
                 this.state = state;
+            }
+
+            public static class ParkingBean {
+                /**
+                 * id : 123456789
+                 * name : xxxxxx
+                 */
+
+                private int id;
+                private String name;
+
+                public int getId() {
+                    return id;
+                }
+
+                public void setId(int id) {
+                    this.id = id;
+                }
+
+                public String getName() {
+                    return name;
+                }
+
+                public void setName(String name) {
+                    this.name = name;
+                }
+            }
+
+            public static class EstateBean {
+                /**
+                 * id : 123456789
+                 * name : xxxxxx
+                 * x : 12.345678
+                 * y : 87.654321
+                 */
+
+                private int id;
+                private String name;
+                private double x;
+                private double y;
+
+                public int getId() {
+                    return id;
+                }
+
+                public void setId(int id) {
+                    this.id = id;
+                }
+
+                public String getName() {
+                    return name;
+                }
+
+                public void setName(String name) {
+                    this.name = name;
+                }
+
+                public double getX() {
+                    return x;
+                }
+
+                public void setX(double x) {
+                    this.x = x;
+                }
+
+                public double getY() {
+                    return y;
+                }
+
+                public void setY(double y) {
+                    this.y = y;
+                }
             }
         }
     }
