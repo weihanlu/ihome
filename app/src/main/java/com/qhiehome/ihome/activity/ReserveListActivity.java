@@ -79,6 +79,11 @@ public class ReserveListActivity extends BaseActivity {
     private List<ReserveOwnedResponse.DataBean.ReservationBean> mReservationBeanList = new ArrayList<>();
     private static SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm");
 
+    private static int ORDER_STATE_RESERVED = 31;   //（显示预计金额）取消预约+导航+小区地图+升降车位锁
+    private static int ORDER_STATE_PARKED = 32;     //（显示预计金额）升降车位锁
+    private static int ORDER_STATE_NOT_PAID = 33;   //（显示金额）支付
+    private static int ORDER_STATE_PAID = 34;       //（显示金额）
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -144,9 +149,12 @@ public class ReserveListActivity extends BaseActivity {
 
         @Override
         public void onBindViewHolder(MyViewHolder holder, final int position) {
+            switch (mReservationBeanList.get(position).getState()){
+
+            }
+
             holder.tv_estate.setText(mReservationBeanList.get(position).getEstate().getName());
             holder.tv_time.setText(TIME_FORMAT.format(mReservationBeanList.get(position).getStartTime()) + "~" + TIME_FORMAT.format(mReservationBeanList.get(position).getEndTime()));
-
             holder.btn_navi.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -185,6 +193,8 @@ public class ReserveListActivity extends BaseActivity {
             TextView tv_time;
             Button btn_navi;
             Button btn_cancel;
+            TextView tv_fee;
+            Button btn_pay;
 
             public MyViewHolder(View view) {
                 super(view);
@@ -192,6 +202,8 @@ public class ReserveListActivity extends BaseActivity {
                 tv_time = (TextView) view.findViewById(R.id.tv_reserve_time);
                 btn_navi = (Button) view.findViewById(R.id.btn_reserve_navi);
                 btn_cancel = (Button) view.findViewById(R.id.btn_reserve_cancel);
+                tv_fee = (TextView) view.findViewById(R.id.tv_reserve_fee);
+                btn_pay = (Button) view.findViewById(R.id.btn_reserve_pay);
             }
 
         }
