@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.support.transition.Visibility;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.DividerItemDecoration;
@@ -30,8 +31,11 @@ import com.baidu.navisdk.adapter.BNaviSettingManager;
 import com.baidu.navisdk.adapter.BaiduNaviManager;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.network.ServiceGenerator;
+import com.qhiehome.ihome.network.model.inquiry.order.OrderRequest;
+import com.qhiehome.ihome.network.model.inquiry.order.OrderResponse;
 import com.qhiehome.ihome.network.model.inquiry.reserveowned.ReserveOwnedRequest;
 import com.qhiehome.ihome.network.model.inquiry.reserveowned.ReserveOwnedResponse;
+import com.qhiehome.ihome.network.service.inquiry.OrderService;
 import com.qhiehome.ihome.network.service.inquiry.ReserveOwnedService;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
@@ -76,8 +80,14 @@ public class ReserveListActivity extends BaseActivity {
     private Toolbar mTbReserve;
     private SwipeRefreshLayout mSrlReserve;
 
-    private List<ReserveOwnedResponse.DataBean.ReservationBean> mReservationBeanList = new ArrayList<>();
+    private List<OrderResponse.DataBean.OrderBean> mOrderBeanList = new ArrayList<>();
     private static SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm");
+
+    private static final int ORDER_STATE_RESERVED = 31;   //（显示预计金额）取消预约+导航+小区地图+升降车位锁
+    private static final int ORDER_STATE_PARKED = 32;     //（显示预计金额）升降车位锁
+    private static final int ORDER_STATE_NOT_PAID = 33;   //（显示金额）支付
+    private static final int ORDER_STATE_PAID = 34;       //（显示金额）
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,7 +103,7 @@ public class ReserveListActivity extends BaseActivity {
         mSrlReserve.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                reserveRequest();
+                orderRequest();
                 mReserveAdapter.notifyDataSetChanged();
             }
         });
@@ -101,7 +111,7 @@ public class ReserveListActivity extends BaseActivity {
         if (initDirs()) {
             initNavi();
         }
-        reserveRequest();
+        orderRequest();
         initRecyclerView();
     }
 
@@ -144,25 +154,86 @@ public class ReserveListActivity extends BaseActivity {
 
         @Override
         public void onBindViewHolder(MyViewHolder holder, final int position) {
-            holder.tv_estate.setText(mReservationBeanList.get(position).getEstate().getName());
-            holder.tv_time.setText(TIME_FORMAT.format(mReservationBeanList.get(position).getStartTime()) + "~" + TIME_FORMAT.format(mReservationBeanList.get(position).getEndTime()));
+            switch (mOrderBeanList.get(position).getState()){
+                case ORDER_STATE_RESERVED:
+                    holder.tv_estate.setText(mOrderBeanList.get(position).getEstate().getName());
+                    holder.tv_time.setText(TIME_FORMAT.format(mOrderBeanList.get(position).getStartTime()) + "~" + TIME_FORMAT.format(mOrderBeanList.get(position).getEndTime()));
+                    holder.tv_fee.setVisibility(View.INVISIBLE);
+                    holder.btn_pay.setVisibility(View.INVISIBLE);
+                    holder.btn_navi.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            //导航到小区
+                            if (BaiduNaviManager.isNaviInited()) {
+                                routeplanToNavi(BNRoutePlanNode.CoordinateType.BD09LL, position);
+                            }
+                        }
+                    });
+                    holder.btn_cancel.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            //取消预约请求
+                        }
+                    });
 
-            holder.btn_navi.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    //导航到小区
-                    if (BaiduNaviManager.isNaviInited()) {
-                        routeplanToNavi(BNRoutePlanNode.CoordinateType.BD09LL, position);
-                    }
-                }
-            });
+                    holder.btn_map.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            //显示小区地图
+                        }
+                    });
 
-            holder.btn_cancel.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // TODO: 2017/8/3 请求取消预约
-                }
-            });
+                    holder.btn_lock.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            //显示控制车位锁界面
+                        }
+                    });
+                    break;
+                case ORDER_STATE_PARKED:
+                    holder.tv_estate.setText(mOrderBeanList.get(position).getEstate().getName());
+                    holder.tv_time.setText(TIME_FORMAT.format(mOrderBeanList.get(position).getStartTime()) + "~" + TIME_FORMAT.format(mOrderBeanList.get(position).getEndTime()));
+                    holder.tv_fee.setVisibility(View.INVISIBLE);
+                    holder.btn_pay.setVisibility(View.INVISIBLE);
+                    holder.btn_map.setVisibility(View.INVISIBLE);
+                    holder.btn_cancel.setVisibility(View.INVISIBLE);
+                    holder.btn_navi.setVisibility(View.INVISIBLE);
+                    holder.btn_lock.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            //显示控制车位锁界面
+                        }
+                    });
+                    break;
+                case ORDER_STATE_NOT_PAID:
+                    holder.tv_estate.setText(mOrderBeanList.get(position).getEstate().getName());
+                    holder.tv_time.setText(TIME_FORMAT.format(mOrderBeanList.get(position).getStartTime()) + "~" + TIME_FORMAT.format(mOrderBeanList.get(position).getEndTime()));
+                    holder.tv_fee.setText("￥" + String.format("%.2f", mOrderBeanList.get(position).getPayFee()));
+                    holder.btn_map.setVisibility(View.INVISIBLE);
+                    holder.btn_cancel.setVisibility(View.INVISIBLE);
+                    holder.btn_navi.setVisibility(View.INVISIBLE);
+                    holder.btn_lock.setVisibility(View.INVISIBLE);
+                    holder.btn_pay.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            //跳转支付界面
+                        }
+                    });
+                    break;
+                case ORDER_STATE_PAID:
+                    holder.tv_estate.setText(mOrderBeanList.get(position).getEstate().getName());
+                    holder.tv_time.setText(TIME_FORMAT.format(mOrderBeanList.get(position).getStartTime()) + "~" + TIME_FORMAT.format(mOrderBeanList.get(position).getEndTime()));
+                    holder.tv_fee.setText("￥" + String.format("%.2f", mOrderBeanList.get(position).getPayFee()));
+                    holder.btn_map.setVisibility(View.INVISIBLE);
+                    holder.btn_cancel.setVisibility(View.INVISIBLE);
+                    holder.btn_navi.setVisibility(View.INVISIBLE);
+                    holder.btn_lock.setVisibility(View.INVISIBLE);
+                    holder.btn_pay.setVisibility(View.INVISIBLE);
+                    break;
+                default:
+                    break;
+            }
+
         }
 
 
@@ -177,42 +248,52 @@ public class ReserveListActivity extends BaseActivity {
 //            while(cursor.moveToNext()){
 //                num = cursor.getInt(cursor.getColumnIndex("count(shareID"));
 //            }
-            return mReservationBeanList.size();
+            return mOrderBeanList.size();
         }
 
         class MyViewHolder extends RecyclerView.ViewHolder {
             TextView tv_estate;
             TextView tv_time;
+            TextView tv_fee;
             Button btn_navi;
             Button btn_cancel;
+            Button btn_map;
+            Button btn_lock;
+            Button btn_pay;
 
             public MyViewHolder(View view) {
                 super(view);
                 tv_estate = (TextView) view.findViewById(R.id.tv_reserve_estate);
                 tv_time = (TextView) view.findViewById(R.id.tv_reserve_time);
+                tv_fee = (TextView) view.findViewById(R.id.tv_reserve_fee);
+
                 btn_navi = (Button) view.findViewById(R.id.btn_reserve_navi);
                 btn_cancel = (Button) view.findViewById(R.id.btn_reserve_cancel);
+                btn_pay = (Button) view.findViewById(R.id.btn_reserve_pay);
+                btn_map = (Button) view.findViewById(R.id.btn_reserve_map);
+                btn_lock = (Button) view.findViewById(R.id.btn_reserve_lock);
             }
 
         }
     }
 
-    private void reserveRequest(){
-        ReserveOwnedService reserveOwnedService = ServiceGenerator.createService(ReserveOwnedService.class);
-        ReserveOwnedRequest reserveOwnedRequest = new ReserveOwnedRequest(SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, Constant.TEST_PHONE_NUM));
-        Call<ReserveOwnedResponse> call = reserveOwnedService.reserveOwned(reserveOwnedRequest);
-        call.enqueue(new Callback<ReserveOwnedResponse>() {
+
+    private void orderRequest(){
+        OrderService orderService = ServiceGenerator.createService(OrderService.class);
+        OrderRequest orderRequest = new OrderRequest(SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, Constant.TEST_PHONE_NUM));
+        Call<OrderResponse> call = orderService.order(orderRequest);
+        call.enqueue(new Callback<OrderResponse>() {
             @Override
-            public void onResponse(Call<ReserveOwnedResponse> call, Response<ReserveOwnedResponse> response) {
+            public void onResponse(Call<OrderResponse> call, Response<OrderResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
-                    mReservationBeanList = response.body().getData().getReservation();
+                    mOrderBeanList = response.body().getData().getOrder();
                 }
                 mSrlReserve.setRefreshing(false);
             }
 
             @Override
-            public void onFailure(Call<ReserveOwnedResponse> call, Throwable t) {
-                ToastUtil.showToast(ReserveListActivity.this, "网络连接异常");
+            public void onFailure(Call<OrderResponse> call, Throwable t) {
+                ToastUtil.showToast(mContext, "网络连接异常");
                 mSrlReserve.setRefreshing(false);
             }
         });
@@ -421,7 +502,7 @@ public class ReserveListActivity extends BaseActivity {
             case BD09LL: {
                 sNode = new BNRoutePlanNode((double) SharedPreferenceUtil.getFloat(mContext, Constant.CURRENT_LONGITUDE, 0), (double) SharedPreferenceUtil.getFloat(mContext, Constant.CURRENT_LATITUDE, 0), "我的位置", null, coType);
                 try{
-                    eNode = new BNRoutePlanNode(mReservationBeanList.get(position).getEstate().getX(), mReservationBeanList.get(position).getEstate().getY(), mReservationBeanList.get(position).getEstate().getName(), null, coType);
+                    eNode = new BNRoutePlanNode(mOrderBeanList.get(position).getEstate().getX(), mOrderBeanList.get(position).getEstate().getY(), mOrderBeanList.get(position).getEstate().getName(), null, coType);
                 }catch (Exception e){
                     e.printStackTrace();
                     ToastUtil.showToast(this, e.getMessage());
