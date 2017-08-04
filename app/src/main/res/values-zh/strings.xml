@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <string name="app_name">I home</string>
+    <string name="left_second">( %ds )</string>
+    <string name="lock_prefix">CrAM</string>
+
+    <string name="device_connected">连接成功</string>
+    <string name="device_connecting">连接中</string>
+    <string name="device_disconnected">断开连接</string>
+
+    <!--LoginActivity-->
     <string name="login_mobile">手机号</string>
     <string name="login_verification">验证码</string>
     <string name="login">登陆</string>
@@ -9,4 +18,7 @@
     <string name="login_wrongVerification">请重新输入验证码</string>
     <string name="login_getVerification">获取</string>
     <string name="login_successGetVerification">获取成功</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">空Fragment</string>
 </resources>

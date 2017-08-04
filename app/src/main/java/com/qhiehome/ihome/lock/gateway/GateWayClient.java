@@ -3,6 +3,7 @@ package com.qhiehome.ihome.lock.gateway;
 import android.content.Context;
 import android.content.Intent;
 
+import com.qhiehome.ihome.application.IhomeApplication;
 import com.qhiehome.ihome.lock.ConnectLockService;
 import com.qhiehome.ihome.util.LogUtil;
 
@@ -50,7 +51,7 @@ public class GateWayClient {
         this.mContext = context;
         failTimes = 3;
         GateWayCallback gateWayCallback = new GateWayCallback();
-        mqttAndroidClient = new MqttAndroidClient(context.getApplicationContext(), HOST, MqttClient.generateClientId());
+        mqttAndroidClient = new MqttAndroidClient(IhomeApplication.getInstance(), HOST, MqttClient.generateClientId());
         mqttAndroidClient.setCallback(gateWayCallback);
         mqttConnectOptions = new MqttConnectOptions();
         mqttConnectOptions.setCleanSession(false);
@@ -131,7 +132,7 @@ public class GateWayClient {
         }
     }
 
-    public void publishMessage(String command) {
+    private void publishMessage(String command) {
         try {
             String sendMsg = "{\"version\": \"v1\", \"gateway_id\": \"" + gateWayId
                     + "\",\"type\": \"DEVICE_CMD\", \"device\": {\"payload\": \""

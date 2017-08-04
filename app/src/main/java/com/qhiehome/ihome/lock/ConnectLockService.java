@@ -4,6 +4,7 @@ import android.app.IntentService;
 import android.content.Intent;
 
 import com.qhiehome.ihome.lock.gateway.GateWayClient;
+import com.qhiehome.ihome.util.LogUtil;
 
 
 /**
@@ -35,35 +36,33 @@ public class ConnectLockService extends IntentService {
     private GateWayClient gateWayClient;
 
     @Override
-    public void onCreate() {
-        super.onCreate();
-        gateWayClient = GateWayClient.getInstance(this);
-    }
-
-    @Override
     protected void onHandleIntent(Intent intent) {
         if (intent != null) {
             String action = intent.getAction();
+            String lockMac = intent.getStringExtra(EXTRA_LOCK_MAC);
             switch (action) {
                 case ACTION_GATEWAY_CONNECT:
                     String gateWayId = intent.getStringExtra(EXTRA_GATEWAY_ID);
-                    String lockMac = intent.getStringExtra(EXTRA_LOCK_MAC);
-                    String lockPwd = intent.getStringExtra(EXTRA_LOCK_PWD);
+                    gateWayClient = GateWayClient.getInstance(this);
                     gateWayClient.setGateWayId(gateWayId);
                     gateWayClient.setLockMac(lockMac);
                     handleActionGateWayConnect();
                     break;
                 case ACTION_BLUETOOTH_CONNECT:
-//                    handleActionBluetoothConnect(lockMac, lockPwd);
+                    String lockPwd = intent.getStringExtra(EXTRA_LOCK_PWD);
+                    handleActionBluetoothConnect(lockMac, lockPwd);
                     break;
                 case ACTION_DISCONNECT:
+                    gateWayClient = GateWayClient.getInstance(this);
                     gateWayClient.disconnect();
                     break;
                 case ACTION_UP_LOCK:
+                    gateWayClient = GateWayClient.getInstance(this);
                     gateWayClient.raiseLock();
                     break;
                 case ACTION_DOWN_LOCK:
-                   gateWayClient.downLock();
+                    gateWayClient = GateWayClient.getInstance(this);
+                    gateWayClient.downLock();
                     break;
                 default:
                     break;
@@ -79,11 +78,11 @@ public class ConnectLockService extends IntentService {
         gateWayClient.connect();
     }
 
-    private void handleActionBluetoothConnect() {
-        connectByBluetooth();
+    private void handleActionBluetoothConnect(String lockMac, String lockPwd) {
+        connectByBluetooth(lockMac, lockPwd);
     }
 
-    private void connectByBluetooth() {
+    private void connectByBluetooth(String lockMac, String lockPwd) {
 
     }
 

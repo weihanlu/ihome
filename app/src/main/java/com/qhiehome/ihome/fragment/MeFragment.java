@@ -1,6 +1,7 @@
 package com.qhiehome.ihome.fragment;
 
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -14,7 +15,6 @@ import android.view.ViewGroup;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.qhiehome.ihome.R;
-import com.qhiehome.ihome.activity.BindLockActivity;
 import com.qhiehome.ihome.activity.LoginActivity;
 import com.qhiehome.ihome.activity.OrderListActivity;
 import com.qhiehome.ihome.activity.PublishParkingActivity;
@@ -61,9 +61,9 @@ public class MeFragment extends Fragment {
     }
 
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        mContext = context;
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        mContext = activity;
     }
 
     @Override

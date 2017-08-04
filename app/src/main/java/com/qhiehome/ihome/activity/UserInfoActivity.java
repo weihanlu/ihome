@@ -8,7 +8,6 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.DividerItemDecoration;
@@ -177,12 +176,12 @@ public class UserInfoActivity extends BaseActivity {
                                     Intent connectLock = new Intent(mContext, ConnectLockService.class);
                                     if (NetworkUtils.isConnected(mContext)) {
                                         connectLock.setAction(ConnectLockService.ACTION_GATEWAY_CONNECT);
+                                        connectLock.putExtra(ConnectLockService.EXTRA_GATEWAY_ID, gatewayId);
                                     } else {
                                         connectLock.setAction(ConnectLockService.ACTION_BLUETOOTH_CONNECT);
+                                        connectLock.putExtra(ConnectLockService.EXTRA_LOCK_PWD, Constant.DEFAULT_PASSWORD);
                                     }
-                                    connectLock.putExtra(ConnectLockService.EXTRA_GATEWAY_ID, gatewayId);
                                     connectLock.putExtra(ConnectLockService.EXTRA_LOCK_MAC, lockMac);
-                                    connectLock.putExtra(ConnectLockService.EXTRA_LOCK_PWD, Constant.DEFAULT_PASSWORD);
                                     startService(connectLock);
                                 }
                             }).build();

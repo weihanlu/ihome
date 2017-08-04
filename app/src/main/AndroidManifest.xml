@@ -84,19 +84,10 @@
             android:enabled="true"
             android:process=":remote" />
 
-        <activity android:name=".activity.BindLockActivity" />
         <activity
             android:name=".activity.BluetoothScanActivity"
             android:windowSoftInputMode="adjustPan" />
 
-        <service
-            android:name=".ble.profile.IhomeService"
-            android:singleUser="true" />
-        <service android:name=".ble.profile.BLECommandService" />
-
-        <activity
-            android:name=".activity.LockDetailActivity"
-            android:launchMode="singleTop" />
         <activity android:name=".activity.UserInfoActivity" />
         <activity android:name=".activity.ParkingListActivity" />
         <activity android:name=".activity.PublishParkingActivity" />
