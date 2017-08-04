@@ -48,6 +48,7 @@ import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.LogUtil;
+import com.qhiehome.ihome.util.NetworkUtils;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
@@ -174,7 +175,11 @@ public class UserInfoActivity extends BaseActivity {
                                 @Override
                                 public void onShow(DialogInterface dialog) {
                                     Intent connectLock = new Intent(mContext, ConnectLockService.class);
-                                    connectLock.setAction(ConnectLockService.ACTION_CONNECT);
+                                    if (NetworkUtils.isConnected(mContext)) {
+                                        connectLock.setAction(ConnectLockService.ACTION_GATEWAY_CONNECT);
+                                    } else {
+                                        connectLock.setAction(ConnectLockService.ACTION_BLUETOOTH_CONNECT);
+                                    }
                                     connectLock.putExtra(ConnectLockService.EXTRA_GATEWAY_ID, gatewayId);
                                     connectLock.putExtra(ConnectLockService.EXTRA_LOCK_MAC, lockMac);
                                     connectLock.putExtra(ConnectLockService.EXTRA_LOCK_PWD, Constant.DEFAULT_PASSWORD);
@@ -208,6 +213,14 @@ public class UserInfoActivity extends BaseActivity {
                     mControlLockDialog = new MaterialDialog.Builder(mContext)
                             .title("已连接").titleGravity(GravityEnum.CENTER)
                             .customView(controlLock ,false)
+                            .dismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialog) {
+                                    Intent disconnect = new Intent(mContext, ConnectLockService.class);
+                                    disconnect.setAction(ConnectLockService.ACTION_DISCONNECT);
+                                    startService(disconnect);
+                                }
+                            })
                             .build();
                 }
             }
@@ -284,7 +297,7 @@ public class UserInfoActivity extends BaseActivity {
                         isRented = true;
                     }
                 }
-                userLockBean = new UserLockBean(estate.getName(), parkingBean.getName(), Integer.valueOf(parkingBean.getId()), parkingBean.getGatewayId(),
+                userLockBean = new UserLockBean(estate.getName(), parkingBean.getName(), parkingBean.getId(), parkingBean.getGatewayId(),
                         parkingBean.getLockMac(), isRented);
                 mUserLocks.add(userLockBean);
                 mParkingIds.append(parkingBean.getId()).append(",");

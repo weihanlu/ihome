@@ -2,11 +2,8 @@ package com.qhiehome.ihome.lock;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.os.Handler;
 
 import com.qhiehome.ihome.lock.gateway.GateWayClient;
-import com.qhiehome.ihome.util.LogUtil;
-import com.qhiehome.ihome.util.NetworkUtils;
 
 
 /**
@@ -19,9 +16,9 @@ public class ConnectLockService extends IntentService {
 
     private static final String TAG = "ConnectLockService";
 
-    public static final String ACTION_CONNECT = "com.qhiehome.ihome.lock.action.CONNECT";
+    public static final String ACTION_GATEWAY_CONNECT = "com.qhiehome.ihome.lock.action.GATEWAY_CONNECT";
+    public static final String ACTION_BLUETOOTH_CONNECT = "com.qhiehome.ihome.lock.action.BLUETOOTH_CONNECT";
     public static final String ACTION_DISCONNECT = "com.qhiehome.ihome.lock.action.DISCONNECT";
-
     public static final String ACTION_UP_LOCK = "com.qhiehome.ihome.lock.action.UP_LOCK";
     public static final String ACTION_DOWN_LOCK = "com.qhiehome.ihome.lock.action.DOWN_LOCK";
 
@@ -38,29 +35,35 @@ public class ConnectLockService extends IntentService {
     private GateWayClient gateWayClient;
 
     @Override
+    public void onCreate() {
+        super.onCreate();
+        gateWayClient = GateWayClient.getInstance(this);
+    }
+
+    @Override
     protected void onHandleIntent(Intent intent) {
         if (intent != null) {
             String action = intent.getAction();
             String gateWayId = intent.getStringExtra(EXTRA_GATEWAY_ID);
             String lockMac = intent.getStringExtra(EXTRA_LOCK_MAC);
             String lockPwd = intent.getStringExtra(EXTRA_LOCK_PWD);
-            gateWayClient = GateWayClient.getInstance(this, gateWayId, lockMac);
+            gateWayClient.setGateWayId(gateWayId);
+            gateWayClient.setLockMac(lockMac);
             switch (action) {
-                case ACTION_CONNECT:
-                    handleActionConnect(gateWayId, lockMac, lockPwd);
+                case ACTION_GATEWAY_CONNECT:
+                    handleActionGateWayConnect(gateWayId, lockMac);
+                    break;
+                case ACTION_BLUETOOTH_CONNECT:
+                    handleActionBluetoothConnect(lockMac, lockPwd);
                     break;
                 case ACTION_DISCONNECT:
-                    handleActionDisconnect();
+                    gateWayClient.disconnect();
                     break;
                 case ACTION_UP_LOCK:
-                    if (gateWayClient != null) {
-                        gateWayClient.publishMessage("[01:01]");
-                    }
+                    gateWayClient.raiseLock();
                     break;
                 case ACTION_DOWN_LOCK:
-                    if (gateWayClient != null) {
-                        gateWayClient.publishMessage("[01:02]");
-                    }
+                   gateWayClient.downLock();
                     break;
                 default:
                     break;
@@ -70,30 +73,28 @@ public class ConnectLockService extends IntentService {
 
     /**
      *
-     * @param gateWayId denote the unique gateway
      * @param lockMac lock mac address
-     * @param lockPwd lock address
+     * @param lockPwd lock password
      */
-    private void handleActionConnect(String gateWayId, String lockMac, String lockPwd) {
-        // 1. use gateway to connect lock, max connect times is 3
-        if (NetworkUtils.isConnected(this)) {
-            connectByGateway(gateWayId, lockMac);
-        }
-        // 2. use bluetooth to connect lock, max connect times is 3
-        if (!gateWayClient.isConnected()) {
-            connectByBluetooth();
-        }
+    private void handleActionBluetoothConnect(String lockMac, String lockPwd) {
+        connectByBluetooth();
     }
 
-    private void connectByBluetooth() {
-
+    /**
+     *
+     * @param gateWayId denote the unique gateway
+     * @param lockMac lock mac address
+     */
+    private void handleActionGateWayConnect(String gateWayId, String lockMac) {
+        connectByGateway(gateWayId, lockMac);
     }
 
     private void connectByGateway(String gateWayId, String lockMac) {
         gateWayClient.connect();
     }
 
-    private void handleActionDisconnect() {
-        gateWayClient.disconnect();
+    private void connectByBluetooth() {
+
     }
+
 }

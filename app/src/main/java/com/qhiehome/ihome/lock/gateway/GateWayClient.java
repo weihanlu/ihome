@@ -38,12 +38,19 @@ public class GateWayClient {
 
     private Context mContext;
 
-    private GateWayClient(Context context, String gateWayId, String lockMac) {
+    private int failTimes;
+
+    private static final String COMMAND_UP = "[01:01]";
+
+    private static final String COMMAND_DOWN = "[01:02]";
+
+    private static final String COMMAND_BEE = "[0A:05]";
+
+    private GateWayClient(Context context) {
         this.mContext = context;
-        this.gateWayId = gateWayId;
-        this.lockMac = lockMac;
         subscribeTopic += this.gateWayId;
         publishTopic += this.gateWayId;
+        failTimes = 3;
         GateWayCallback gateWayCallback = new GateWayCallback();
         mqttAndroidClient = new MqttAndroidClient(context.getApplicationContext(), HOST, MqttClient.generateClientId());
         mqttAndroidClient.setCallback(gateWayCallback);
@@ -51,22 +58,35 @@ public class GateWayClient {
         mqttConnectOptions.setCleanSession(false);
     }
 
-    public static GateWayClient getInstance(Context context, String gateWayId, String lockMac) {
+    public static GateWayClient getInstance(Context context) {
         if (gateWayClient == null) {
             synchronized (GateWayClient.class) {
                 if (gateWayClient == null) {
-                    gateWayClient = new GateWayClient(context, gateWayId, lockMac);
+                    gateWayClient = new GateWayClient(context);
                 }
             }
         }
         return gateWayClient;
     }
 
+    public String getGateWayId() {
+        return gateWayId;
+    }
+
+    public void setGateWayId(String gateWayId) {
+        this.gateWayId = gateWayId;
+    }
+
+    public String getLockMac() {
+        return lockMac;
+    }
+
+    public void setLockMac(String lockMac) {
+        this.lockMac = lockMac;
+    }
+
     public void connect() {
         try {
-            if (mqttAndroidClient.isConnected()) {
-                mqttAndroidClient.disconnect();
-            }
             mqttAndroidClient.connect(mqttConnectOptions, new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
@@ -75,7 +95,13 @@ public class GateWayClient {
 
                 @Override
                 public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                    LogUtil.d(TAG, "Failed to connect to: " + HOST);
+                    if (failTimes < 0) {
+                        Intent intent = new Intent(mContext, ConnectLockService.class);
+                        intent.setAction(ConnectLockService.ACTION_BLUETOOTH_CONNECT);
+                        mContext.startService(intent);
+                    }
+                    failTimes--;
+                    connect();
                 }
             });
         } catch (MqttException e) {
@@ -93,10 +119,6 @@ public class GateWayClient {
         }
     }
 
-    public boolean isConnected() {
-        return mqttAndroidClient != null && mqttAndroidClient.isConnected();
-    }
-
     private void subscribeToTopic() {
         try {
             mqttAndroidClient.subscribe(subscribeTopic, 0, null, new IMqttActionListener() {
@@ -109,7 +131,7 @@ public class GateWayClient {
 
                 @Override
                 public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                    LogUtil.d(TAG, "subscribe failure");
+                   connect();
                 }
             });
         } catch (MqttException e) {
@@ -130,6 +152,24 @@ public class GateWayClient {
             mqttAndroidClient.publish(publishTopic, message);
         } catch (MqttException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void raiseLock() {
+        if (gateWayClient != null) {
+            gateWayClient.publishMessage(COMMAND_UP);
+        }
+    }
+
+    public void downLock() {
+        if (gateWayClient != null) {
+            gateWayClient.publishMessage(COMMAND_DOWN);
+        }
+    }
+
+    public void beeLock() {
+        if (gateWayClient != null) {
+            gateWayClient.publishMessage(COMMAND_BEE);
         }
     }
 
