@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">I home</string>
+    <string name="app_name">Ihome</string>
     <string name="left_second">( %ds )</string>
     <string name="lock_prefix">CrAM</string>
 
