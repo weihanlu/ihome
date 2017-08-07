@@ -87,7 +87,6 @@
         <activity
             android:name=".activity.BluetoothScanActivity"
             android:windowSoftInputMode="adjustPan" />
-
         <activity android:name=".activity.UserInfoActivity" />
         <activity android:name=".activity.ParkingListActivity" />
         <activity android:name=".activity.PublishParkingActivity" />
@@ -108,10 +107,10 @@
 
         <service
             android:name=".lock.ConnectLockService"
-            android:exported="false"/>
+            android:exported="false" />
+        <service android:name="org.eclipse.paho.android.service.MqttService" />
 
-        <service android:name="org.eclipse.paho.android.service.MqttService"/>
-
+        <activity android:name=".activity.SettingActivity"></activity>
     </application>
 
 </manifest>

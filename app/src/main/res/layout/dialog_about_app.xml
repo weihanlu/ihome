@@ -12,7 +12,7 @@
         />
 
     <TextView
-        android:text="Ihome"
+        android:text="共享停车"
         android:textSize="20sp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
