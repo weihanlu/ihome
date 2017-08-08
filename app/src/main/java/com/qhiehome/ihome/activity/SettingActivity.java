@@ -84,6 +84,7 @@ public class SettingActivity extends BaseActivity {
                         break;
                     case 4:
                         ActivityManager.finishAll();
+                        SharedPreferenceUtil.setString(mContext, Constant.PHONE_KEY, "");
                         LoginActivity.start(mContext);
                         break;
                     default:

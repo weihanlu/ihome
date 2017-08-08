@@ -111,7 +111,7 @@ public class ParkFragment extends Fragment {
     private LatLng mPrePt;
     private Marker mMarker;
     private Marker mClickedMarker;
-    private boolean isSearch;
+    private boolean mIsSearch;
     private BaiduMap.OnMarkerClickListener mOnMarkerClickListener;
     private boolean mRefreshEstate;
     private LocationClient mLocationClient;
@@ -177,7 +177,7 @@ public class ParkFragment extends Fragment {
         //暂时不需定时器
 //        AlarmTimer.setRepeatAlarmTime(mContext, System.currentTimeMillis(),
 //                10 * 1000, Constant.TIMER_ACTION, AlarmManager.RTC_WAKEUP);
-        isSearch = false;
+        mIsSearch = false;
         return view;
     }
 
@@ -288,7 +288,6 @@ public class ParkFragment extends Fragment {
                         .longitude(bdLocation.getLongitude()).build();
                 LatLng xy = new LatLng(bdLocation.getLatitude(),
                         bdLocation.getLongitude());
-                mMyPt = xy;
                 SharedPreferenceUtil.setFloat(mContext, Constant.CURRENT_LATITUDE, (float) bdLocation.getLatitude());
                 SharedPreferenceUtil.setFloat(mContext, Constant.CURRENT_LONGITUDE, (float) bdLocation.getLongitude());
                 // 设置定位数据
@@ -409,7 +408,7 @@ public class ParkFragment extends Fragment {
 
     private void addMarkers() {
         mBaiduMap.clear();
-        if (isSearch){
+        if (mIsSearch){
             //添加图标
             Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.img_target);
             int width = bm.getWidth();
@@ -491,7 +490,7 @@ public class ParkFragment extends Fragment {
     @OnClick(R.id.btn_map_location)
     public void onLocationClicked() {
         mMyPt = mCurrentPt;
-        isSearch = false;
+        mIsSearch = false;
         MapStatus mMapStatus = new MapStatus.Builder()
                 .target(mCurrentPt)
                 .zoom(MAP_ZOOM_LEVEL)
@@ -544,7 +543,7 @@ public class ParkFragment extends Fragment {
                 MapStatusUpdate mMapStatusUpdate = MapStatusUpdateFactory.newMapStatus(mMapStatus);
                 mBaiduMap.setMapStatus(mMapStatusUpdate);
                 //刷新附近停车场
-                isSearch = true;
+                mIsSearch = true;
                 updateMapState(searchPt);
             }
         }
@@ -635,7 +634,6 @@ public class ParkFragment extends Fragment {
     }
 
     private boolean hasBasePhoneAuth() {
-        // TODO Auto-generated method stub
 
         PackageManager pm = this.getActivity().getPackageManager();
         for (String auth : authBaseArr) {
@@ -647,7 +645,6 @@ public class ParkFragment extends Fragment {
     }
 
     private boolean hasCompletePhoneAuth() {
-        // TODO Auto-generated method stub
 
         PackageManager pm = this.getActivity().getPackageManager();
         for (String auth : authComArr) {
@@ -792,7 +789,7 @@ public class ParkFragment extends Fragment {
 //                    }
 //                }
 
-                // TODO: 2017/7/28 导航页面移至我的预约页面
+
 
 //                mParkingReadDB.close();
                 break;
@@ -858,14 +855,12 @@ public class ParkFragment extends Fragment {
 
         @Override
         public void onRoutePlanFailed() {
-            // TODO Auto-generated method stub
             Toast.makeText(mContext, "算路失败", Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        // TODO Auto-generated method stub
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == authBaseRequestCode) {
             for (int ret : grantResults) {

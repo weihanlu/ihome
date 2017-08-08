@@ -6,21 +6,23 @@ package com.qhiehome.ihome.network.model.park.reserve;
 
 public class ReserveRequest {
 
-
     /**
-     * phone : xxxx...xxxx
-     * start_time : 1499826000000
-     * end_time : 1499828000000
+     * phone : f8cfd23a25811570298c8773bdca4d4d538d0d7fe52f6e5b3aefd08b907c8df2
+     * estateId : 1
+     * startTime : 1600000000000
+     * endTime : 1600000000001
      */
 
     private String phone;
-    private long start_time;
-    private long end_time;
+    private int estateId;
+    private long startTime;
+    private long endTime;
 
-    public ReserveRequest(String phone, long start_time, long end_time) {
+    public ReserveRequest(String phone, int estateId, long startTime, long endTime) {
         this.phone = phone;
-        this.start_time = start_time;
-        this.end_time = end_time;
+        this.estateId = estateId;
+        this.startTime = startTime;
+        this.endTime = endTime;
     }
 
     public String getPhone() {
@@ -31,19 +33,27 @@ public class ReserveRequest {
         this.phone = phone;
     }
 
-    public long getStart_time() {
-        return start_time;
+    public int getEstateId() {
+        return estateId;
     }
 
-    public void setStart_time(long start_time) {
-        this.start_time = start_time;
+    public void setEstateId(int estateId) {
+        this.estateId = estateId;
     }
 
-    public long getEnd_time() {
-        return end_time;
+    public long getStartTime() {
+        return startTime;
     }
 
-    public void setEnd_time(long end_time) {
-        this.end_time = end_time;
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
+
+    public long getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(long endTime) {
+        this.endTime = endTime;
     }
 }

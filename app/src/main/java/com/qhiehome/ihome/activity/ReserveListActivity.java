@@ -108,11 +108,11 @@ public class ReserveListActivity extends BaseActivity {
             }
         });
         mSrlReserve.setRefreshing(true);
+        orderRequest();
+        initRecyclerView();
         if (initDirs()) {
             initNavi();
         }
-        orderRequest();
-        initRecyclerView();
     }
 
     public static void start(Context context) {
@@ -367,7 +367,6 @@ public class ReserveListActivity extends BaseActivity {
     }
 
     private boolean hasBasePhoneAuth() {
-        // TODO Auto-generated method stub
 
         PackageManager pm = this.getPackageManager();
         for (String auth : authBaseArr) {
@@ -379,7 +378,6 @@ public class ReserveListActivity extends BaseActivity {
     }
 
     private boolean hasCompletePhoneAuth() {
-        // TODO Auto-generated method stub
 
         PackageManager pm = this.getPackageManager();
         for (String auth : authComArr) {
@@ -582,14 +580,12 @@ public class ReserveListActivity extends BaseActivity {
 
         @Override
         public void onRoutePlanFailed() {
-            // TODO Auto-generated method stub
             Toast.makeText(mContext, "算路失败", Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        // TODO Auto-generated method stub
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == authBaseRequestCode) {
             for (int ret : grantResults) {
