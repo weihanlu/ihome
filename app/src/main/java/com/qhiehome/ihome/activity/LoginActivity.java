@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.view.TextureView;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -25,6 +26,7 @@ import com.qhiehome.ihome.observer.SMSContentObserver;
 import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
+import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
@@ -94,11 +96,20 @@ public class LoginActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
-
         mHandler = new SMSObserverHandler(this);
         SMSContentObserver sco = new SMSContentObserver(LoginActivity.this,mHandler);
         LoginActivity.this.getContentResolver().registerContentObserver(
                 Uri.parse("content://sms/"), true, sco);
+        initView();
+    }
+
+    private void initView() {
+        String phoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, "");
+        if (!TextUtils.isEmpty(phoneNum)) {
+            mEtPhone.setText(SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, ""));
+            mEtVerify.requestFocus();
+        }
+
     }
 
     private static class SMSObserverHandler extends Handler{
@@ -111,7 +122,6 @@ public class LoginActivity extends BaseActivity {
             final LoginActivity loginActivity = mActivity.get();
             if(msg.what == GET_VERIFICATION){
                 loginActivity.mEtVerify.setText(msg.obj.toString());
-                loginActivity.login();
             }
             if (msg.what == COUNT_DOWN_START){
                 loginActivity.runOnUiThread(new Runnable() {
@@ -213,6 +223,7 @@ public class LoginActivity extends BaseActivity {
 
     @OnClick(R.id.bt_login)
     public void login() {
+        LogUtil.d(TAG, "login() executed");
         mPhoneNum = mEtPhone.getText().toString();
         String verifyCode = mEtVerify.getText().toString();
         if (TextUtils.isEmpty(verifyCode)) {

@@ -3,20 +3,25 @@ package com.qhiehome.ihome.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.baidu.mapapi.SDKInitializer;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.fragment.MeFragment;
 import com.qhiehome.ihome.fragment.ParkFragment;
 import com.qhiehome.ihome.manager.ActivityManager;
 import com.qhiehome.ihome.util.Constant;
+import com.qhiehome.ihome.util.SharedPreferenceUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +35,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
 
     private List<TextView> mTabTextIndicators = new ArrayList<>();
 
+    private Context mContext;
+
 //    Toolbar mToolbar;
 
     Fragment mParkFragment;
@@ -42,6 +49,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
         super.onCreate(savedInstanceState);
         SDKInitializer.initialize(getApplicationContext());
         setContentView(R.layout.activity_main);
+        mContext = this;
         initData();
         initView();
         initFragments(savedInstanceState);
@@ -63,13 +71,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
         mRlPark.setOnClickListener(this);
         mRlMe.setOnClickListener(this);
     }
-
-//    private void initToolbar() {
-//        mToolbar = (Toolbar) findViewById(R.id.toolbar);
-//        mToolbar.setTitle("Ihome");
-//        setSupportActionBar(mToolbar);
-//
-//    }
 
     private void initFragments(Bundle savedInstanceState) {
         mFragmentManager = getSupportFragmentManager();
@@ -99,8 +100,25 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
                 switchContent(mMeFragment, mParkFragment);
                 break;
             case R.id.rl_me:
-                mTvMe.setTextColor(getResources().getColor(R.color.colorAccent));
-                switchContent(mParkFragment, mMeFragment);
+                String phoneNum = SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, "");
+                if (TextUtils.isEmpty(phoneNum)) {
+                    mTvPark.setTextColor(getResources().getColor(R.color.colorAccent));
+                    new MaterialDialog.Builder(mContext)
+                            .title("去登录")
+                            .content("确定登录吗？")
+                            .positiveText("登录")
+                            .negativeText("取消")
+                            .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                @Override
+                                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                    LoginActivity.start(mContext);
+                                }
+                            })
+                            .show();
+                } else {
+                    mTvMe.setTextColor(getResources().getColor(R.color.colorAccent));
+                    switchContent(mParkFragment, mMeFragment);
+                }
                 break;
             default:
                 break;

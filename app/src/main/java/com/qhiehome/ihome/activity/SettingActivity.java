@@ -16,6 +16,8 @@ import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.adapter.MeAdapter;
 import com.qhiehome.ihome.adapter.SettingMenuAdapter;
 import com.qhiehome.ihome.manager.ActivityManager;
+import com.qhiehome.ihome.util.Constant;
+import com.qhiehome.ihome.util.SharedPreferenceUtil;
 
 import java.util.Set;
 
@@ -71,17 +73,16 @@ public class SettingActivity extends BaseActivity {
                     case 1:
                         break;
                     case 2:
+                        ServiceContractActivity.start(mContext);
                         break;
                     case 3:
-                        break;
-                    case 4:
                         View aboutApp = LayoutInflater.from(mContext).inflate(R.layout.dialog_about_app, null);
                         new MaterialDialog.Builder(mContext)
                                 .title("关于Ihome")
                                 .customView(aboutApp ,false)
                                 .show();
                         break;
-                    case 5:
+                    case 4:
                         ActivityManager.finishAll();
                         LoginActivity.start(mContext);
                         break;

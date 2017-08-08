@@ -10,7 +10,6 @@
 
     <string-array name="setting_menu">
         <item>检查更新</item>
-        <item>帮助中心</item>
         <item>意见反馈</item>
         <item>服务条款</item>
         <item>关于应用</item>

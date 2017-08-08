@@ -10,7 +10,6 @@
 
     <string-array name="setting_menu">
         <item>Check Update</item>
-        <item>Helper Center</item>
         <item>Advice</item>
         <item>Service Contract</item>
         <item>About</item>

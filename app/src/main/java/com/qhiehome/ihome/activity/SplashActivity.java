@@ -3,8 +3,12 @@ package com.qhiehome.ihome.activity;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
+
 import com.qhiehome.ihome.manager.ActivityManager;
+import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.LogUtil;
+import com.qhiehome.ihome.util.SharedPreferenceUtil;
 
 public class SplashActivity extends BaseActivity {
 
@@ -19,7 +23,7 @@ public class SplashActivity extends BaseActivity {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                LoginActivity.start(SplashActivity.this);
+                MainActivity.start(SplashActivity.this);
                 LogUtil.d(TAG, "SplashActivity finished");
                 finish();
             }
