@@ -194,7 +194,7 @@ public class LoginActivity extends BaseActivity {
                     SMSResponse smsResponse = response.body();
                     int error_code = smsResponse.getError_code();
                     if (error_code == SUCCESS_ERROR_CODE){
-                        ToastUtil.showToast(LoginActivity.this,"短信发送成功");
+//                        ToastUtil.showToast(LoginActivity.this,"短信发送成功");
                     }else {
                         ToastUtil.showToast(LoginActivity.this, smsResponse.getReason());
                         mHasSentSMS = false;

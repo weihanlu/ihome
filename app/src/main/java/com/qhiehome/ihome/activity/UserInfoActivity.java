@@ -8,7 +8,6 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.DividerItemDecoration;
@@ -29,7 +28,6 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.GravityEnum;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.qhiehome.ihome.R;
-import com.qhiehome.ihome.adapter.ScanLockAdapter;
 import com.qhiehome.ihome.adapter.UserLockAdapter;
 import com.qhiehome.ihome.bean.UserLockBean;
 import com.qhiehome.ihome.lock.ConnectLockService;
@@ -39,15 +37,10 @@ import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedRequest
 import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedResponse;
 import com.qhiehome.ihome.network.model.lock.updatepwd.UpdateLockPwdRequest;
 import com.qhiehome.ihome.network.model.lock.updatepwd.UpdateLockPwdResponse;
-import com.qhiehome.ihome.network.model.signin.SigninRequest;
-import com.qhiehome.ihome.network.model.signin.SigninResponse;
 import com.qhiehome.ihome.network.service.inquiry.ParkingOwnedService;
 import com.qhiehome.ihome.network.service.lock.UpdateLockPwdService;
-import com.qhiehome.ihome.network.service.signin.SigninService;
 import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
-import com.qhiehome.ihome.util.EncryptUtil;
-import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.NetworkUtils;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
@@ -73,7 +66,7 @@ public class UserInfoActivity extends BaseActivity {
     @BindView(R.id.vs_user_locks)
     ViewStub mViewStub;
 
-    private static final String[] LIST_CONTENT = {"头像","手机号","昵称"};
+    private static final String[] LIST_CONTENT = {"头像","手机号"};
     private List<String> userInfo;
 
     private Context mContext;
@@ -121,7 +114,6 @@ public class UserInfoActivity extends BaseActivity {
     }
 
     private void initData() {
-        //requestAvatarAndNickName();
         mUserLocks = new ArrayList<>();
         mParkingIds = new StringBuilder();
         inquiryOwnedParkings();
@@ -129,34 +121,38 @@ public class UserInfoActivity extends BaseActivity {
 
     private void inquiryOwnedParkings() {
         mCurrentTime = System.currentTimeMillis();
-        ParkingOwnedService parkingOwnedService = ServiceGenerator.createService(ParkingOwnedService.class);
-        ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(Constant.TEST_PHONE_NUM);
-        Call<ParkingOwnedResponse> call = parkingOwnedService.parkingOwned(parkingOwnedRequest);
-        call.enqueue(new Callback<ParkingOwnedResponse>() {
-            @Override
-            public void onResponse(@NonNull  Call<ParkingOwnedResponse> call,@NonNull Response<ParkingOwnedResponse> response) {
-                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                    // success and then inflate ViewStub
-                    List<ParkingResponse.DataBean.EstateBean> estateList = response.body().getData().getEstate();
-                    if (estateList.size() != 0) {
-                        mViewStub.inflate();
-                        RecyclerView rvUserLocks = (RecyclerView) findViewById(R.id.rv_user_locks);
-                        rvUserLocks.setHasFixedSize(true);
-                        LinearLayoutManager llm = new LinearLayoutManager(mContext);
-                        rvUserLocks.setLayoutManager(llm);
-                        initLocks(estateList);
-                        UserLockAdapter userLockAdapter = new UserLockAdapter(mContext, mUserLocks);
-                        rvUserLocks.setAdapter(userLockAdapter);
-                        initListener(userLockAdapter);
+        if (NetworkUtils.isConnected(this)) {
+            ParkingOwnedService parkingOwnedService = ServiceGenerator.createService(ParkingOwnedService.class);
+            ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(Constant.TEST_PHONE_NUM);
+            Call<ParkingOwnedResponse> call = parkingOwnedService.parkingOwned(parkingOwnedRequest);
+            call.enqueue(new Callback<ParkingOwnedResponse>() {
+                @Override
+                public void onResponse(@NonNull  Call<ParkingOwnedResponse> call,@NonNull Response<ParkingOwnedResponse> response) {
+                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                        // success and then inflate ViewStub
+                        List<ParkingResponse.DataBean.EstateBean> estateList = response.body().getData().getEstate();
+                        if (estateList.size() != 0) {
+                            mViewStub.inflate();
+                            RecyclerView rvUserLocks = (RecyclerView) findViewById(R.id.rv_user_locks);
+                            rvUserLocks.setHasFixedSize(true);
+                            LinearLayoutManager llm = new LinearLayoutManager(mContext);
+                            rvUserLocks.setLayoutManager(llm);
+                            initLocks(estateList);
+                            UserLockAdapter userLockAdapter = new UserLockAdapter(mContext, mUserLocks);
+                            rvUserLocks.setAdapter(userLockAdapter);
+                            initListener(userLockAdapter);
+                        }
                     }
                 }
-            }
 
-            @Override
-            public void onFailure(@NonNull  Call<ParkingOwnedResponse> call,@NonNull Throwable t) {
+                @Override
+                public void onFailure(@NonNull  Call<ParkingOwnedResponse> call,@NonNull Throwable t) {
 
-            }
-        });
+                }
+            });
+        } else {
+            // get lock info from local
+        }
     }
 
     private void initListener(final UserLockAdapter userLockAdapter) {
@@ -168,8 +164,8 @@ public class UserInfoActivity extends BaseActivity {
                 final String lockMac = userLockBean.getLockMac();
                 if (mProgressDialog == null) {
                     mProgressDialog = new MaterialDialog.Builder(mContext)
-                            .title("Progress Dialog")
-                            .content("Please wait...")
+                            .title("连接中")
+                            .content("请等待...")
                             .progress(true, 0)
                             .showListener(new DialogInterface.OnShowListener() {
                                 @Override
@@ -177,12 +173,12 @@ public class UserInfoActivity extends BaseActivity {
                                     Intent connectLock = new Intent(mContext, ConnectLockService.class);
                                     if (NetworkUtils.isConnected(mContext)) {
                                         connectLock.setAction(ConnectLockService.ACTION_GATEWAY_CONNECT);
+                                        connectLock.putExtra(ConnectLockService.EXTRA_GATEWAY_ID, gatewayId);
                                     } else {
                                         connectLock.setAction(ConnectLockService.ACTION_BLUETOOTH_CONNECT);
+                                        connectLock.putExtra(ConnectLockService.EXTRA_LOCK_PWD, Constant.DEFAULT_PASSWORD);
                                     }
-                                    connectLock.putExtra(ConnectLockService.EXTRA_GATEWAY_ID, gatewayId);
                                     connectLock.putExtra(ConnectLockService.EXTRA_LOCK_MAC, lockMac);
-                                    connectLock.putExtra(ConnectLockService.EXTRA_LOCK_PWD, Constant.DEFAULT_PASSWORD);
                                     startService(connectLock);
                                 }
                             }).build();
@@ -345,7 +341,6 @@ public class UserInfoActivity extends BaseActivity {
         userInfo = new ArrayList<>();
         userInfo.add("img_profile.jpg");
         userInfo.add(SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, Constant.TEST_PHONE_NUM));
-        userInfo.add("铁锤");
     }
 
     @Override

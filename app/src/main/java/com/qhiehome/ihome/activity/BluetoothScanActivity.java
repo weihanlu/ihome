@@ -20,7 +20,6 @@ import android.widget.TextView;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.adapter.ScanLockAdapter;
 import com.qhiehome.ihome.bean.BLEDevice;
-import com.qhiehome.ihome.manager.CommunicationManager;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.ToastUtil;
@@ -67,10 +66,10 @@ public class BluetoothScanActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         if (mBluetoothAdapter.isEnabled()) {
-            if (!CommunicationManager.getInstance().isBleConnectingOrConnected()) {
-                LogUtil.i(TAG, "onResume, scanLeDevice(true)");
-                scanLeDevice(true);
-            }
+//            if (!CommunicationManager.getInstance().isBleConnectingOrConnected()) {
+//                LogUtil.i(TAG, "onResume, scanLeDevice(true)");
+//                scanLeDevice(true);
+//            }
         }
     }
 

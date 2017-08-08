@@ -24,10 +24,6 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
-# SMSSDK
--dontwarn com.mob.**
--keep class com.mob.**{*;}
-
 -dontwarn cn.smssdk.**
 -keep class cn.smssdk.**{*;}
 
@@ -46,3 +42,8 @@
 # Retain declared checked exceptions for use by a Proxy instance.
 -keepattributes Exceptions
 # ---------------------------------------------------------   retrofit end
+
+-dontwarn okhttp3.**
+
+# okio
+-dontwarn okio.**

@@ -1,6 +1,7 @@
 package com.qhiehome.ihome.fragment;
 
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -14,11 +15,11 @@ import android.view.ViewGroup;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.qhiehome.ihome.R;
-import com.qhiehome.ihome.activity.BindLockActivity;
 import com.qhiehome.ihome.activity.LoginActivity;
 import com.qhiehome.ihome.activity.OrderListActivity;
 import com.qhiehome.ihome.activity.PublishParkingActivity;
 import com.qhiehome.ihome.activity.ReserveListActivity;
+import com.qhiehome.ihome.activity.SettingActivity;
 import com.qhiehome.ihome.activity.UserInfoActivity;
 import com.qhiehome.ihome.adapter.MeAdapter;
 import com.qhiehome.ihome.manager.ActivityManager;
@@ -61,9 +62,9 @@ public class MeFragment extends Fragment {
     }
 
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        mContext = context;
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        mContext = activity;
     }
 
     @Override
@@ -116,16 +117,9 @@ public class MeFragment extends Fragment {
                         OrderListActivity.start(mContext);
                         break;
                     case 4:
-                        View aboutApp = LayoutInflater.from(mContext).inflate(R.layout.dialog_about_app, null);
-                        new MaterialDialog.Builder(mContext)
-                                .title("关于App")
-                                .customView(aboutApp ,false)
-                                .show();
+                        SettingActivity.start(mContext);
                         break;
                     case 5:
-                        ActivityManager.finishAll();
-                        LoginActivity.start(mContext);
-                        break;
                     default:
                         break;
                 }

@@ -14,7 +14,7 @@
 
     <Button
         android:id="@+id/btn_map_location"
-        android:text="origin"
+        android:text="当前位置"
         android:textAllCaps="false"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -30,14 +30,14 @@
         android:layout_alignTop="@+id/btn_map_location"
         android:layout_marginEnd="22dp"
         android:layout_toStartOf="@+id/btn_map_location"
-        android:text="Navi" />
+        android:text="导航" />
 
     <Button
         android:id="@+id/btn_map_refresh"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="26dp"
-        android:text="Refresh"
+        android:text="刷新"
         android:layout_alignBaseline="@+id/btn_map_navi"
         android:layout_alignBottom="@+id/btn_map_navi"
         android:layout_toStartOf="@+id/btn_map_navi" />
