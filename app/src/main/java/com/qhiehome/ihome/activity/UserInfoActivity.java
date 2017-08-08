@@ -123,7 +123,8 @@ public class UserInfoActivity extends BaseActivity {
         mCurrentTime = System.currentTimeMillis();
         if (NetworkUtils.isConnected(this)) {
             ParkingOwnedService parkingOwnedService = ServiceGenerator.createService(ParkingOwnedService.class);
-            ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(Constant.TEST_PHONE_NUM);
+            String phoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, "");
+            ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(phoneNum);
             Call<ParkingOwnedResponse> call = parkingOwnedService.parkingOwned(parkingOwnedRequest);
             call.enqueue(new Callback<ParkingOwnedResponse>() {
                 @Override
