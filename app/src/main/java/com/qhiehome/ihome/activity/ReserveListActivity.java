@@ -417,23 +417,23 @@ public class ReserveListActivity extends BaseActivity {
 
                     @Override
                     public void run() {
-                        Toast.makeText(mContext, authinfo, Toast.LENGTH_LONG).show();
+//                        Toast.makeText(mContext, authinfo, Toast.LENGTH_LONG).show();
                     }
                 });
             }
 
             public void initSuccess() {
-                Toast.makeText(mContext, "百度导航引擎初始化成功", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, "百度导航引擎初始化成功", Toast.LENGTH_SHORT).show();
                 hasInitSuccess = true;
                 initSetting();
             }
 
             public void initStart() {
-                Toast.makeText(mContext, "百度导航引擎初始化开始", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, "百度导航引擎初始化开始", Toast.LENGTH_SHORT).show();
             }
 
             public void initFailed() {
-                Toast.makeText(mContext, "百度导航引擎初始化失败", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, "百度导航引擎初始化失败", Toast.LENGTH_SHORT).show();
             }
 
         }, null, ttsHandler, ttsPlayStateListener);

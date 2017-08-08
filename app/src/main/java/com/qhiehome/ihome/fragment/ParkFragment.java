@@ -7,13 +7,15 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Color;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +30,7 @@ import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
+import com.baidu.mapapi.map.MapStatus;
 import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
@@ -45,6 +48,7 @@ import com.baidu.navisdk.adapter.BNRoutePlanNode.CoordinateType;
 import com.baidu.navisdk.adapter.BNaviSettingManager;
 import com.baidu.navisdk.adapter.BaiduNaviManager;
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.activity.MapSearchActivity;
 import com.qhiehome.ihome.activity.NaviGuideActivity;
 import com.qhiehome.ihome.activity.ParkingListActivity;
 import com.qhiehome.ihome.network.ServiceGenerator;
@@ -81,6 +85,9 @@ public class ParkFragment extends Fragment {
 
 
     public static final String TAG = "ParkFragment";
+
+    public static final int REQUEST_CODE = 1;
+
     @BindView(R.id.btn_map_location)
     Button mBtnMapLocation;
     Unbinder unbinder;
@@ -90,17 +97,21 @@ public class ParkFragment extends Fragment {
     Button mBtnMapRefresh;
     @BindView(R.id.btn_map_marker)
     Button mBtnMapMarker;
+    @BindView(R.id.btn_map_search)
+    Button mBtnMapSearch;
 
 
     private Context mContext;
 
     private MapView mMapView;
+    private Toolbar mTbMap;
     private BaiduMap mBaiduMap;
     private LatLng mCurrentPt;
     private LatLng mMyPt;
     private LatLng mPrePt;
     private Marker mMarker;
     private Marker mClickedMarker;
+    private boolean isSearch;
     private BaiduMap.OnMarkerClickListener mOnMarkerClickListener;
     private boolean mRefreshEstate;
     private LocationClient mLocationClient;
@@ -141,6 +152,7 @@ public class ParkFragment extends Fragment {
     private int mChosenCount;
 
     private boolean mMapStateParkingNum = true;
+    private String mCity;
 
     @Override
     public void onAttach(Context context) {
@@ -153,6 +165,8 @@ public class ParkFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_park, container, false);
         initView(view);
+        mTbMap = (Toolbar) view.findViewById(R.id.tb_map);
+        initToolbar();
         initMap();
         initLocate();
         unbinder = ButterKnife.bind(this, view);
@@ -163,10 +177,13 @@ public class ParkFragment extends Fragment {
         //暂时不需定时器
 //        AlarmTimer.setRepeatAlarmTime(mContext, System.currentTimeMillis(),
 //                10 * 1000, Constant.TIMER_ACTION, AlarmManager.RTC_WAKEUP);
-
+        isSearch = false;
         return view;
     }
 
+    private void initToolbar() {
+        mTbMap.setTitle("Ihome");
+    }
 
     @Override
     public void onStart() {
@@ -229,7 +246,7 @@ public class ParkFragment extends Fragment {
         mBaiduMap.setMapStatus(msu);
         mBaiduMap.setMyLocationEnabled(true);
         UiSettings settings = mBaiduMap.getUiSettings();
-        settings.setScrollGesturesEnabled(false);//禁用地图拖拽
+        //settings.setScrollGesturesEnabled(false);//禁用地图拖拽
         settings.setRotateGesturesEnabled(false);//禁用地图旋转
         settings.setOverlookingGesturesEnabled(false);
     }
@@ -263,6 +280,7 @@ public class ParkFragment extends Fragment {
                 if (bdLocation == null || mMapView == null) {
                     return;
                 }
+                mCity = bdLocation.getCity();
                 MyLocationData locData = new MyLocationData.Builder()
                         .accuracy(bdLocation.getRadius())
                         // 此处设置开发者获取到的方向信息，顺时针0-360
@@ -270,6 +288,7 @@ public class ParkFragment extends Fragment {
                         .longitude(bdLocation.getLongitude()).build();
                 LatLng xy = new LatLng(bdLocation.getLatitude(),
                         bdLocation.getLongitude());
+                mMyPt = xy;
                 SharedPreferenceUtil.setFloat(mContext, Constant.CURRENT_LATITUDE, (float) bdLocation.getLatitude());
                 SharedPreferenceUtil.setFloat(mContext, Constant.CURRENT_LONGITUDE, (float) bdLocation.getLongitude());
                 // 设置定位数据
@@ -278,7 +297,7 @@ public class ParkFragment extends Fragment {
                     mCurrentPt = xy;
                     MapStatusUpdate status = MapStatusUpdateFactory.newLatLng(xy);
                     mBaiduMap.animateMapStatus(status);
-                    updateMapState();
+                    updateMapState(mCurrentPt);
                     mRefreshEstate = false;
                     mPrePt = xy;
                 } else {
@@ -334,10 +353,10 @@ public class ParkFragment extends Fragment {
         }
     }
 
-    private void updateMapState() {
+    private void updateMapState(LatLng pt) {
         mBaiduMap.removeMarkerClickListener(mOnMarkerClickListener);
         ParkingEmptyService parkingEmptyService = ServiceGenerator.createService(ParkingEmptyService.class);
-        ParkingEmptyRequest parkingEmptyRequest = new ParkingEmptyRequest(mCurrentPt.longitude, mCurrentPt.latitude, RADIUS);
+        ParkingEmptyRequest parkingEmptyRequest = new ParkingEmptyRequest(pt.longitude, pt.latitude, RADIUS);
         Call<ParkingEmptyResponse> call = parkingEmptyService.parkingEmpty(parkingEmptyRequest);
         call.enqueue(new Callback<ParkingEmptyResponse>() {
             @Override
@@ -361,8 +380,8 @@ public class ParkFragment extends Fragment {
 //                    Bitmap newbm = Bitmap.createBitmap(bm, 0, 0, width, height, matrix,
 //                            true);
 //                    BitmapDescriptor arrow = BitmapDescriptorFactory.fromBitmap(newbm);
-
                     addMarkers();
+
                 }
             }
 
@@ -388,8 +407,27 @@ public class ParkFragment extends Fragment {
     }
 
 
-    private void addMarkers(){
+    private void addMarkers() {
         mBaiduMap.clear();
+        if (isSearch){
+            //添加图标
+            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.img_target);
+            int width = bm.getWidth();
+            int height = bm.getHeight();
+            int newWidth = 60;
+            int newHeight = 60;
+            float scaleWidth = ((float) newWidth) / width;
+            float scaleHeight = ((float) newHeight) / height;
+            Matrix matrix = new Matrix();
+            matrix.postScale(scaleWidth, scaleHeight);
+            Bitmap newbm = Bitmap.createBitmap(bm, 0, 0, width, height, matrix,
+                    true);
+            BitmapDescriptor flag = BitmapDescriptorFactory.fromBitmap(newbm);
+            MarkerOptions searchOptions = new MarkerOptions()
+                    .position(mMyPt)//设置位置
+                    .icon(flag);//设置图标样式
+            mMarker = (Marker) mBaiduMap.addOverlay(searchOptions);
+        }
         for (int i = 0; i < mEstateBeanList.size(); i++) {
             boolean hasShare = false;
             for (int j = 0; j < mEstateBeanList.get(i).getParking().size(); j++) {
@@ -404,11 +442,11 @@ public class ParkFragment extends Fragment {
 
                 View customMarker = View.inflate(mContext, R.layout.custom_map_marker, null);
                 TextView tv_marker = (TextView) customMarker.findViewById(R.id.tv_marker);
-                if (mMapStateParkingNum){
+                if (mMapStateParkingNum) {
                     tv_marker.setText(String.valueOf(mEstateBeanList.get(i).getParking().size()));
                     tv_marker.setTextColor(Resources.getSystem().getColor(android.R.color.holo_green_light));
-                }else {
-                    tv_marker.setText(String.format("%d",mEstateBeanList.get(i).getUnitPrice()));
+                } else {
+                    tv_marker.setText(String.format("%d", mEstateBeanList.get(i).getUnitPrice()));
                     tv_marker.setTextColor(Resources.getSystem().getColor(android.R.color.holo_red_light));
                 }
                 customMarker.setDrawingCacheEnabled(true);
@@ -450,23 +488,70 @@ public class ParkFragment extends Fragment {
         unbinder.unbind();
     }
 
+    @OnClick(R.id.btn_map_location)
+    public void onLocationClicked() {
+        mMyPt = mCurrentPt;
+        isSearch = false;
+        MapStatus mMapStatus = new MapStatus.Builder()
+                .target(mCurrentPt)
+                .zoom(MAP_ZOOM_LEVEL)
+                .build();
+        MapStatusUpdate mMapStatusUpdate = MapStatusUpdateFactory.newMapStatus(mMapStatus);
+        mBaiduMap.setMapStatus(mMapStatusUpdate);
+        updateMapState(mMyPt);
+    }
 
 
     @OnClick(R.id.btn_map_refresh)
     public void onRefreshClicked() {
-        updateMapState();
+        updateMapState(mMyPt);
     }
 
     @OnClick(R.id.btn_map_marker)
     public void onChangeMarkerClicked() {
         mMapStateParkingNum = !mMapStateParkingNum;
-        if (mMapStateParkingNum){
+        if (mMapStateParkingNum) {
             mBtnMapMarker.setText("显示单价");
-        }else {
+        } else {
             mBtnMapMarker.setText("显示车位");
         }
         addMarkers();
     }
+
+
+    @OnClick(R.id.btn_map_search)
+    public void onViewClicked() {
+        Intent intent = new Intent(getActivity(), MapSearchActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putString("city", mCity);
+        intent.putExtras(bundle);
+        getActivity().startActivityForResult(intent, REQUEST_CODE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == getActivity().RESULT_OK) {
+            if (requestCode == REQUEST_CODE) {
+                //接收数据，改变地图中心
+                Bundle bundle = data.getExtras();
+                LatLng searchPt = new LatLng(bundle.getDouble("latitude"), bundle.getDouble("longitude"));
+                mMyPt = searchPt;
+                MapStatus mMapStatus = new MapStatus.Builder()
+                        .target(searchPt)
+                        .zoom(MAP_ZOOM_LEVEL)
+                        .build();
+                MapStatusUpdate mMapStatusUpdate = MapStatusUpdateFactory.newMapStatus(mMapStatus);
+                mBaiduMap.setMapStatus(mMapStatusUpdate);
+                //刷新附近停车场
+                isSearch = true;
+                updateMapState(searchPt);
+            }
+        }
+    }
+
+
+
 
     static class startTimeComparator implements Comparator {
         @Override

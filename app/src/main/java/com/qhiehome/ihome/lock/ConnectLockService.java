@@ -83,7 +83,8 @@ public class ConnectLockService extends IntentService {
     }
 
     private void connectByBluetooth(String lockMac, String lockPwd) {
-
+        LogUtil.d(TAG, "lockMac is " + lockMac + ", lockPwd is " + lockPwd);
+        // TODO: 2017/8/7 使用蓝牙连接
     }
 
 }

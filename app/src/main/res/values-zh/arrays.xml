@@ -5,11 +5,15 @@
         <item>我的预约</item>
         <item>发布</item>
         <item>历史订单</item>
-        <item>关于App</item>
-        <item>退出登录</item>
+        <item>设置</item>
     </string-array>
 
-    <string-array name="time">
-
+    <string-array name="setting_menu">
+        <item>检查更新</item>
+        <item>帮助中心</item>
+        <item>意见反馈</item>
+        <item>服务条款</item>
+        <item>关于应用</item>
+        <item>退出</item>
     </string-array>
 </resources>

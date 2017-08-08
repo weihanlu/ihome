@@ -5,7 +5,15 @@
         <item>My Reservation</item>
         <item>Release</item>
         <item>My Orders</item>
+        <item>Setting</item>
+    </string-array>
+
+    <string-array name="setting_menu">
+        <item>Check Update</item>
+        <item>Helper Center</item>
+        <item>Advice</item>
+        <item>Service Contract</item>
         <item>About</item>
-        <item>Logout</item>
+        <item>Quit</item>
     </string-array>
 </resources>

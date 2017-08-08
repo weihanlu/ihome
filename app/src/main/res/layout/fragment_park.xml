@@ -5,16 +5,56 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="com.qhiehome.ihome.fragment.ParkFragment">
-
-    <com.baidu.mapapi.map.MapView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/mv_park"
-        android:clickable="true" />
+        android:orientation="vertical">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/tb_map"
+            android:layout_width="408dp"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            android:minHeight="?attr/actionBarSize"
+            android:theme="?attr/actionBarTheme">
+        </android.support.v7.widget.Toolbar>
+
+        <com.baidu.mapapi.map.MapView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/mv_park"
+            android:clickable="true">
+
+        </com.baidu.mapapi.map.MapView>
+
+    </LinearLayout>
+
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal"
+        android:paddingRight="16dp">
+
+        <Button
+            android:id="@+id/btn_map_search"
+            android:layout_width="40dp"
+            android:layout_height="37dp"
+            android:layout_marginRight="16dp"
+            android:text="搜"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.538"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp" />
+
+
+    </android.support.constraint.ConstraintLayout>
 
     <Button
         android:id="@+id/btn_map_location"
-        android:text="origin"
+        android:text="当前位置"
         android:textAllCaps="false"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -30,14 +70,14 @@
         android:layout_alignTop="@+id/btn_map_location"
         android:layout_marginEnd="22dp"
         android:layout_toStartOf="@+id/btn_map_location"
-        android:text="Navi" />
+        android:text="导航" />
 
     <Button
         android:id="@+id/btn_map_refresh"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="26dp"
-        android:text="Refresh"
+        android:text="刷新"
         android:layout_alignBaseline="@+id/btn_map_navi"
         android:layout_alignBottom="@+id/btn_map_navi"
         android:layout_toStartOf="@+id/btn_map_navi" />

@@ -22,14 +22,18 @@ public class Constant {
 
     public static final int VERIFY_NUM = 6;
 
-    public static final String CURRENT_LONGITUDE= "CURRENT_LONGITUDE";
+    public static final String CURRENT_LONGITUDE = "CURRENT_LONGITUDE";
 
-    public static final String CURRENT_LATITUDE= "CURRENT_LATITUDE";
+    public static final String CURRENT_LATITUDE = "CURRENT_LATITUDE";
+
+    public static final String SEARCH_LONGITUDE = "SEARCH_LONGITUDE";
+
+    public static final String SEARCH_LATITUDE = "SEARCH_LATITUDE";
+
+    public static final String SEARCH_NAME = "SEARCH_NAME";
 
     public static final String OWNED_PARKING_KEY = "owned_parking_key";
 
     public static final String TIMER_ACTION= "TIMER_ACTION";
-
-
 
 }
