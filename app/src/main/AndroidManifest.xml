@@ -87,6 +87,7 @@
         <activity
             android:name=".activity.BluetoothScanActivity"
             android:windowSoftInputMode="adjustPan" />
+
         <activity android:name=".activity.UserInfoActivity" />
         <activity android:name=".activity.ParkingListActivity" />
         <activity android:name=".activity.PublishParkingActivity" />
@@ -111,6 +112,7 @@
         <service android:name="org.eclipse.paho.android.service.MqttService" />
 
         <activity android:name=".activity.SettingActivity"></activity>
+        <activity android:name=".activity.MapSearchActivity"></activity>
     </application>
 
 </manifest>
