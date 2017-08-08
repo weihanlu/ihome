@@ -6,12 +6,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +21,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.bigkoo.pickerview.OptionsPickerView;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.network.ServiceGenerator;
@@ -65,6 +69,7 @@ public class ParkingListActivity extends BaseActivity {
     private ParkingListAdapter mAdapter;
     private List<Map<String, String>> parking_data = new ArrayList<>();
     private ParkingResponse.DataBean.EstateBean mEstateBean;
+    private Context mContext;
 
     private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm");
     private static final String INTEGER_2 = "%02d";
@@ -97,6 +102,7 @@ public class ParkingListActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_parking_list);
         ButterKnife.bind(this);
+        mContext = this;
         Intent intent = this.getIntent();
         Bundle bundle = intent.getExtras();
         mEstateBean = (ParkingResponse.DataBean.EstateBean) bundle.getSerializable("estate");
@@ -372,35 +378,52 @@ public class ParkingListActivity extends BaseActivity {
     /*********预约按钮*********/
     @OnClick(R.id.btn_parking_reserve)
     public void onViewClicked() {
-        ReserveService reserveService = ServiceGenerator.createService(ReserveService.class);
-        final ReserveRequest reserveRequest = new ReserveRequest(SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, Constant.TEST_PHONE_NUM), mStartTimeMillis, mEndTimeMillis);
-        Call<ReserveResponse> call = reserveService.reserve(reserveRequest);
-        call.enqueue(new Callback<ReserveResponse>() {
-            @Override
-            public void onResponse(Call<ReserveResponse> call, Response<ReserveResponse> response) {
-                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
-                    // TODO: 2017/8/3 预约成功，跳转支付界面
-                }else {
-                    final AlertDialog.Builder reserveFailedDialog = new AlertDialog.Builder(ParkingListActivity.this);
-                    //reserveFailedDialog.setIcon(R.drawable.icon_dialog);
-                    //可以增加APPlogo
-                    reserveFailedDialog.setTitle("预约失败");
-                    reserveFailedDialog.setMessage("没有合适的车位，请重新选择小区或时间");
-                    reserveFailedDialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+        String phoneNum = SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, "");
+        if (TextUtils.isEmpty(phoneNum)){
+            new MaterialDialog.Builder(mContext)
+                    .title("去登录")
+                    .content("确定登录吗？")
+                    .positiveText("登录")
+                    .negativeText("取消")
+                    .onPositive(new MaterialDialog.SingleButtonCallback() {
                         @Override
-                        public void onClick(DialogInterface dialog, int which) {
-
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            LoginActivity.start(mContext);
                         }
-                    });
-                    reserveFailedDialog.show();
-                }
-            }
+                    })
+                    .show();
+        }else {
+            ReserveService reserveService = ServiceGenerator.createService(ReserveService.class);
+            final ReserveRequest reserveRequest = new ReserveRequest(SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, Constant.TEST_PHONE_NUM), mEstateBean.getId(), mStartTimeMillis, mEndTimeMillis);
+            Call<ReserveResponse> call = reserveService.reserve(reserveRequest);
+            call.enqueue(new Callback<ReserveResponse>() {
+                @Override
+                public void onResponse(Call<ReserveResponse> call, Response<ReserveResponse> response) {
+                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
+                        // TODO: 2017/8/3 预约成功，跳转支付界面
+                    }else {
+                        final AlertDialog.Builder reserveFailedDialog = new AlertDialog.Builder(ParkingListActivity.this);
+                        //reserveFailedDialog.setIcon(R.drawable.icon_dialog);
+                        //可以增加APPlogo
+                        reserveFailedDialog.setTitle("预约失败");
+                        reserveFailedDialog.setMessage("没有合适的车位，请重新选择小区或时间");
+                        reserveFailedDialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
 
-            @Override
-            public void onFailure(Call<ReserveResponse> call, Throwable t) {
-                ToastUtil.showToast(ParkingListActivity.this, "网络连接异常");
-            }
-        });
+                            }
+                        });
+                        reserveFailedDialog.show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ReserveResponse> call, Throwable t) {
+                    ToastUtil.showToast(ParkingListActivity.this, "网络连接异常");
+                }
+            });
+        }
+
     }
 
 

@@ -43,7 +43,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class MapSearchActivity extends AppCompatActivity {
+public class MapSearchActivity extends BaseActivity {
 
 //    @BindView(R.id.et_search)
 //    EditText mEtSearch;
