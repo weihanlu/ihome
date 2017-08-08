@@ -20,12 +20,11 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <WebView
-        android:id="@+id/wv_service_contract"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    <com.qhiehome.ihome.view.ProgressWebView
+        android:id="@+id/pwv_web_contract"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-    </WebView>
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        />
 
 </android.support.design.widget.CoordinatorLayout>

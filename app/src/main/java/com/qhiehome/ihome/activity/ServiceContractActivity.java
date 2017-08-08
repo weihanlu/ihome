@@ -3,24 +3,27 @@ package com.qhiehome.ihome.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.webkit.WebView;
 
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.view.ProgressWebView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import static com.qhiehome.ihome.util.Constant.CONTRACT_URL;
+
 public class ServiceContractActivity extends BaseActivity {
+
+    private static final String TAG = ServiceContractActivity.class.getSimpleName();
 
     @BindView(R.id.toolbar)
     Toolbar mToolbar;
 
-    @BindView(R.id.wv_service_contract)
-    WebView mWvServiceContract;
+    @BindView(R.id.pwv_web_contract)
+    ProgressWebView mProgressWebView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,11 +35,11 @@ public class ServiceContractActivity extends BaseActivity {
 
     private void initView() {
         initToolbar();
-        initWebView();
+        initProgressWebView();
     }
 
-    private void initWebView() {
-
+    private void initProgressWebView() {
+        mProgressWebView.loadUrl(CONTRACT_URL);
     }
 
     private void initToolbar() {

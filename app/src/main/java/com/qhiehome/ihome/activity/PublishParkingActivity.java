@@ -351,7 +351,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                     }
                     mPublishAdapter.notifyDataSetChanged();
                 } else {
-                    mPublishList.clear();
+                    inquiryParkingInfo();
                     ToastUtil.showToast(mContext, "发布失败");
                 }
             }
