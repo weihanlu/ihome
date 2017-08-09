@@ -13,6 +13,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.CursorAdapter;
@@ -85,6 +86,7 @@ public class MapSearchActivity extends BaseActivity {
                 switch (msg.what) {
                     case BACK_MSG:
                         mapSearchActivity.deliverData(mapSearchActivity.mPosition);
+                        mapSearchActivity.mFloatingSearchView.setSearchFocused(false);
                         mapSearchActivity.finish();
                         break;
                     default:

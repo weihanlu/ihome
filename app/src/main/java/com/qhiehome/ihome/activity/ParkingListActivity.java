@@ -31,6 +31,7 @@ import com.qhiehome.ihome.network.model.park.reserve.ReserveRequest;
 import com.qhiehome.ihome.network.model.park.reserve.ReserveResponse;
 import com.qhiehome.ihome.network.service.park.ReserveService;
 import com.qhiehome.ihome.util.Constant;
+import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.TimeUtil;
 import com.qhiehome.ihome.util.ToastUtil;
@@ -394,13 +395,14 @@ public class ParkingListActivity extends BaseActivity {
                     .show();
         }else {
             ReserveService reserveService = ServiceGenerator.createService(ReserveService.class);
-            final ReserveRequest reserveRequest = new ReserveRequest(SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, Constant.TEST_PHONE_NUM), mEstateBean.getId(), mStartTimeMillis, mEndTimeMillis);
+            final ReserveRequest reserveRequest = new ReserveRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, Constant.TEST_PHONE_NUM), EncryptUtil.ALGO.SHA_256), mEstateBean.getId(), mStartTimeMillis, mEndTimeMillis);
             Call<ReserveResponse> call = reserveService.reserve(reserveRequest);
             call.enqueue(new Callback<ReserveResponse>() {
                 @Override
                 public void onResponse(Call<ReserveResponse> call, Response<ReserveResponse> response) {
                     if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
                         // TODO: 2017/8/3 预约成功，跳转支付界面
+                        ToastUtil.showToast(mContext, "预约成功");
                     }else {
                         final AlertDialog.Builder reserveFailedDialog = new AlertDialog.Builder(ParkingListActivity.this);
                         //reserveFailedDialog.setIcon(R.drawable.icon_dialog);

@@ -71,6 +71,7 @@ public class SettingActivity extends BaseActivity {
                     case 0:
                         break;
                     case 1:
+                        FeedbackActivity.start(mContext);
                         break;
                     case 2:
                         ServiceContractActivity.start(mContext);
