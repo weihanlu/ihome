@@ -96,13 +96,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
         resetOtherTabText();
         switch (v.getId()) {
             case R.id.rl_park:
-                mTvPark.setTextColor(getResources().getColor(R.color.colorAccent));
+                mTvPark.setTextColor(getResources().getColor(R.color.white));
                 switchContent(mMeFragment, mParkFragment);
                 break;
             case R.id.rl_me:
                 String phoneNum = SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, "");
                 if (TextUtils.isEmpty(phoneNum)) {
-                    mTvPark.setTextColor(getResources().getColor(R.color.colorAccent));
+                    mTvPark.setTextColor(getResources().getColor(R.color.white));
                     new MaterialDialog.Builder(mContext)
                             .title("去登录")
                             .content("确定登录吗？")
@@ -116,7 +116,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
                             })
                             .show();
                 } else {
-                    mTvMe.setTextColor(getResources().getColor(R.color.colorAccent));
+                    mTvMe.setTextColor(getResources().getColor(R.color.white));
                     switchContent(mParkFragment, mMeFragment);
                 }
                 break;
@@ -127,7 +127,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
 
     private void resetOtherTabText() {
         for (TextView textView: mTabTextIndicators) {
-            textView.setTextColor(getResources().getColor(R.color.white));
+            textView.setTextColor(getResources().getColor(R.color.light_gray));
         }
     }
 

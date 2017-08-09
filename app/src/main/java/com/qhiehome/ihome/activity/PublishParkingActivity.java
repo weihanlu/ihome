@@ -298,6 +298,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                     }
                 }
             });
+            addBtn.callOnClick();
         }
         dialog.getBuilder().onPositive(new MaterialDialog.SingleButtonCallback() {
             @Override
