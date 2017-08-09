@@ -127,7 +127,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
 
     private void resetOtherTabText() {
         for (TextView textView: mTabTextIndicators) {
-            textView.setTextColor(getResources().getColor(R.color.black));
+            textView.setTextColor(getResources().getColor(R.color.white));
         }
     }
 

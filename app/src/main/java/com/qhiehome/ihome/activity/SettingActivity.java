@@ -103,6 +103,7 @@ public class SettingActivity extends BaseActivity {
             actionBar.setDisplayShowTitleEnabled(false);
         }
         mToolbar.setTitle("设置");
+        mToolbar.setTitleTextColor(getResources().getColor(R.color.white));
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

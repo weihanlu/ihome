@@ -86,6 +86,7 @@ public class MeFragment extends Fragment {
 
     private void initToolbar() {
         mToolbar.setTitle("Ihome");
+        mToolbar.setTitleTextColor(getResources().getColor(R.color.white));
     }
 
     private void initRecyclerView(View view) {

@@ -99,9 +99,6 @@ public class ParkFragment extends Fragment {
     Button mBtnMapRefresh;
     @BindView(R.id.btn_map_marker)
     Button mBtnMapMarker;
-    @BindView(R.id.btn_map_search)
-    Button mBtnMapSearch;
-
 
     private Context mContext;
 
@@ -184,7 +181,7 @@ public class ParkFragment extends Fragment {
     }
 
     private void initToolbar() {
-        mTbMap.setTitle("Ihome");
+//        mTbMap.setTitle("Ihome");
     }
 
     @Override
@@ -522,8 +519,6 @@ public class ParkFragment extends Fragment {
         addMarkers();
     }
 
-
-    @OnClick(R.id.btn_map_search)
     public void onViewClicked() {
         Intent intent = new Intent(getActivity(), MapSearchActivity.class);
         Bundle bundle = new Bundle();
