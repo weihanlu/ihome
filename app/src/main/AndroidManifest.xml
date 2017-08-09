@@ -65,14 +65,14 @@
             android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.LoginActivity"/>
+        <activity android:name=".activity.LoginActivity" />
         <activity
             android:name=".activity.MainActivity"
-            android:launchMode="singleTask">
-        </activity>
+            android:launchMode="singleTask"></activity>
 
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
@@ -87,7 +87,6 @@
         <activity
             android:name=".activity.BluetoothScanActivity"
             android:windowSoftInputMode="adjustPan" />
-
         <activity android:name=".activity.UserInfoActivity" />
         <activity android:name=".activity.ParkingListActivity" />
         <activity android:name=".activity.PublishParkingActivity" />
@@ -111,9 +110,10 @@
             android:exported="false" />
         <service android:name="org.eclipse.paho.android.service.MqttService" />
 
-        <activity android:name=".activity.SettingActivity"></activity>
-        <activity android:name=".activity.MapSearchActivity"></activity>
-        <activity android:name=".activity.ServiceContractActivity"></activity>
+        <activity android:name=".activity.SettingActivity" />
+        <activity android:name=".activity.MapSearchActivity" />
+        <activity android:name=".activity.ServiceContractActivity" />
+        <activity android:name=".activity.FeedbackActivity"></activity>
     </application>
 
 </manifest>

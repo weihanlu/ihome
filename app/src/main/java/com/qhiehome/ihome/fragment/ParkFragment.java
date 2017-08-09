@@ -19,6 +19,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -56,6 +57,7 @@ import com.qhiehome.ihome.network.model.base.ParkingResponse;
 import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyRequest;
 import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyResponse;
 import com.qhiehome.ihome.network.service.inquiry.ParkingEmptyService;
+import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
@@ -503,6 +505,9 @@ public class ParkFragment extends Fragment {
 
     @OnClick(R.id.btn_map_refresh)
     public void onRefreshClicked() {
+        if (mMyPt == null){
+            mMyPt = mCurrentPt;
+        }
         updateMapState(mMyPt);
     }
 
@@ -532,6 +537,7 @@ public class ParkFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == getActivity().RESULT_OK) {
             if (requestCode == REQUEST_CODE) {
+                //CommonUtil.hideKeyboard(getActivity());
                 //接收数据，改变地图中心
                 Bundle bundle = data.getExtras();
                 LatLng searchPt = new LatLng(bundle.getDouble("latitude"), bundle.getDouble("longitude"));
