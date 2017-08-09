@@ -53,6 +53,7 @@ public class FeedbackActivity extends AppCompatActivity {
             actionBar.setDisplayShowTitleEnabled(false);
         }
         mTbFeedback.setTitle("意见反馈");
+        mTbFeedback.setTitleTextColor(getResources().getColor(R.color.white));
         mTbFeedback.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
