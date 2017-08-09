@@ -82,6 +82,7 @@ public class ParkingListActivity extends BaseActivity {
     private static final int LIST_TOTAL_FEE = 3;
     private static final int LIST_ITEM_COUNT = 4;
     private float mPrice = 0;
+    private float mUnitPrice = 0;
     private String mStartTime;
     private String mEndTime;
     private int mStartHourSelection = 0;
@@ -110,7 +111,8 @@ public class ParkingListActivity extends BaseActivity {
         initToolbar();
         initData();
         initRecyclerView();
-        //mTvParkingGuarfee.setText("担保费：￥" + String.format(DECIMAL_2, mEstateBean.getGuaranteeFee()));
+        mUnitPrice = (float) mEstateBean.getUnitPrice();
+        mTvParkingGuarfee.setText("担保费：￥" + String.format(DECIMAL_2, (float) mEstateBean.getGuaranteeFee()));
 
     }
 
@@ -231,6 +233,7 @@ public class ParkingListActivity extends BaseActivity {
                     calendar.set(Calendar.MINUTE, Integer.valueOf(mStartMinites.get(options1).get(options2)));
                     mStartTimeMillis = calendar.getTimeInMillis();
                     initEndTimeDataSourse(Integer.valueOf(mStartHours.get(options1)), Integer.valueOf(mStartMinites.get(options1).get(options2)), mEndTimeMillis <= mStartTimeMillis);
+                    mPrice = (mEndTimeMillis-mStartTimeMillis)/1000
                     mAdapter.notifyDataSetChanged();
                 }
             })
@@ -328,7 +331,7 @@ public class ParkingListActivity extends BaseActivity {
             if (holder instanceof ParkingHolderNoBtn) {
                 if (position == LIST_PARKING_INFO) {
                     ((ParkingHolderNoBtn) holder).tv_title.setText(mEstateBean.getName());
-                    //((ParkingHolderNoBtn) holder).tv_content.setText("￥"+ String.format(DECIMAL_2, mEstateBean.getUnitPrice()) +"/小时");
+                    ((ParkingHolderNoBtn) holder).tv_content.setText("￥"+ String.format(DECIMAL_2, (float) mEstateBean.getUnitPrice()) +"/小时");
                 }
                 if (position == LIST_TOTAL_FEE) {
                     ((ParkingHolderNoBtn) holder).tv_title.setText("停车费");
@@ -402,6 +405,7 @@ public class ParkingListActivity extends BaseActivity {
                 public void onResponse(Call<ReserveResponse> call, Response<ReserveResponse> response) {
                     if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
                         // TODO: 2017/8/3 预约成功，跳转支付界面
+                        //可停至XX：XX
                         ToastUtil.showToast(mContext, "预约成功");
                     }else {
                         final AlertDialog.Builder reserveFailedDialog = new AlertDialog.Builder(ParkingListActivity.this);
