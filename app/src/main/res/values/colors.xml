@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">@color/light_blue</color>
-    <color name="colorPrimaryDark">@color/dark_blue</color>
+    <color name="colorPrimary">@color/light_green</color>
+    <color name="colorPrimaryDark">@color/dark_green</color>
     <color name="colorAccent">#FF4081</color>
     <color name="gray">#666666</color>
     <color name="white">#FFF</color>
@@ -10,4 +10,6 @@
     <color name="slight_gray">#f2f0f0</color>
     <color name="light_blue">#2e8abb</color><!-- 浅蓝色 -->
     <color name="dark_blue">#3A5FCD</color>
+    <color name="light_green">#43AF5C</color>
+    <color name="dark_green">#28a746</color>
 </resources>

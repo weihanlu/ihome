@@ -65,8 +65,6 @@ public class ParkingListActivity extends BaseActivity {
     Toolbar mTbParking;
     @BindView(R.id.rv_parking)
     RecyclerView mRvParking;
-    @BindView(R.id.tv_estate_name)
-    TextView mTvEstateName;
     private ParkingListAdapter mAdapter;
     private List<Map<String, String>> parking_data = new ArrayList<>();
     private ParkingResponse.DataBean.EstateBean mEstateBean;
@@ -123,14 +121,13 @@ public class ParkingListActivity extends BaseActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
         }
+        mTbParking.setTitle(mEstateBean.getName());
         mTbParking.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
             }
         });
-
-        mTvEstateName.setText(mEstateBean.getName());
     }
 
 

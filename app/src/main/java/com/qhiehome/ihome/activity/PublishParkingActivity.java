@@ -232,7 +232,8 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
         }
-
+        mToolbar.setTitle("发布车位");
+        mToolbar.setTitleTextColor(getResources().getColor(R.color.white));
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
