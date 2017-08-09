@@ -19,11 +19,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.RelativeLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,7 +36,6 @@ import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.Marker;
 import com.baidu.mapapi.map.MarkerOptions;
-import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.UiSettings;
@@ -53,6 +48,7 @@ import com.baidu.navisdk.adapter.BNRoutePlanNode.CoordinateType;
 import com.baidu.navisdk.adapter.BNaviSettingManager;
 import com.baidu.navisdk.adapter.BaiduNaviManager;
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.activity.CityActivity;
 import com.qhiehome.ihome.activity.MapSearchActivity;
 import com.qhiehome.ihome.activity.NaviGuideActivity;
 import com.qhiehome.ihome.activity.ParkingListActivity;
@@ -61,13 +57,10 @@ import com.qhiehome.ihome.network.model.base.ParkingResponse;
 import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyRequest;
 import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyResponse;
 import com.qhiehome.ihome.network.service.inquiry.ParkingEmptyService;
-import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
-
-import org.angmarch.views.NiceSpinner;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -94,7 +87,9 @@ public class ParkFragment extends Fragment {
 
     public static final String TAG = "ParkFragment";
 
-    public static final int REQUEST_CODE = 1;
+    public static final int REQUEST_CODE_SEARCH = 1;
+
+    public static final int REQUEST_CODE_CITY = 2;
 
     @BindView(R.id.btn_map_location)
     Button mBtnMapLocation;
@@ -424,7 +419,7 @@ public class ParkFragment extends Fragment {
 
     private void addMarkers() {
         mBaiduMap.clear();
-        if (mIsSearch){
+        if (mIsSearch) {
             //添加图标
             Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.img_target);
             int width = bm.getWidth();
@@ -520,7 +515,7 @@ public class ParkFragment extends Fragment {
 
     @OnClick(R.id.btn_map_refresh)
     public void onRefreshClicked() {
-        if (mMyPt == null){
+        if (mMyPt == null) {
             mMyPt = mCurrentPt;
         }
         updateMapState(mMyPt);
@@ -543,14 +538,23 @@ public class ParkFragment extends Fragment {
         Bundle bundle = new Bundle();
         bundle.putString("city", mCity);
         intent.putExtras(bundle);
-        getActivity().startActivityForResult(intent, REQUEST_CODE);
+        getActivity().startActivityForResult(intent, REQUEST_CODE_SEARCH);
+    }
+
+    @OnClick(R.id.iv_select_city)
+    public void onSelectCity() {
+        Intent intent = new Intent(getActivity(), CityActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putString("city", mCity);
+        intent.putExtras(bundle);
+        getActivity().startActivityForResult(intent, REQUEST_CODE_CITY);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == getActivity().RESULT_OK) {
-            if (requestCode == REQUEST_CODE) {
+            if (requestCode == REQUEST_CODE_SEARCH) {
                 //CommonUtil.hideKeyboard(getActivity());
                 //接收数据，改变地图中心
                 Bundle bundle = data.getExtras();
@@ -565,6 +569,10 @@ public class ParkFragment extends Fragment {
                 //刷新附近停车场
                 mIsSearch = true;
                 updateMapState(searchPt);
+            }
+            if (requestCode == REQUEST_CODE_CITY){
+                mTvCurrentCity.setText("当前城市：" + data.getExtras().getString("city"));
+                // TODO: 2017/8/9 地图改变城市
             }
         }
     }
@@ -808,7 +816,6 @@ public class ParkFragment extends Fragment {
 //                        break;
 //                    }
 //                }
-
 
 
 //                mParkingReadDB.close();
