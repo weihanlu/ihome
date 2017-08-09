@@ -21,8 +21,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -65,6 +68,8 @@ import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
+import org.angmarch.views.NiceSpinner;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -102,6 +107,11 @@ public class ParkFragment extends Fragment {
     @BindView(R.id.btn_map_marker)
     Button mBtnMapMarker;
 
+    @BindView(R.id.spinner_city)
+    NiceSpinner mSpinnerCity;
+
+    private List<String> mCities;
+
     private Context mContext;
 
     private MapView mMapView;
@@ -117,7 +127,6 @@ public class ParkFragment extends Fragment {
     private boolean mRefreshEstate;
     private LocationClient mLocationClient;
     private BDLocationListener mBDLocationListener;
-
 
     /******百度地图导航******/
     private String mSDCardPath = null;
@@ -165,12 +174,10 @@ public class ParkFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_park, container, false);
+        unbinder = ButterKnife.bind(this, view);
         initView(view);
-        mTbMap = (Toolbar) view.findViewById(R.id.tb_map);
-        initToolbar();
         initMap();
         initLocate();
-        unbinder = ButterKnife.bind(this, view);
 //        mParkingSQLHelper = new ParkingSQLHelper(mContext);
 //        if (initDirs()) {
 //            initNavi();
@@ -236,6 +243,19 @@ public class ParkFragment extends Fragment {
 
     private void initView(View view) {
         mMapView = (MapView) view.findViewById(R.id.mv_park);
+        initSpinner();
+    }
+
+    private void initSpinner() {
+        initCities();
+        mSpinnerCity.attachDataSource(mCities);
+    }
+
+    private void initCities() {
+        mCities = new ArrayList<>();
+        mCities.add("北京");
+        mCities.add("深圳");
+        mCities.add("上海");
     }
 
     /**
@@ -522,6 +542,7 @@ public class ParkFragment extends Fragment {
         addMarkers();
     }
 
+    @OnClick(R.id.rl_input_location)
     public void onViewClicked() {
         Intent intent = new Intent(getActivity(), MapSearchActivity.class);
         Bundle bundle = new Bundle();

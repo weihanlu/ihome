@@ -5,21 +5,17 @@
     android:layout_height="match_parent"
     tools:context="com.qhiehome.ihome.fragment.ParkFragment">
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/tb_map"
+    <include layout="@layout/layout_top_park_fragment"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        android:minHeight="?attr/actionBarSize"
-        android:theme="?attr/actionBarTheme"
-        />
+        android:id="@+id/layout_top" />
 
     <com.baidu.mapapi.map.MapView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/mv_park"
         android:clickable="true"
-        android:layout_below="@id/tb_map"
+        android:layout_below="@id/layout_top"
         />
 
     <Button
