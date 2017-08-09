@@ -20,43 +20,41 @@
 
     <Button
         android:id="@+id/btn_map_location"
-        android:text="当前位置"
+        android:background="@drawable/btn_location_normal"
         android:textAllCaps="false"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp"
-        android:layout_marginEnd="68dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_below="@+id/btn_map_marker"
+        android:layout_alignStart="@+id/btn_map_marker"
+        android:layout_marginTop="41dp" />
 
     <Button
         android:id="@+id/btn_map_navi"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/btn_map_location"
-        android:layout_marginEnd="22dp"
-        android:layout_toStartOf="@+id/btn_map_location"
-        android:text="导航" />
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:background="@drawable/btn_nav"
+        android:layout_below="@+id/btn_map_refresh"
+        android:layout_alignStart="@+id/btn_map_location"
+        android:layout_marginTop="40dp" />
 
     <Button
         android:id="@+id/btn_map_refresh"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="26dp"
-        android:text="刷新"
-        android:layout_alignBaseline="@+id/btn_map_navi"
-        android:layout_alignBottom="@+id/btn_map_navi"
-        android:layout_toStartOf="@+id/btn_map_navi" />
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:background="@android:drawable/ic_popup_sync"
+        android:layout_below="@+id/btn_map_location"
+        android:layout_alignStart="@+id/btn_map_navi"
+        android:layout_marginTop="32dp" />
 
     <Button
         android:id="@+id/btn_map_marker"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
         android:layout_marginEnd="15dp"
         android:layout_marginTop="167dp"
-        android:text="显示单价" />
+        android:background="@drawable/btn_numbers_checked" />
 
 
 </RelativeLayout>

@@ -9,6 +9,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -22,6 +23,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -429,7 +431,7 @@ public class ParkFragment extends Fragment {
         mBaiduMap.clear();
         if (mIsSearch){
             //添加图标
-            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.img_target);
+            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.ic_marker);
             int width = bm.getWidth();
             int height = bm.getHeight();
             int newWidth = 60;
@@ -459,13 +461,14 @@ public class ParkFragment extends Fragment {
                 OverlayOptions options;
 
                 View customMarker = View.inflate(mContext, R.layout.custom_map_marker, null);
+                ImageView iv_marker = (ImageView) customMarker.findViewById(R.id.iv_marker);
                 TextView tv_marker = (TextView) customMarker.findViewById(R.id.tv_marker);
                 if (mMapStateParkingNum) {
                     tv_marker.setText(String.valueOf(mEstateBeanList.get(i).getParking().size()));
-                    tv_marker.setTextColor(Resources.getSystem().getColor(android.R.color.holo_green_light));
+                    iv_marker.setBackground(getResources().getDrawable(R.drawable.ic_marker_numbers));
                 } else {
                     tv_marker.setText(String.format("%d", mEstateBeanList.get(i).getUnitPrice()));
-                    tv_marker.setTextColor(Resources.getSystem().getColor(android.R.color.holo_red_light));
+                    iv_marker.setBackground(getResources().getDrawable(R.drawable.ic_marker_price));
                 }
                 customMarker.setDrawingCacheEnabled(true);
                 customMarker.measure(
@@ -532,9 +535,9 @@ public class ParkFragment extends Fragment {
     public void onChangeMarkerClicked() {
         mMapStateParkingNum = !mMapStateParkingNum;
         if (mMapStateParkingNum) {
-            mBtnMapMarker.setText("显示单价");
+            mBtnMapMarker.setBackground(getResources().getDrawable(R.drawable.btn_price_checked));
         } else {
-            mBtnMapMarker.setText("显示车位");
+            mBtnMapMarker.setBackground(getResources().getDrawable(R.drawable.btn_numbers_checked));
         }
         addMarkers();
     }

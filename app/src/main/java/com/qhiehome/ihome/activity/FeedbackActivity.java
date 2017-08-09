@@ -34,6 +34,7 @@ public class FeedbackActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         initToolbar();
         mEvFeedback.setFocusable(true);
+        mEvFeedback.setFocusableInTouchMode(true);
     }
 
     @OnClick(R.id.btn_feedback)
