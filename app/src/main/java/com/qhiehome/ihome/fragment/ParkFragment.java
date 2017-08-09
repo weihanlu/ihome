@@ -42,6 +42,7 @@ import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.Marker;
 import com.baidu.mapapi.map.MarkerOptions;
+import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.UiSettings;
@@ -289,12 +290,12 @@ public class ParkFragment extends Fragment {
         locOption.setNeedDeviceDirect(true);// 设置返回结果包含手机的方向
         mLocationClient.setLocOption(locOption);
 
-//        // 设置自定义图标
+        // 设置自定义图标
 //        BitmapDescriptor myMarker = BitmapDescriptorFactory
-//                .fromResource(R.drawable.navi_map);
-//        MyLocationConfigeration config = new MyLocationConfigeration(
-//                MyLocationConfigeration.LocationMode.FOLLOWING, true, myMarker);
-
+//                .fromResource(R.drawable.btn_nav);
+//        MyLocationConfiguration config = new MyLocationConfiguration(
+//                MyLocationConfiguration.LocationMode.FOLLOWING, true, myMarker);
+//        mBaiduMap.setMyLocationConfiguration(config);
         mBDLocationListener = new BDLocationListener() {
             @Override
             public void onReceiveLocation(BDLocation bdLocation) {
@@ -491,6 +492,7 @@ public class ParkFragment extends Fragment {
                 bundle.putSerializable("estate", mEstateBeanList.get(i));
                 //bundle.putString("name", mEstateBeanList.get(i).getName());
                 mMarker = (Marker) mBaiduMap.addOverlay(options);
+                mMarker.setToTop();
                 mMarker.setExtraInfo(bundle);
             }
         }
