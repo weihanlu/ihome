@@ -9,7 +9,6 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -23,7 +22,6 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -107,12 +105,12 @@ public class ParkFragment extends Fragment {
     @BindView(R.id.btn_map_marker)
     Button mBtnMapMarker;
 
-    @BindView(R.id.spinner_city)
-    NiceSpinner mSpinnerCity;
-
-    private List<String> mCities;
+    @BindView((R.id.tv_current_city))
+    TextView mTvCurrentCity;
 
     private Context mContext;
+
+    private boolean isGetCurrentCity;
 
     private MapView mMapView;
     private Toolbar mTbMap;
@@ -243,19 +241,6 @@ public class ParkFragment extends Fragment {
 
     private void initView(View view) {
         mMapView = (MapView) view.findViewById(R.id.mv_park);
-        initSpinner();
-    }
-
-    private void initSpinner() {
-        initCities();
-        mSpinnerCity.attachDataSource(mCities);
-    }
-
-    private void initCities() {
-        mCities = new ArrayList<>();
-        mCities.add("北京");
-        mCities.add("深圳");
-        mCities.add("上海");
     }
 
     /**
@@ -302,6 +287,15 @@ public class ParkFragment extends Fragment {
                     return;
                 }
                 mCity = bdLocation.getCity();
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!isGetCurrentCity) {
+                            mTvCurrentCity.append(mCity);
+                            isGetCurrentCity = true;
+                        }
+                    }
+                });
                 MyLocationData locData = new MyLocationData.Builder()
                         .accuracy(bdLocation.getRadius())
                         // 此处设置开发者获取到的方向信息，顺时针0-360
@@ -431,7 +425,7 @@ public class ParkFragment extends Fragment {
         mBaiduMap.clear();
         if (mIsSearch){
             //添加图标
-            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.ic_marker);
+            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.img_target);
             int width = bm.getWidth();
             int height = bm.getHeight();
             int newWidth = 60;
@@ -461,14 +455,13 @@ public class ParkFragment extends Fragment {
                 OverlayOptions options;
 
                 View customMarker = View.inflate(mContext, R.layout.custom_map_marker, null);
-                ImageView iv_marker = (ImageView) customMarker.findViewById(R.id.iv_marker);
                 TextView tv_marker = (TextView) customMarker.findViewById(R.id.tv_marker);
                 if (mMapStateParkingNum) {
                     tv_marker.setText(String.valueOf(mEstateBeanList.get(i).getParking().size()));
-                    iv_marker.setBackground(getResources().getDrawable(R.drawable.ic_marker_numbers));
+                    tv_marker.setTextColor(Resources.getSystem().getColor(android.R.color.holo_green_light));
                 } else {
                     tv_marker.setText(String.format("%d", mEstateBeanList.get(i).getUnitPrice()));
-                    iv_marker.setBackground(getResources().getDrawable(R.drawable.ic_marker_price));
+                    tv_marker.setTextColor(Resources.getSystem().getColor(android.R.color.holo_red_light));
                 }
                 customMarker.setDrawingCacheEnabled(true);
                 customMarker.measure(
@@ -535,9 +528,9 @@ public class ParkFragment extends Fragment {
     public void onChangeMarkerClicked() {
         mMapStateParkingNum = !mMapStateParkingNum;
         if (mMapStateParkingNum) {
-            mBtnMapMarker.setBackground(getResources().getDrawable(R.drawable.btn_price_checked));
+            mBtnMapMarker.setText("显示单价");
         } else {
-            mBtnMapMarker.setBackground(getResources().getDrawable(R.drawable.btn_numbers_checked));
+            mBtnMapMarker.setText("显示车位");
         }
         addMarkers();
     }
