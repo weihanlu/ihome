@@ -24,4 +24,8 @@
         <item name="android:maxHeight">2dp</item>
     </style>
 
+    <style name="toolbar_theme" parent="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+        <item name="colorControlNormal">@color/white</item>
+    </style>
+
 </resources>

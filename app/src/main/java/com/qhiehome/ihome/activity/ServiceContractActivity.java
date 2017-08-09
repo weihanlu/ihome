@@ -50,6 +50,7 @@ public class ServiceContractActivity extends BaseActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
         mToolbar.setTitle("服务协议");
+        mToolbar.setTitleTextColor(getResources().getColor(R.color.white));
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

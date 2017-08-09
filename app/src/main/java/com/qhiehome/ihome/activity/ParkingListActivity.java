@@ -113,7 +113,7 @@ public class ParkingListActivity extends BaseActivity {
         initRecyclerView();
         mUnitPrice = (float) mEstateBean.getUnitPrice();
         mTvParkingGuarfee.setText("担保费：￥" + String.format(DECIMAL_2, (float) mEstateBean.getGuaranteeFee()));
-
+        mPrice = mUnitPrice/4;
     }
 
     private void initToolbar() {
@@ -140,6 +140,8 @@ public class ParkingListActivity extends BaseActivity {
         Calendar calendar = Calendar.getInstance();
         //calendar.setTime(TimeUtil.getInstance().millis2Date(System.currentTimeMillis() + QUARTER_TIME));
         calendar.add(Calendar.MINUTE, 15);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
         mStartTimeMillis = calendar.getTimeInMillis();
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int min = calendar.get(Calendar.MINUTE);
@@ -181,6 +183,8 @@ public class ParkingListActivity extends BaseActivity {
         }else {
             calendar.set(Calendar.HOUR_OF_DAY, startHour);
             calendar.set(Calendar.MINUTE, startMin);
+            calendar.set(Calendar.SECOND, 0);
+            calendar.set(Calendar.MILLISECOND, 0);
             calendar.add(Calendar.MINUTE, 15);
             mEndMinites.clear();
             mEndHours.clear();
@@ -231,9 +235,13 @@ public class ParkingListActivity extends BaseActivity {
                     Calendar calendar = Calendar.getInstance();
                     calendar.set(Calendar.HOUR_OF_DAY, Integer.valueOf(mStartHours.get(options1)));
                     calendar.set(Calendar.MINUTE, Integer.valueOf(mStartMinites.get(options1).get(options2)));
+                    calendar.set(Calendar.SECOND, 0);
+                    calendar.set(Calendar.MILLISECOND, 0);
                     mStartTimeMillis = calendar.getTimeInMillis();
                     initEndTimeDataSourse(Integer.valueOf(mStartHours.get(options1)), Integer.valueOf(mStartMinites.get(options1).get(options2)), mEndTimeMillis <= mStartTimeMillis);
-                    mPrice = (mEndTimeMillis-mStartTimeMillis)/1000
+                    float mills = mEndTimeMillis - mStartTimeMillis;
+                    float hours = mills/1000/3600;
+                    mPrice = hours * mUnitPrice;
                     mAdapter.notifyDataSetChanged();
                 }
             })
@@ -266,7 +274,12 @@ public class ParkingListActivity extends BaseActivity {
                     Calendar calendar = Calendar.getInstance();
                     calendar.set(Calendar.HOUR_OF_DAY, Integer.valueOf(mEndHours.get(options1)));
                     calendar.set(Calendar.MINUTE, Integer.valueOf(mEndMinites.get(options1).get(options2)));
+                    calendar.set(Calendar.SECOND, 0);
+                    calendar.set(Calendar.MILLISECOND, 0);
                     mEndTimeMillis = calendar.getTimeInMillis();
+                    float mills = mEndTimeMillis - mStartTimeMillis;
+                    float hours = mills/1000/3600;
+                    mPrice = hours * mUnitPrice;
                     mAdapter.notifyDataSetChanged();
                 }
             })
