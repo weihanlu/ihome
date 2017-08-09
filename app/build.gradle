@@ -49,7 +49,7 @@ dependencies {
     compile 'com.contrarywind:Android-PickerView:3.2.5'
     compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2'
     compile 'com.github.arimorty:floatingsearchview:2.1.1'
+    compile 'com.github.arcadefire:nice-spinner:1.2'
     testCompile 'junit:junit:4.12'
     apt 'com.jakewharton:butterknife-compiler:8.7.0'
-    compile 'com.github.arcadefire:nice-spinner:1.2'
 }
