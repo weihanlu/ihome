@@ -3,13 +3,13 @@ package com.qhiehome.ihome.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.util.ToastUtil;
@@ -54,7 +54,7 @@ public class FeedbackActivity extends AppCompatActivity {
             actionBar.setDisplayShowTitleEnabled(false);
         }
         mTbFeedback.setTitle("意见反馈");
-        mTbFeedback.setTitleTextColor(getResources().getColor(R.color.white));
+        mTbFeedback.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
         mTbFeedback.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

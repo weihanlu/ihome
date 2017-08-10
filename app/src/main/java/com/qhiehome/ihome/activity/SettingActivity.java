@@ -2,6 +2,7 @@ package com.qhiehome.ihome.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
@@ -103,7 +104,7 @@ public class SettingActivity extends BaseActivity {
             actionBar.setDisplayShowTitleEnabled(false);
         }
         mToolbar.setTitle("设置");
-        mToolbar.setTitleTextColor(getResources().getColor(R.color.white));
+        mToolbar.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -2,6 +2,7 @@ package com.qhiehome.ihome.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -35,10 +36,15 @@ public class ServiceContractActivity extends BaseActivity {
 
     private void initView() {
         initToolbar();
-        initProgressWebView();
     }
 
-    private void initProgressWebView() {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        initServiceContract();
+    }
+
+    private void initServiceContract() {
         mProgressWebView.loadUrl(CONTRACT_URL);
     }
 
@@ -50,7 +56,7 @@ public class ServiceContractActivity extends BaseActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
         mToolbar.setTitle("服务协议");
-        mToolbar.setTitleTextColor(getResources().getColor(R.color.white));
+        mToolbar.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

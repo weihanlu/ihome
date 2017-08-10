@@ -1,6 +1,5 @@
 package com.qhiehome.ihome.activity;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -9,14 +8,12 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
-import android.view.TextureView;
 import android.widget.Button;
 import android.widget.EditText;
 
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.SMS.SMSResponse;
-import com.qhiehome.ihome.network.model.lock.updatepwd.UpdateLockPwdResponse;
 import com.qhiehome.ihome.network.model.signin.SigninRequest;
 import com.qhiehome.ihome.network.model.signin.SigninResponse;
 import com.qhiehome.ihome.network.service.SMS.SMSService;
@@ -36,7 +33,6 @@ import java.lang.ref.WeakReference;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Random;
 
 import butterknife.BindView;
@@ -69,8 +65,6 @@ public class LoginActivity extends BaseActivity {
     String login_successGetVerification;
 
     private static final int DEFAULT_PHONE_LEN = 11;
-
-    private static final String DEFAULT_COUNTRY_CODE = "86";
 
     private static final int UPPER_SECOND = 60;
 
@@ -109,7 +103,6 @@ public class LoginActivity extends BaseActivity {
             mEtPhone.setText(SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, ""));
             mEtVerify.requestFocus();
         }
-
     }
 
     private static class SMSObserverHandler extends Handler{

@@ -6,8 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.RelativeLayout;
@@ -19,8 +18,8 @@ import com.baidu.mapapi.SDKInitializer;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.fragment.MeFragment;
 import com.qhiehome.ihome.fragment.ParkFragment;
-import com.qhiehome.ihome.manager.ActivityManager;
 import com.qhiehome.ihome.util.Constant;
+import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 
 import java.util.ArrayList;
@@ -37,8 +36,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
 
     private Context mContext;
 
-//    Toolbar mToolbar;
-
     Fragment mParkFragment;
     Fragment mMeFragment;
     Fragment mThisFragment;
@@ -53,6 +50,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
         initData();
         initView();
         initFragments(savedInstanceState);
+        LogUtil.d(TAG, "MainActivity onCreate()");
     }
 
     private void initData() {
@@ -96,13 +94,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
         resetOtherTabText();
         switch (v.getId()) {
             case R.id.rl_park:
-                mTvPark.setTextColor(getResources().getColor(R.color.white));
+                mTvPark.setTextColor(ContextCompat.getColor(this, R.color.white));
                 switchContent(mMeFragment, mParkFragment);
                 break;
             case R.id.rl_me:
                 String phoneNum = SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, "");
                 if (TextUtils.isEmpty(phoneNum)) {
-                    mTvPark.setTextColor(getResources().getColor(R.color.white));
+                    mTvPark.setTextColor(ContextCompat.getColor(this, R.color.white));
                     new MaterialDialog.Builder(mContext)
                             .title("去登录")
                             .content("确定登录吗？")
@@ -116,7 +114,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
                             })
                             .show();
                 } else {
-                    mTvMe.setTextColor(getResources().getColor(R.color.white));
+                    mTvMe.setTextColor(ContextCompat.getColor(this, R.color.white));
                     switchContent(mParkFragment, mMeFragment);
                 }
                 break;
@@ -127,7 +125,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
 
     private void resetOtherTabText() {
         for (TextView textView: mTabTextIndicators) {
-            textView.setTextColor(getResources().getColor(R.color.light_gray));
+            textView.setTextColor(ContextCompat.getColor(this, R.color.gray));
         }
     }
 

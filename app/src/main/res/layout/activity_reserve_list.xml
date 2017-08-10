@@ -23,25 +23,21 @@
             android:minHeight="?attr/actionBarSize"
             android:theme="?attr/actionBarTheme" />
 
-
     </android.support.design.widget.AppBarLayout>
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/srl_reserve"
         android:layout_width="match_parent"
-        android:layout_height="597dp"
-        android:layout_marginBottom="0dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginLeft="0dp"
-        android:layout_marginRight="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="0dp"
-        tools:layout_editor_absoluteY="62dp">
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        >
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/rv_reserve"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            />
+
     </android.support.v4.widget.SwipeRefreshLayout>
 
 

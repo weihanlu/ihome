@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
@@ -122,6 +123,7 @@ public class ParkingListActivity extends BaseActivity {
             actionBar.setDisplayShowTitleEnabled(false);
         }
         mTbParking.setTitle(mEstateBean.getName());
+        mTbParking.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
         mTbParking.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

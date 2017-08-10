@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.DividerItemDecoration;
@@ -46,6 +47,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 import butterknife.OnClick;
 import retrofit2.Call;
@@ -54,10 +56,6 @@ import retrofit2.Response;
 
 public class ReserveListActivity extends BaseActivity {
 
-    //    @BindView(R.id.tb_reserve)
-//    Toolbar mTbReserve;
-//    @BindView(R.id.rv_reserve)
-//    RecyclerView mRvReserve;
     private ReserveAdapter mReserveAdapter;
 
     private BNRoutePlanNode.CoordinateType mCoordinateType;
@@ -81,7 +79,7 @@ public class ReserveListActivity extends BaseActivity {
     private SwipeRefreshLayout mSrlReserve;
 
     private List<OrderResponse.DataBean.OrderBean> mOrderBeanList = new ArrayList<>();
-    private static SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm");
+    private static SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm", Locale.CHINA);
 
     private static final int ORDER_STATE_RESERVED = 31;   //（显示预计金额）取消预约+导航+小区地图+升降车位锁
     private static final int ORDER_STATE_PARKED = 32;     //（显示预计金额）升降车位锁
@@ -96,23 +94,28 @@ public class ReserveListActivity extends BaseActivity {
 //        ButterKnife.bind(this);
         mRvReserve = (RecyclerView) findViewById(R.id.rv_reserve);
         mTbReserve = (Toolbar) findViewById(R.id.tb_reserve);
-        mSrlReserve = (SwipeRefreshLayout) findViewById(R.id.srl_reserve);
         mContext = this;
         initToolbar();
-
-        mSrlReserve.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                orderRequest();
-                mReserveAdapter.notifyDataSetChanged();
-            }
-        });
-        mSrlReserve.setRefreshing(true);
-        orderRequest();
+        initSwiperRefreshLayout();
         initRecyclerView();
         if (initDirs()) {
             initNavi();
         }
+        orderRequest();
+    }
+
+    public void initSwiperRefreshLayout() {
+        mSrlReserve = (SwipeRefreshLayout) findViewById(R.id.srl_reserve);
+        mSrlReserve.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                orderRequest();
+            }
+        });
+        mSrlReserve.setColorSchemeResources(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light, android.R.color.holo_orange_light, android.R.color.holo_red_light);
+        mSrlReserve.setRefreshing(true);
+
     }
 
     public static void start(Context context) {
@@ -128,6 +131,8 @@ public class ReserveListActivity extends BaseActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
         }
+        mTbReserve.setTitle("我的预约");
+        mTbReserve.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
         mTbReserve.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -236,18 +241,8 @@ public class ReserveListActivity extends BaseActivity {
 
         }
 
-
         @Override
         public int getItemCount() {
-//            String table = ParkingSQLHelper.TABLE_NAME;
-//            String[] columns = new String[]{"count(shareID)"};
-//            String selection = "startTime>?";
-//            String[] selectionArgs = new String[]{String.valueOf(System.currentTimeMillis())};
-//            String orderBy = "startTime, endTime";
-//            Cursor cursor = mParkingDatabase.query(table,columns,selection,selectionArgs,null,null,orderBy,null);
-//            while(cursor.moveToNext()){
-//                num = cursor.getInt(cursor.getColumnIndex("count(shareID"));
-//            }
             return mOrderBeanList.size();
         }
 
@@ -288,8 +283,16 @@ public class ReserveListActivity extends BaseActivity {
             public void onResponse(Call<OrderResponse> call, Response<OrderResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
                     mOrderBeanList = response.body().getData().getOrder();
+                    if (mReserveAdapter != null) {
+                        mReserveAdapter.notifyDataSetChanged();
+                    }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mSrlReserve.setRefreshing(false);
+                        }
+                    });
                 }
-                mSrlReserve.setRefreshing(false);
             }
 
             @Override

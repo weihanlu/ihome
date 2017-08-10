@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.DividerItemDecoration;
@@ -138,7 +139,7 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
             actionBar.setDisplayShowTitleEnabled(false);
         }
         mTbOrder.setTitle("历史订单");
-        mTbOrder.setTitleTextColor(getResources().getColor(R.color.white));
+        mTbOrder.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
         mTbOrder.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -159,8 +160,7 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
     class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.MyViewHolder> {
         @Override
         public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            MyViewHolder viewHolder = new MyViewHolder(LayoutInflater.from(OrderListActivity.this).inflate(R.layout.item_order_list, parent, false));
-            return viewHolder;
+            return new MyViewHolder(LayoutInflater.from(OrderListActivity.this).inflate(R.layout.item_order_list, parent, false));
         }
 
         @Override
@@ -204,7 +204,7 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
             TextView tv_fee;
             ImageView iv_income_expense;
 
-            public MyViewHolder(View view) {
+            private MyViewHolder(View view) {
                 super(view);
                 tv_estate = (TextView) view.findViewById(R.id.tv_order_estate);
                 tv_time = (TextView) view.findViewById(R.id.tv_order_time);
@@ -214,8 +214,6 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
 
         }
     }
-
-
 
     public void onRefresh()
     {

@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -86,7 +87,7 @@ public class MeFragment extends Fragment {
 
     private void initToolbar() {
         mToolbar.setTitle("Ihome");
-        mToolbar.setTitleTextColor(getResources().getColor(R.color.white));
+        mToolbar.setTitleTextColor(ContextCompat.getColor(mContext, R.color.white));
     }
 
     private void initRecyclerView(View view) {

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
@@ -137,11 +138,11 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                                         timeFormat.format(TimeUtil.getInstance().millis2Date(shareBean.getEndTime())));
                                 publishBean.setShareId(shareBean.getId());
                                 mPublishList.add(publishBean);
-                                if (mPublishAdapter != null) {
-                                    mPublishAdapter.notifyDataSetChanged();
-                                }
                             }
                         }
+                    }
+                    if (mPublishAdapter != null) {
+                        mPublishAdapter.notifyDataSetChanged();
                     }
                     runOnUiThread(new Runnable() {
                         @Override
@@ -156,6 +157,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
             @Override
             public void onFailure(@NonNull Call<ParkingOwnedResponse> call, @NonNull Throwable t) {
                 LogUtil.d(TAG, "request failure");
+                mSrfPublish.setRefreshing(false);
             }
         });
     }
@@ -233,7 +235,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
             actionBar.setDisplayShowTitleEnabled(false);
         }
         mToolbar.setTitle("发布车位");
-        mToolbar.setTitleTextColor(getResources().getColor(R.color.white));
+        mToolbar.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

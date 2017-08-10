@@ -1,8 +1,8 @@
 package com.qhiehome.ihome.activity;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
@@ -15,8 +15,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
-import com.qhiehome.ihome.adapter.MeAdapter;
-import com.qhiehome.ihome.util.ToastUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +31,6 @@ public class CityActivity extends AppCompatActivity {
 
     private List<String> mCities = new ArrayList<>();
     private String mCurrentCity;
-    private CityAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +61,7 @@ public class CityActivity extends AppCompatActivity {
             actionBar.setDisplayShowTitleEnabled(false);
         }
         mTbCity.setTitle("选择城市");
-        mTbCity.setTitleTextColor(getResources().getColor(R.color.white));
+        mTbCity.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
         mTbCity.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -75,11 +72,11 @@ public class CityActivity extends AppCompatActivity {
 
     private void initRecyclerView(){
         mRvCity.setLayoutManager(new LinearLayoutManager(this));
-        mAdapter = new CityAdapter();
-        mAdapter.setOnItemClickListener(new OnClickListener() {
+        CityAdapter adapter = new CityAdapter();
+        adapter.setOnItemClickListener(new OnClickListener() {
             @Override
             public void onClick(View view, int i) {
-                String city_selected = "";
+                String city_selected;
                 if (i == 0){
                     city_selected = mCurrentCity;
                 }else {
@@ -94,18 +91,16 @@ public class CityActivity extends AppCompatActivity {
                 finish();
             }
         });
-        mRvCity.setAdapter(mAdapter);
-        Context context = CityActivity.this;
-        DividerItemDecoration did = new DividerItemDecoration(context, LinearLayoutManager.VERTICAL);
-        mRvCity.addItemDecoration(did);
+        mRvCity.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
+        mRvCity.setAdapter(adapter);
     }
 
     class CityAdapter extends RecyclerView.Adapter<CityAdapter.MyViewHolder> {
+
         @Override
         public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             return new MyViewHolder(LayoutInflater.from(CityActivity.this).inflate(R.layout.item_city_select, parent, false));
         }
-
 
         @Override
         public void onBindViewHolder(final MyViewHolder holder, int position) {
@@ -137,7 +132,7 @@ public class CityActivity extends AppCompatActivity {
             TextView tv_hint;
 
 
-            public MyViewHolder(View view) {
+            private MyViewHolder(View view) {
                 super(view);
                 tv_city = (TextView) view.findViewById(R.id.tv_city);
                 tv_hint = (TextView) view.findViewById(R.id.tv_city_hint);

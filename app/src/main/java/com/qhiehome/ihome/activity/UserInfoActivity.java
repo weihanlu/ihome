@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -320,6 +321,8 @@ public class UserInfoActivity extends BaseActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
         }
+        mTbUserinfo.setTitle("个人信息");
+        mTbUserinfo.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
         mTbUserinfo.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
