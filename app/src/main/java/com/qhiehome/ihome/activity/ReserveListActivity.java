@@ -2,6 +2,7 @@ package com.qhiehome.ihome.activity;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -35,8 +36,11 @@ import com.qhiehome.ihome.network.model.inquiry.order.OrderRequest;
 import com.qhiehome.ihome.network.model.inquiry.order.OrderResponse;
 import com.qhiehome.ihome.network.model.inquiry.reserveowned.ReserveOwnedRequest;
 import com.qhiehome.ihome.network.model.inquiry.reserveowned.ReserveOwnedResponse;
+import com.qhiehome.ihome.network.model.park.reservecancel.ReserveCancelRequest;
+import com.qhiehome.ihome.network.model.park.reservecancel.ReserveCancelResponse;
 import com.qhiehome.ihome.network.service.inquiry.OrderService;
 import com.qhiehome.ihome.network.service.inquiry.ReserveOwnedService;
+import com.qhiehome.ihome.network.service.park.ReserveCancelService;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
@@ -178,6 +182,7 @@ public class ReserveListActivity extends BaseActivity {
                         @Override
                         public void onClick(View v) {
                             //取消预约请求
+                            CancelReserve(position);
                         }
                     });
 
@@ -299,6 +304,27 @@ public class ReserveListActivity extends BaseActivity {
             public void onFailure(Call<OrderResponse> call, Throwable t) {
                 ToastUtil.showToast(mContext, "网络连接异常");
                 mSrlReserve.setRefreshing(false);
+            }
+        });
+    }
+
+
+    private void CancelReserve(final int position){
+        int orderId = mOrderBeanList.get(position).getId();
+        ReserveCancelService reserveCancelService = ServiceGenerator.createService(ReserveCancelService.class);
+        Call<ReserveCancelResponse> call = reserveCancelService.reserve(new ReserveCancelRequest(orderId));
+        call.enqueue(new Callback<ReserveCancelResponse>() {
+            @Override
+            public void onResponse(Call<ReserveCancelResponse> call, Response<ReserveCancelResponse> response) {
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
+                    mOrderBeanList.remove(position);
+                    mReserveAdapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ReserveCancelResponse> call, Throwable t) {
+                ToastUtil.showToast(mContext, "网络连接异常");
             }
         });
     }
