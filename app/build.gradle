@@ -52,4 +52,5 @@ dependencies {
     compile 'com.github.arcadefire:nice-spinner:1.2'
     testCompile 'junit:junit:4.12'
     apt 'com.jakewharton:butterknife-compiler:8.7.0'
+    compile 'com.github.fodroid:XStatusBarHelper:v1.1'
 }
