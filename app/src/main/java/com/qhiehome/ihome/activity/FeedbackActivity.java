@@ -22,8 +22,8 @@ public class FeedbackActivity extends AppCompatActivity {
 
     @BindView(R.id.tb_feedback)
     Toolbar mTbFeedback;
-    @BindView(R.id.ev_feedback)
-    EditText mEvFeedback;
+    @BindView(R.id.et_feedback)
+    EditText mEtFeedback;
     @BindView(R.id.btn_feedback)
     Button mBtnFeedback;
 
@@ -33,13 +33,11 @@ public class FeedbackActivity extends AppCompatActivity {
         setContentView(R.layout.activity_feedback);
         ButterKnife.bind(this);
         initToolbar();
-        mEvFeedback.setFocusable(true);
-        mEvFeedback.setFocusableInTouchMode(true);
     }
 
     @OnClick(R.id.btn_feedback)
     public void onViewClicked() {
-        if (mEvFeedback.getText().toString().trim().isEmpty()){
+        if (mEtFeedback.getText().toString().trim().isEmpty()){
             ToastUtil.showToast(this, "请输入反馈内容");
         }else {
             // TODO: 2017/8/9 意见反馈接口

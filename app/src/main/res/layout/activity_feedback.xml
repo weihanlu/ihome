@@ -24,23 +24,33 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:padding="4dp">
 
-        <EditText
-            android:id="@+id/ev_feedback"
+        <FrameLayout
+            android:id="@+id/fl_feedback"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:hint="请留下您的宝贵意见"
-            android:textColorHint="@android:color/darker_gray"
-            />
+            android:layout_height="200dp"
+            android:background="@drawable/bg_et_feedback">
+
+            <EditText
+                android:id="@+id/et_feedback"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:hint="请留下您的宝贵意见"
+                android:textColorHint="@android:color/darker_gray"
+                android:backgroundTint="@color/white"
+                />
+
+        </FrameLayout>
 
         <Button
             android:id="@+id/btn_feedback"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="提交"
-            android:layout_below="@id/ev_feedback"
+            android:layout_below="@id/fl_feedback"
             />
 
     </RelativeLayout>
