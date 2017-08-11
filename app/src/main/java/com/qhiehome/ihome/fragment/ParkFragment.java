@@ -16,6 +16,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,26 +54,40 @@ import com.qhiehome.ihome.activity.MapSearchActivity;
 import com.qhiehome.ihome.activity.NaviGuideActivity;
 import com.qhiehome.ihome.activity.ParkingListActivity;
 import com.qhiehome.ihome.network.ServiceGenerator;
+import com.qhiehome.ihome.network.model.baiduMap.BaiduMapResponse;
 import com.qhiehome.ihome.network.model.base.ParkingResponse;
 import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyRequest;
 import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyResponse;
+import com.qhiehome.ihome.network.service.baiduMap.BaiduMapService;
+import com.qhiehome.ihome.network.service.baiduMap.BaiduMapServiceGenerator;
 import com.qhiehome.ihome.network.service.inquiry.ParkingEmptyService;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+import okio.Utf8;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -572,7 +587,46 @@ public class ParkFragment extends Fragment {
             }
             if (requestCode == REQUEST_CODE_CITY){
                 mTvCurrentCity.setText("当前城市：" + data.getExtras().getString("city"));
-                // TODO: 2017/8/9 地图改变城市
+                String URLString;
+                String cityName = data.getExtras().getString("city");
+                String output = "json";
+                String key = "R6nE16pZMKymjr58SMBAPsU3wC8BD9RY";
+//                try {
+//                    cityName = URLEncoder.encode(data.getExtras().getString("city"), "UTF-8");
+//                }catch (Exception e){
+//                    e.printStackTrace();
+//                }
+                if (!TextUtils.isEmpty(cityName)){
+                    BaiduMapService baiduMapService = BaiduMapServiceGenerator.createService(BaiduMapService.class);
+                    Map<String, String> option = new HashMap<String, String>();
+                    option.put("address", cityName);
+                    option.put("output", output);
+                    option.put("key", key);
+                    Call<BaiduMapResponse> call = baiduMapService.queryLatLnt(option);
+                    call.enqueue(new Callback<BaiduMapResponse>() {
+                        @Override
+                        public void onResponse(Call<BaiduMapResponse> call, Response<BaiduMapResponse> response) {
+                            if (response.body().getStatus().equals("OK")){
+                                mMyPt = new LatLng(response.body().getResult().getLocation().getLat(), response.body().getResult().getLocation().getLng());
+                                MapStatus mMapStatus = new MapStatus.Builder()
+                                        .target(mMyPt)
+                                        .zoom(MAP_ZOOM_LEVEL)
+                                        .build();
+                                MapStatusUpdate mMapStatusUpdate = MapStatusUpdateFactory.newMapStatus(mMapStatus);
+                                mBaiduMap.setMapStatus(mMapStatusUpdate);
+                                //刷新附近停车场
+                                mIsSearch = true;
+                                updateMapState(mMyPt);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<BaiduMapResponse> call, Throwable t) {
+
+                        }
+                    });
+                }
+
             }
         }
     }
