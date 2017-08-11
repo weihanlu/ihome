@@ -63,6 +63,7 @@
         android:textColor="@color/white"
         android:textCursorDrawable="@null"
         android:inputType="phone"
+        android:backgroundTint="@color/white"
         app:layout_constraintBaseline_toBaselineOf="@+id/tv_phone"
         app:layout_constraintLeft_toRightOf="@+id/tv_phone"
         android:layout_marginStart="33dp" />
@@ -77,6 +78,7 @@
         android:textColor="@color/white"
         android:textCursorDrawable="@null"
         android:inputType="numberDecimal"
+        android:backgroundTint="@color/white"
         app:layout_constraintBaseline_toBaselineOf="@+id/tv_vertify"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="@+id/et_phone"
