@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.AppBarLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.DividerItemDecoration;
@@ -61,14 +62,21 @@ public class UserInfoActivity extends BaseActivity {
 
     @BindView(R.id.tb_userinfo)
     Toolbar mTbUserinfo;
-    @BindView(R.id.rv_userinfo)
-    RecyclerView mRvUserinfo;
+
+    @BindView(R.id.app_bar)
+    AppBarLayout mAppBarLayout;
+
+    @BindView(R.id.tv_phoneNum)
+    TextView mTvPhoneNum;
+
+    @BindView(R.id.iv_avatar)
+    ImageView mIvAvatar;
+
+    @BindView(R.id.tv_toolbar_title)
+    TextView mTvToolbarTitle;
 
     @BindView(R.id.vs_user_locks)
     ViewStub mViewStub;
-
-    private static final String[] LIST_CONTENT = {"头像","手机号"};
-    private List<String> userInfo;
 
     private Context mContext;
 
@@ -96,7 +104,6 @@ public class UserInfoActivity extends BaseActivity {
         mContext = this;
         initData();
         initView();
-        initUserInfo();
     }
 
     @Override
@@ -117,6 +124,8 @@ public class UserInfoActivity extends BaseActivity {
     private void initData() {
         mUserLocks = new ArrayList<>();
         mParkingIds = new StringBuilder();
+        String phoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, "");
+        mTvPhoneNum.setText(phoneNum);
         inquiryOwnedParkings();
     }
 
@@ -311,80 +320,39 @@ public class UserInfoActivity extends BaseActivity {
 
     private void initView() {
         initToolbar();
-        initRecyclerView();
+        initAppBarLayout();
     }
 
     private void initToolbar() {
-        setSupportActionBar(mTbUserinfo);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setDisplayShowTitleEnabled(false);
-        }
-        mTbUserinfo.setTitle("个人信息");
-        mTbUserinfo.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
         mTbUserinfo.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
             }
         });
-
     }
 
-    private void initRecyclerView(){
-        mRvUserinfo.setLayoutManager(new LinearLayoutManager(this));
-        UserInfoAdapter mAdapter = new UserInfoAdapter();
-        mRvUserinfo.setAdapter(mAdapter);
-        Context context = UserInfoActivity.this;
-        DividerItemDecoration did = new DividerItemDecoration(context,LinearLayoutManager.VERTICAL);
-        mRvUserinfo.addItemDecoration(did);
-    }
-
-    private void initUserInfo(){
-        userInfo = new ArrayList<>();
-        userInfo.add("img_profile.jpg");
-        userInfo.add(SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, Constant.TEST_PHONE_NUM));
+    private void initAppBarLayout() {
+        mAppBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
+            @Override
+            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+                float total = appBarLayout.getTotalScrollRange() * 1.0f;
+                float p = Math.abs(verticalOffset) / total;
+                if (p > 0.5) {
+                    mTvToolbarTitle.setAlpha(1.0f / 0.5f * (p - 0.5f));
+                    mTvPhoneNum.setAlpha(0);
+                } else {
+                    mTvToolbarTitle.setAlpha(0);
+                    mTvPhoneNum.setAlpha(1.0f - p / 0.5f);
+                }
+                mIvAvatar.setVisibility(p == 1 ? View.INVISIBLE: View.VISIBLE);
+            }
+        });
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-    }
-
-    class UserInfoAdapter extends RecyclerView.Adapter<UserInfoAdapter.MyViewHolder>{
-        @Override
-        public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType){
-            MyViewHolder viewHolder = new MyViewHolder(LayoutInflater.from(UserInfoActivity.this).inflate(R.layout.item_user_info_list,parent,false));
-            return viewHolder;
-        }
-        @Override
-        public void onBindViewHolder(MyViewHolder holder, int position){
-            holder.tv_userinfo.setText(LIST_CONTENT[position]);
-            if (position == 0){
-                Bitmap bm = BitmapFactory.decodeResource(getResources(),R.drawable.img_profile);
-                holder.iv_userimg.setImageBitmap(bm);
-            }else {
-                holder.tv_usercontent.setText(userInfo.get(position));
-            }
-        }
-        @Override
-        public int getItemCount(){
-            return LIST_CONTENT.length;
-        }
-
-        class MyViewHolder extends ViewHolder{
-            TextView tv_userinfo;
-            TextView tv_usercontent;
-            ImageView iv_userimg;
-            public MyViewHolder(View view){
-                super(view);
-                tv_userinfo = (TextView) view.findViewById(R.id.tv_userinfo);
-                tv_usercontent = (TextView) view.findViewById(R.id.tv_usercontent);
-                iv_userimg = (ImageView) view.findViewById(R.id.iv_userimg);
-            }
-
-        }
     }
 
     private class ConnectLockReceiver extends BroadcastReceiver {
