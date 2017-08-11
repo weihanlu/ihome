@@ -2,15 +2,10 @@ package com.qhiehome.ihome.activity;
 
 import android.os.Handler;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.TextUtils;
 
 import com.qhiehome.ihome.R;
-import com.qhiehome.ihome.manager.ActivityManager;
-import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.LogUtil;
-import com.qhiehome.ihome.util.SharedPreferenceUtil;
 
 import me.shihao.library.XStatusBarHelper;
 
