@@ -38,4 +38,12 @@ public class Constant {
 
     public static final String CONTRACT_URL = "http://weixin.qq.com/agreement?lang=zh_CN";
 
+    // update module
+
+    public static final String APK_UPDATE_UKEY = "ce208a1437998ef0a8e5f60b7dc4aac1";
+    public static final String APK_UPDATE_API_KEY = "61bb58e6d87d6d2d6b84c7a44c237a7e";
+    public static final String APK_UPDATE_PAGE_NUM = "1";
+
+    public static final String APK_UPDATE_URL_PATTERN = "http://www.pgyer.com/apiv1/app/install?aKey=%s&_api_key=61bb58e6d87d6d2d6b84c7a44c237a7e&password=ihome";
+
 }

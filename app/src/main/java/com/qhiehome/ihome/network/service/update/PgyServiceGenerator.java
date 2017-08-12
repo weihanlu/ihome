@@ -7,7 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class PgyServiceGenerator {
 
-    private static final String BASE_URL = "http://www.pgyer.com/apiv1/app/";
+    private static final String BASE_URL = "http://www.pgyer.com/apiv1/user/";
 
     private static Retrofit.Builder retrofitBuilder
             = new Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(GsonConverterFactory.create());

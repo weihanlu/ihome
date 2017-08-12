@@ -5,9 +5,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
@@ -17,10 +19,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.qhiehome.ihome.R;
-import com.qhiehome.ihome.adapter.MeAdapter;
 import com.qhiehome.ihome.adapter.SettingMenuAdapter;
 import com.qhiehome.ihome.manager.ActivityManager;
 import com.qhiehome.ihome.network.model.update.CheckUpdateResponse;
@@ -30,6 +30,7 @@ import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
+import com.qhiehome.ihome.util.ToastUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -38,10 +39,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
 import butterknife.BindArray;
 import butterknife.BindView;
@@ -53,8 +51,6 @@ import retrofit2.Response;
 public class SettingActivity extends BaseActivity {
 
     private static final String TAG = "SettingActivity";
-
-    private static final String APK_UPDATE_URL = "http://www.pgyer.com/apiv1/app/install?aKey=2ecfc4108f814c51dabbb1b21c80fe90&_api_key=61bb58e6d87d6d2d6b84c7a44c237a7e&password=ihome";
 
     @BindArray(R.array.setting_menu)
     String[] mSettingMenu;
@@ -132,29 +128,56 @@ public class SettingActivity extends BaseActivity {
     private void updateApp() {
         cancelUpdate = false;
         // 1. request versionCode on server
-        // 2. get local app version
-        int serverCode = 2;
-        int versionCode = CommonUtil.getVersionCode();
-        if (serverCode > versionCode) {
-            mDialog = new MaterialDialog.Builder(this)
-                    .title("正在更新")
-                    .content("下载进度")
-                    .progress(false, 100, true)
-                    .dismissListener(new DialogInterface.OnDismissListener() {
-                        @Override
-                        public void onDismiss(DialogInterface dialog) {
-                            dialog.dismiss();
-                            cancelUpdate = true;
-                        }
-                    })
-                    .show();
-            // download apk
-            downloadApk();
-        }
+        PgyService pgyService = PgyServiceGenerator.createService(PgyService.class);
+        Call<CheckUpdateResponse> call = pgyService.getLatestVersion(Constant.APK_UPDATE_UKEY, Constant.APK_UPDATE_API_KEY, Constant.APK_UPDATE_PAGE_NUM);
+        call.enqueue(new Callback<CheckUpdateResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<CheckUpdateResponse> call, @NonNull Response<CheckUpdateResponse> response) {
+                CheckUpdateResponse body = response.body();
+                if (body != null && body.getCode().equals("0")) {
+                    List<CheckUpdateResponse.DataBean.ListBean> list = body.getData().getList();
+                    int onLineAppVersionNo = Integer.valueOf(list.get(0).getAppVersionNo());
+                    if (onLineAppVersionNo > 0) {
+                        final String appKey = list.get(0).getAppKey();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mDialog = new MaterialDialog.Builder(mContext)
+                                        .title("正在更新")
+                                        .content("下载进度")
+                                        .progress(false, 100, true)
+                                        .dismissListener(new DialogInterface.OnDismissListener() {
+                                            @Override
+                                            public void onDismiss(DialogInterface dialog) {
+                                                dialog.dismiss();
+                                                cancelUpdate = true;
+                                            }
+                                        })
+                                        .show();
+                                downloadApk(String.format(Constant.APK_UPDATE_URL_PATTERN, appKey));
+                            }
+                        });
+                    } else {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                ToastUtil.showToast(mContext, "当前已是最新版本");
+                            }
+                        });
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<CheckUpdateResponse> call, @NonNull Throwable t) {
+                ToastUtil.showToast(mContext, "网络异常");
+            }
+        });
     }
 
-    private void downloadApk() {
-        new DownloadAsyncTask().execute(APK_UPDATE_URL);
+    private void downloadApk(String downloadUrl) {
+//        LogUtil.d(TAG, "download url is " + downloadUrl);
+        new DownloadAsyncTask().execute(downloadUrl);
     }
 
     private void initToolbar() {
@@ -185,8 +208,17 @@ public class SettingActivity extends BaseActivity {
             return;
         }
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setDataAndType(Uri.parse("file://" + apkFile.toString()), "application/vnd.android.package-archive");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Uri apkUri = FileProvider.getUriForFile(this, "com.qhiehome.ihome.provider", apkFile);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setDataAndType(apkUri, "application/vnd.android.package-archive");
+        } else {
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive");
+        }
         startActivity(intent);
+        android.os.Process.killProcess(android.os.Process.myPid());
     }
 
     private class DownloadAsyncTask extends AsyncTask<String, Void, Void> {
@@ -196,7 +228,7 @@ public class SettingActivity extends BaseActivity {
             try {
                 if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
                     String sdpath = Environment.getExternalStorageDirectory() + "/";
-                    mSavedPath = sdpath + "download";
+                    mSavedPath = sdpath + "Download";
                     URL url = new URL(params[0]);
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.connect();
@@ -207,6 +239,9 @@ public class SettingActivity extends BaseActivity {
                         file.mkdir();
                     }
                     File apkFile = new File(mSavedPath, "Ihome.apk");
+                    if (apkFile.exists()) {
+                        apkFile.delete();
+                    }
                     FileOutputStream fos = new FileOutputStream(apkFile);
                     int count = 0;
                     byte buf[] = new byte[1024];

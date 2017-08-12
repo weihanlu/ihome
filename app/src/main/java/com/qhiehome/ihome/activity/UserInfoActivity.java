@@ -52,6 +52,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -348,6 +349,11 @@ public class UserInfoActivity extends BaseActivity {
                 mIvAvatar.setVisibility(p == 1 ? View.INVISIBLE: View.VISIBLE);
             }
         });
+    }
+
+    @OnClick(R.id.iv_avatar)
+    public void onAvatarClick() {
+        ToastUtil.showToast(this, "点击头像");
     }
 
     @Override
