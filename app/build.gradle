@@ -18,6 +18,17 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    productFlavors {
+        development {
+            minSdkVersion 19
+            resConfigs ("zh", "hdpi")
+        }
+    }
+
+    if (project.hasProperty('devBuild')) {
+        aaptOptions.cruncherEnabled = false
+    }
 }
 
 repositories {
