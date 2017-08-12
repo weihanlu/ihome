@@ -9,9 +9,11 @@ import android.util.TypedValue;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.qhiehome.ihome.R;
+import com.baidu.mapapi.map.Circle;
 
-public class UserInfoBehavior extends CoordinatorLayout.Behavior<ImageView>{
+import de.hdodenhof.circleimageview.CircleImageView;
+
+public class UserInfoBehavior extends CoordinatorLayout.Behavior<CircleImageView>{
 
     private static final String TAG = UserInfoBehavior.class.getSimpleName();
     private int maxScrollDistance;
@@ -31,7 +33,7 @@ public class UserInfoBehavior extends CoordinatorLayout.Behavior<ImageView>{
     }
 
     @Override
-    public boolean layoutDependsOn(CoordinatorLayout parent, ImageView child, View dependency) {
+    public boolean layoutDependsOn(CoordinatorLayout parent, CircleImageView child, View dependency) {
         // 确定依赖关系，ImageView 依赖的是AppBarLayout
         return dependency instanceof AppBarLayout;
     }
@@ -40,7 +42,7 @@ public class UserInfoBehavior extends CoordinatorLayout.Behavior<ImageView>{
     private int startY;
 
     @Override
-    public boolean onDependentViewChanged(CoordinatorLayout parent, ImageView child, View dependency) {
+    public boolean onDependentViewChanged(CoordinatorLayout parent, CircleImageView child, View dependency) {
         // child为头像，dependency是AppBarLayout
         if (maxScrollDistance == 0) {
             maxScrollDistance = dependency.getBottom() - toolbarHeight;

@@ -53,4 +53,5 @@ dependencies {
     testCompile 'junit:junit:4.12'
     apt 'com.jakewharton:butterknife-compiler:8.7.0'
     compile 'com.github.fodroid:XStatusBarHelper:v1.1'
+    compile 'de.hdodenhof:circleimageview:2.1.0'
 }

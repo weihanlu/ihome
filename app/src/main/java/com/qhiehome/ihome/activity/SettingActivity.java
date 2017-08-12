@@ -137,7 +137,8 @@ public class SettingActivity extends BaseActivity {
                 if (body != null && body.getCode().equals("0")) {
                     List<CheckUpdateResponse.DataBean.ListBean> list = body.getData().getList();
                     int onLineAppVersionNo = Integer.valueOf(list.get(0).getAppVersionNo());
-                    if (onLineAppVersionNo > 0) {
+                    LogUtil.d(TAG, "online version is " + onLineAppVersionNo + ", local version is " + CommonUtil.getVersionCode());
+                    if (onLineAppVersionNo > CommonUtil.getVersionCode()) {
                         final String appKey = list.get(0).getAppKey();
                         runOnUiThread(new Runnable() {
                             @Override

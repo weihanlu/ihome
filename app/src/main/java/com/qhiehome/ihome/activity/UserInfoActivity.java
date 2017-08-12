@@ -1,26 +1,32 @@
 package com.qhiehome.ihome.activity;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.ActionBar;
-import android.support.v7.widget.DividerItemDecoration;
+import android.support.v4.content.FileProvider;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -43,16 +49,21 @@ import com.qhiehome.ihome.network.service.inquiry.ParkingOwnedService;
 import com.qhiehome.ihome.network.service.lock.UpdateLockPwdService;
 import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
+import com.qhiehome.ihome.util.FileUtils;
 import com.qhiehome.ihome.util.NetworkUtils;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import de.hdodenhof.circleimageview.CircleImageView;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -60,6 +71,11 @@ import retrofit2.Response;
 public class UserInfoActivity extends BaseActivity {
 
     private static final String TAG = UserInfoActivity.class.getSimpleName();
+
+    private static final int CODE_CAMERA_REQUEST_SRC = 1;
+    private static final int REQUEST_FOR_OPEN_CAMERA_AND_WRITE_EXTERNAL = 2;
+    private static final int CODE_PICTURES_REQUEST_SRC = 3;
+    private static final int REQUEST_FOR_COPY_LOCAL_FILE = 4;
 
     @BindView(R.id.tb_userinfo)
     Toolbar mTbUserinfo;
@@ -71,7 +87,7 @@ public class UserInfoActivity extends BaseActivity {
     TextView mTvPhoneNum;
 
     @BindView(R.id.iv_avatar)
-    ImageView mIvAvatar;
+    CircleImageView mIvAvatar;
 
     @BindView(R.id.tv_toolbar_title)
     TextView mTvToolbarTitle;
@@ -96,6 +112,10 @@ public class UserInfoActivity extends BaseActivity {
     MaterialDialog mProgressDialog;
 
     MaterialDialog mControlLockDialog;
+
+    private String mAvatarPath;
+
+    private File mAvatarFile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,9 +143,15 @@ public class UserInfoActivity extends BaseActivity {
     }
 
     private void initData() {
+        String phoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, "");
+        String avatarName = "portrait_" + phoneNum;
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        mAvatarFile = new File(storageDir, avatarName + ".jpg");
+        mAvatarPath = mAvatarFile.getAbsolutePath();
+
         mUserLocks = new ArrayList<>();
         mParkingIds = new StringBuilder();
-        String phoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, "");
+
         mTvPhoneNum.setText(phoneNum);
         inquiryOwnedParkings();
     }
@@ -322,6 +348,16 @@ public class UserInfoActivity extends BaseActivity {
     private void initView() {
         initToolbar();
         initAppBarLayout();
+        initAvatar();
+    }
+
+    private void initAvatar() {
+        File avatarDir = mAvatarFile.getParentFile();
+        if (avatarDir.isDirectory() && avatarDir.listFiles().length != 0) {
+            Bitmap avatarBitmap = BitmapFactory.decodeFile(mAvatarPath);
+            mIvAvatar.setImageBitmap(avatarBitmap);
+        }
+
     }
 
     private void initToolbar() {
@@ -353,7 +389,169 @@ public class UserInfoActivity extends BaseActivity {
 
     @OnClick(R.id.iv_avatar)
     public void onAvatarClick() {
-        ToastUtil.showToast(this, "点击头像");
+        new MaterialDialog.Builder(this)
+                .title("请选择")
+                .items(R.array.avatar_items)
+                .itemsCallback(new MaterialDialog.ListCallback() {
+                    @Override
+                    public void onSelection(MaterialDialog dialog, View itemView, int position, CharSequence text) {
+                        switch (position) {
+                            case 0:
+                                if (CommonUtil.checkCameraHardware(mContext)) {
+                                    openCamera();
+                                } else {
+                                    ToastUtil.showToast(mContext, "没有检测到相机");
+                                }
+                                break;
+                            case 1:
+                                openLocalFolder();
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                })
+                .show();
+    }
+
+    private void openCamera() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                == PackageManager.PERMISSION_GRANTED) {
+            getPhotoByCamera();
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    REQUEST_FOR_OPEN_CAMERA_AND_WRITE_EXTERNAL);
+        }
+    }
+
+    private void getPhotoByCamera() {
+        Intent mStartCamera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // Ensure that there's a camera activity to handle the intent
+        if (mStartCamera.resolveActivity(getPackageManager()) != null) {
+            // Create the File where the photo should go
+            File photoFile = null;
+            try {
+                photoFile = createImageFile();
+            } catch (IOException ex) {
+                // Error occurred while creating the file...
+            }
+            // Continue only if the file was successfully created
+            if (photoFile != null) {
+                Uri photoURI;
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+                    mStartCamera.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    photoURI = FileProvider.getUriForFile(this, "com.qhiehome.ihome.provider", photoFile);
+                } else {
+                    photoURI = Uri.fromFile(photoFile);
+                }
+                mStartCamera.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                startActivityForResult(mStartCamera, CODE_CAMERA_REQUEST_SRC);
+            }
+        }
+    }
+
+    private File createImageFile() throws IOException {
+        if (mAvatarFile.exists()) {
+            mAvatarFile.delete();
+        } else {
+            mAvatarFile.createNewFile();
+        }
+        // Save a file: path for use with ACTION_VIEW intents
+        return mAvatarFile;
+    }
+
+    private void openLocalFolder() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                == PackageManager.PERMISSION_GRANTED) {
+            getPhotoFromFolder();
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    REQUEST_FOR_COPY_LOCAL_FILE);
+        }
+    }
+
+    private void getPhotoFromFolder() {
+        Intent getLocalPictures = new Intent();
+        getLocalPictures.setType("image/*");
+        getLocalPictures.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(getLocalPictures, CODE_PICTURES_REQUEST_SRC);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == CODE_CAMERA_REQUEST_SRC) {
+                galleryAddPic();
+                showOriginalImage();
+            } else if (requestCode == CODE_PICTURES_REQUEST_SRC) {
+                showLocalImage(data);
+            }
+        }
+    }
+
+    private void showOriginalImage() {
+        final Bitmap portraitBitmap = getScaledImage(mAvatarPath, mIvAvatar);
+        mIvAvatar.setImageBitmap(portraitBitmap);
+    }
+
+    private Bitmap getScaledImage(String filePath, ImageView imageView) {
+        int targetW = imageView.getWidth();
+        int targetH = imageView.getHeight();
+        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+        bmOptions.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(filePath, bmOptions);
+        int photoW = bmOptions.outWidth;
+        int photoH = bmOptions.outHeight;
+        int scaleFactor = Math.min(photoW / targetW, photoH / targetH);
+        bmOptions.inJustDecodeBounds = false;
+        bmOptions.inSampleSize = scaleFactor;
+        return BitmapFactory.decodeFile(filePath, bmOptions);
+    }
+
+    // Add the portrait to the galley
+    private void galleryAddPic() {
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        File portraitPhoto = new File(mAvatarPath);
+        Uri portraitUri = Uri.fromFile(portraitPhoto);
+        mediaScanIntent.setData(portraitUri);
+        this.sendBroadcast(mediaScanIntent);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == REQUEST_FOR_OPEN_CAMERA_AND_WRITE_EXTERNAL) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                    && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                getPhotoByCamera();
+            } else {
+                ToastUtil.showToast(mContext, "permission denied");
+            }
+        } else if (requestCode == REQUEST_FOR_COPY_LOCAL_FILE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getPhotoFromFolder();
+            }
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    private void showLocalImage(Intent data) {
+        Uri uri = data.getData();
+        ContentResolver cr = this.getContentResolver();
+        Bitmap bitmap = null;
+        try {
+            bitmap = BitmapFactory.decodeStream(cr.openInputStream(uri));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        mIvAvatar.setImageBitmap(bitmap);
+        // 将bitmap写入文件中
+        BitmapToFileTask bitmapToFileTask= new BitmapToFileTask();
+        bitmapToFileTask.execute(bitmap);
     }
 
     @Override
@@ -371,7 +569,26 @@ public class UserInfoActivity extends BaseActivity {
                     mControlLockDialog.show();
                 }
             }
+        }
+    }
 
+    private class BitmapToFileTask extends AsyncTask<Bitmap, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Bitmap... bitmap) {
+            try {
+                if (mAvatarFile.exists()) {
+                    mAvatarFile.delete();
+                } else {
+                    mAvatarFile.createNewFile();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (mAvatarFile != null) {
+                FileUtils.bitmapToJpeg(bitmap[0], mAvatarFile);
+            }
+            return null;
         }
     }
 

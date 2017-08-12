@@ -51,13 +51,13 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <ImageView
+    <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/iv_avatar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/ic_avatar"
-        android:padding="2dp"
-        android:scaleType="fitCenter"
+        android:layout_width="128dp"
+        android:layout_height="128dp"
+        android:src="@drawable/ic_avatar_default"
+        app:civ_border_width="2dp"
+        app:civ_border_color="@color/white"
         app:layout_behavior="com.qhiehome.ihome.behavior.UserInfoBehavior"
         />
 

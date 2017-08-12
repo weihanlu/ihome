@@ -1,6 +1,7 @@
 package com.qhiehome.ihome.util;
 
 import android.annotation.SuppressLint;
+import android.graphics.Bitmap;
 import android.os.Environment;
 
 import java.io.BufferedWriter;
@@ -285,6 +286,22 @@ public class FileUtils {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	/**
+	 * Bitmap存入本地文件
+	 * @param bitmap bitmap
+	 * @param file file
+	 */
+	public static void bitmapToJpeg(Bitmap bitmap, File file) {
+		try {
+			FileOutputStream fos = new FileOutputStream(file);
+			bitmap.compress(Bitmap.CompressFormat.JPEG, 80, fos); // 压缩20%
+			fos.flush();
+			fos.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 

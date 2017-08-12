@@ -50,4 +50,10 @@ public class CommonUtil {
         }
     }
 
+    /** Check if this device has a camera */
+    public static boolean checkCameraHardware(Context context) {
+        // this device has a camera
+        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
+    }
+
 }
