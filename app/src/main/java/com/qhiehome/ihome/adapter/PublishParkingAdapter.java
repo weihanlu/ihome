@@ -9,15 +9,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
-import com.qhiehome.ihome.bean.BLEDevice;
 import com.qhiehome.ihome.bean.PublishBean;
-import com.qhiehome.ihome.network.model.park.publish.PublishparkRequest;
 
 import java.util.ArrayList;
-
-/**
- * BindLockAdapter recyclerView adapter {@link com.qhiehome.ihome.activity.BindLockActivity}
- */
 
 public class PublishParkingAdapter extends RecyclerView.Adapter<PublishParkingAdapter.PublishParkingHolder>{
 
@@ -40,13 +34,12 @@ public class PublishParkingAdapter extends RecyclerView.Adapter<PublishParkingAd
         PublishBean requestBean = mPublishList.get(position);
         holder.mTvParkingId.setText(requestBean.getParkingId());
         holder.mTvParkingPeriod.setText("发布时间段 " + requestBean.getStartTime() + " ~ " + requestBean.getEndTime());
-        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+        holder.mIvCallbackPublish.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onLongClick(View v) {
+            public void onClick(View v) {
                 if (onItemClickListener != null) {
-                    onItemClickListener.onItemLongClick(holder.itemView, holder.getLayoutPosition());
+                    onItemClickListener.onCallbackPublish(holder.itemView, holder.getLayoutPosition());
                 }
-                return true;
             }
         });
     }
@@ -66,25 +59,27 @@ public class PublishParkingAdapter extends RecyclerView.Adapter<PublishParkingAd
         notifyItemRemoved(position);
     }
 
-    public static class PublishParkingHolder extends RecyclerView.ViewHolder {
+    static class PublishParkingHolder extends RecyclerView.ViewHolder {
 
         TextView mTvParkingId;
         TextView mTvParkingPeriod;
+        ImageView mIvCallbackPublish;
 
         private PublishParkingHolder(View itemView) {
             super(itemView);
             mTvParkingId = (TextView) itemView.findViewById(R.id.tv_parking_id);
             mTvParkingPeriod = (TextView) itemView.findViewById(R.id.tv_parking_period);
+            mIvCallbackPublish = (ImageView) itemView.findViewById(R.id.iv_callback_publish);
         }
     }
 
 
     public interface OnItemClickListener {
         void onItemClick(View view, int position);
-        void onItemLongClick(View view, int position);
+        void onCallbackPublish(View view, int position);
     }
 
-    public void setOnItemLongClickListener(OnItemClickListener listener) {
+    public void setOnItemClickListener(OnItemClickListener listener) {
         this.onItemClickListener = listener;
     }
 

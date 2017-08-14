@@ -78,13 +78,16 @@ public class UserInfoActivity extends BaseActivity {
     private static final int REQUEST_FOR_COPY_LOCAL_FILE = 4;
 
     @BindView(R.id.tb_userinfo)
-    Toolbar mTbUserinfo;
+    Toolbar mTbUserInfo;
 
     @BindView(R.id.app_bar)
     AppBarLayout mAppBarLayout;
 
     @BindView(R.id.tv_phoneNum)
     TextView mTvPhoneNum;
+
+    @BindView(R.id.tv_balance)
+    TextView mTvBalance;
 
     @BindView(R.id.iv_avatar)
     CircleImageView mIvAvatar;
@@ -103,7 +106,7 @@ public class UserInfoActivity extends BaseActivity {
 
     private StringBuilder mParkingIds;
 
-    private ConnectLockReceiver mRecevier;
+    private ConnectLockReceiver mReceiver;
 
     EditText mEtOldPwd;
 
@@ -130,16 +133,16 @@ public class UserInfoActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        mRecevier = new ConnectLockReceiver();
+        mReceiver = new ConnectLockReceiver();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ConnectLockService.BROADCAST_CONNECT);
-        registerReceiver(mRecevier, intentFilter);
+        registerReceiver(mReceiver, intentFilter);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        unregisterReceiver(mRecevier);
+        unregisterReceiver(mReceiver);
     }
 
     private void initData() {
@@ -152,16 +155,15 @@ public class UserInfoActivity extends BaseActivity {
         mUserLocks = new ArrayList<>();
         mParkingIds = new StringBuilder();
 
-        mTvPhoneNum.setText(phoneNum);
-        inquiryOwnedParkings();
+        mTvPhoneNum.setText("账号：" + phoneNum);
+        inquiryOwnedParkings(phoneNum);
     }
 
-    private void inquiryOwnedParkings() {
+    private void inquiryOwnedParkings(String phoneNum) {
         mCurrentTime = System.currentTimeMillis();
         if (NetworkUtils.isConnected(this)) {
             ParkingOwnedService parkingOwnedService = ServiceGenerator.createService(ParkingOwnedService.class);
-            //String phoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, "");
-            ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest("18612304336");
+            ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(phoneNum);
             Call<ParkingOwnedResponse> call = parkingOwnedService.parkingOwned(parkingOwnedRequest);
             call.enqueue(new Callback<ParkingOwnedResponse>() {
                 @Override
@@ -361,7 +363,7 @@ public class UserInfoActivity extends BaseActivity {
     }
 
     private void initToolbar() {
-        mTbUserinfo.setNavigationOnClickListener(new View.OnClickListener() {
+        mTbUserInfo.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
@@ -378,9 +380,11 @@ public class UserInfoActivity extends BaseActivity {
                 if (p > 0.5) {
                     mTvToolbarTitle.setAlpha(1.0f / 0.5f * (p - 0.5f));
                     mTvPhoneNum.setAlpha(0);
+                    mTvBalance.setAlpha(0);
                 } else {
                     mTvToolbarTitle.setAlpha(0);
                     mTvPhoneNum.setAlpha(1.0f - p / 0.5f);
+                    mTvBalance.setAlpha(1.0f - p / 0.5f);
                 }
                 mIvAvatar.setVisibility(p == 1 ? View.INVISIBLE: View.VISIBLE);
             }

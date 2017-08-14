@@ -116,10 +116,10 @@ public class MeFragment extends Fragment {
                         PublishParkingActivity.start(mContext);
                         break;
                     case 3:
-                        OrderListActivity.start(mContext);
+//                        OrderListActivity.start(mContext);
+                        SettingActivity.start(mContext);
                         break;
                     case 4:
-                        SettingActivity.start(mContext);
                         break;
                     case 5:
                     default:

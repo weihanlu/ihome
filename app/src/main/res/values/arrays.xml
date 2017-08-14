@@ -4,7 +4,7 @@
         <item>Account</item>
         <item>My Reservation</item>
         <item>Release</item>
-        <item>My Orders</item>
+        <!--<item>My Orders</item>-->
         <item>Setting</item>
     </string-array>
 

@@ -39,6 +39,7 @@ import com.qhiehome.ihome.network.service.park.PublishParkService;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.LogUtil;
+import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.TimeUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 import com.qhiehome.ihome.view.RecyclerViewEmptySupport;
@@ -87,7 +88,9 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
 
     private PublishParkingAdapter mPublishAdapter;
 
-    private AppCompatSpinner mEndSpinner;
+    AppCompatSpinner mEndSpinner;
+
+    private String mPhoneNum;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,6 +114,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
         mParkingIdList = new ArrayList<>();
         mPublishList = new ArrayList<>();
         mTimePeriods = new ArrayList<>();
+        mPhoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, "");
         inquiryParkingInfo();
     }
 
@@ -118,7 +122,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
         mParkingIdList.clear();
         mPublishList.clear();
         ParkingOwnedService parkingOwnedService = ServiceGenerator.createService(ParkingOwnedService.class);
-        ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest("18612304336");
+        ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(mPhoneNum);
         Call<ParkingOwnedResponse> call = parkingOwnedService.parkingOwned(parkingOwnedRequest);
         call.enqueue(new Callback<ParkingOwnedResponse>() {
             @Override
@@ -180,51 +184,55 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
     }
 
     private void initListener(final PublishParkingAdapter mPublishAdapter) {
-       mPublishAdapter.setOnItemLongClickListener(new PublishParkingAdapter.OnItemClickListener() {
-           @Override
-           public void onItemClick(View view, int position) {
-               ToastUtil.showToast(PublishParkingActivity.this, "click this");
-           }
+      mPublishAdapter.setOnItemClickListener(new PublishParkingAdapter.OnItemClickListener() {
+          @Override
+          public void onItemClick(View view, int position) {
 
-           @Override
-           public void onItemLongClick(View view, final int position) {
-               final PublishBean publishBean = mPublishList.get(position);
-               final int shareId = publishBean.getShareId();
-               new MaterialDialog.Builder(mContext)
-                       .title("Warning")
-                       .content("确定取消发布吗？")
-                       .positiveText("确定")
-                       .negativeText("取消")
-                       .canceledOnTouchOutside(false)
-                       .onPositive(new MaterialDialog.SingleButtonCallback() {
-                           @Override
-                           public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                               PublishCallbackService publishCallbackService = ServiceGenerator.createService(PublishCallbackService.class);
-                               PublishCancelRequest publishCancelRequest = new PublishCancelRequest(shareId, Constant.DEFAULT_PASSWORD);
-                               Call<PublishCancelResponse> call = publishCallbackService.callback(publishCancelRequest);
-                               call.enqueue(new Callback<PublishCancelResponse>() {
-                                   @Override
-                                   public void onResponse(@NonNull Call<PublishCancelResponse> call,@NonNull Response<PublishCancelResponse> response) {
-                                       if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                                           mPublishAdapter.removeItem(position);
-                                           if (mPublishList.size() == 0) {
-                                               mPublishAdapter.notifyDataSetChanged();
-                                           }
-                                       } else {
-                                           ToastUtil.showToast(mContext, "取消失败");
-                                       }
-                                   }
+          }
 
-                                   @Override
-                                   public void onFailure(@NonNull Call<PublishCancelResponse> call, @NonNull Throwable t) {
+          @Override
+          public void onCallbackPublish(View view, final int position) {
+              final PublishBean publishBean = mPublishList.get(position);
+              final int shareId = publishBean.getShareId();
+              int red = ContextCompat.getColor(mContext, android.R.color.holo_red_light);
+              new MaterialDialog.Builder(mContext)
+                      .title("警告")
+                      .titleColor(red)
+                      .content("确定取消发布吗？")
+                      .contentColor(red)
+                      .positiveText("确定")
+                      .positiveColor(red)
+                      .negativeText("取消")
+                      .canceledOnTouchOutside(false)
+                      .onPositive(new MaterialDialog.SingleButtonCallback() {
+                          @Override
+                          public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                              PublishCallbackService publishCallbackService = ServiceGenerator.createService(PublishCallbackService.class);
+                              PublishCancelRequest publishCancelRequest = new PublishCancelRequest(shareId, Constant.DEFAULT_PASSWORD);
+                              Call<PublishCancelResponse> call = publishCallbackService.callback(publishCancelRequest);
+                              call.enqueue(new Callback<PublishCancelResponse>() {
+                                  @Override
+                                  public void onResponse(@NonNull Call<PublishCancelResponse> call,@NonNull Response<PublishCancelResponse> response) {
+                                      if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                                          mPublishAdapter.removeItem(position);
+                                          if (mPublishList.size() == 0) {
+                                              mPublishAdapter.notifyDataSetChanged();
+                                          }
+                                      } else {
+                                          ToastUtil.showToast(mContext, "取消失败");
+                                      }
+                                  }
 
-                                   }
-                               });
-                           }
-                       })
-                       .show();
-           }
-       });
+                                  @Override
+                                  public void onFailure(@NonNull Call<PublishCancelResponse> call, @NonNull Throwable t) {
+
+                                  }
+                              });
+                          }
+                      })
+                      .show();
+          }
+      });
     }
 
     private void initToolbar() {
