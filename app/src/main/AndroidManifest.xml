@@ -12,7 +12,9 @@
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-feature android:name="android.hardware.camera"
+
+    <uses-feature
+        android:name="android.hardware.camera"
         android:required="false" />
     <!-- Bluetooth permission -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
@@ -40,9 +42,8 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <!-- install permission-->
 
-
+    <!-- install permission -->
     <application
         android:name=".application.IhomeApplication"
         android:allowBackup="true"
@@ -103,11 +104,12 @@
         <activity android:name=".activity.SettingActivity" />
         <activity android:name=".activity.MapSearchActivity" />
         <activity android:name=".activity.ServiceContractActivity" />
-        <activity android:name=".activity.FeedbackActivity"
-            android:windowSoftInputMode="stateVisible"/>
-        <activity android:name=".activity.CityActivity"/>
+        <activity
+            android:name=".activity.FeedbackActivity"
+            android:windowSoftInputMode="stateVisible" />
+        <activity android:name=".activity.CityActivity" />
 
-        <!-- use to fix bug of install apk and store camera file-->
+        <!-- use to fix bug of install apk and store camera file -->
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.qhiehome.ihome.provider"
@@ -115,10 +117,11 @@
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths"
-                />
+                android:resource="@xml/file_paths" />
         </provider>
 
+        <activity android:name=".activity.PayActivity" />
+        <activity android:name=".activity.ParkingTimelineActivity"></activity>
     </application>
 
 </manifest>

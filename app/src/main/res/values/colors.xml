@@ -11,5 +11,9 @@
     <color name="light_blue">#2e8abb</color><!-- 浅蓝色 -->
     <color name="dark_blue">#3A5FCD</color>
     <color name="light_green">#43AF5C</color>
+    <color name="purple">#69415D</color>
+    <color name="purple_start_color">#6178f2</color>
+    <color name="purple_end_color">#925eff</color>
+    <color name="light_purple">#917fF2</color>
     <color name="dark_green">#28a746</color>
 </resources>

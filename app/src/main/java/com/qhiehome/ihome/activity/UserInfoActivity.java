@@ -161,7 +161,7 @@ public class UserInfoActivity extends BaseActivity {
         if (NetworkUtils.isConnected(this)) {
             ParkingOwnedService parkingOwnedService = ServiceGenerator.createService(ParkingOwnedService.class);
             //String phoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, "");
-            ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(Constant.TEST_PHONE_NUM);
+            ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest("18612304336");
             Call<ParkingOwnedResponse> call = parkingOwnedService.parkingOwned(parkingOwnedRequest);
             call.enqueue(new Callback<ParkingOwnedResponse>() {
                 @Override

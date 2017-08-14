@@ -1,6 +1,9 @@
 package com.qhiehome.ihome.network.model.base;
 
+import android.support.annotation.NonNull;
+
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -165,7 +168,7 @@ public class ParkingResponse extends Response implements Serializable{
                     this.share = share;
                 }
 
-                public static class ShareBean implements Serializable{
+                public static class ShareBean implements Serializable, Comparable<ShareBean>{
                     /**
                      * id : 123456789
                      * startTime : 1499826000000
@@ -198,6 +201,19 @@ public class ParkingResponse extends Response implements Serializable{
 
                     public void setEndTime(long endTime) {
                         this.endTime = endTime;
+                    }
+
+                    @Override
+                    public int compareTo(@NonNull ShareBean o) {
+                        long thisStartTime = this.getStartTime();
+                        long otherStartTime = o.getStartTime();
+                        if (thisStartTime < otherStartTime) {
+                            return -1;
+                        } else if (thisStartTime > otherStartTime) {
+                            return 1;
+                        } else {
+                            return 0;
+                        }
                     }
                 }
             }

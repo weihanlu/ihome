@@ -22,7 +22,7 @@ android {
     productFlavors {
         development {
             minSdkVersion 19
-            resConfigs ("zh", "hdpi")
+            resConfigs("zh", "hdpi")
         }
     }
 
@@ -61,8 +61,9 @@ dependencies {
     compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2'
     compile 'com.github.arimorty:floatingsearchview:2.1.1'
     compile 'com.github.arcadefire:nice-spinner:1.2'
-    testCompile 'junit:junit:4.12'
-    apt 'com.jakewharton:butterknife-compiler:8.7.0'
     compile 'com.github.fodroid:XStatusBarHelper:v1.1'
     compile 'de.hdodenhof:circleimageview:2.1.0'
+    compile 'com.vivian.widgets:TimeLineItemDecoration:1.2'
+    testCompile 'junit:junit:4.12'
+    apt 'com.jakewharton:butterknife-compiler:8.7.0'
 }

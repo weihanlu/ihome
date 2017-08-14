@@ -417,6 +417,9 @@ public class ParkingListActivity extends BaseActivity {
                 public void onResponse(Call<ReserveResponse> call, Response<ReserveResponse> response) {
                     if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
                         // TODO: 2017/8/3 预约成功，跳转支付界面
+                        Intent intent = new Intent(ParkingListActivity.this, PayActivity.class);
+                        intent.putExtra("grauFee", mUnitPrice);
+                        startActivity(intent);
                         //可停至XX：XX
                         ToastUtil.showToast(mContext, "预约成功");
                     }else {
