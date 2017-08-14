@@ -15,12 +15,14 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -53,6 +55,7 @@ import com.qhiehome.ihome.activity.CityActivity;
 import com.qhiehome.ihome.activity.MapSearchActivity;
 import com.qhiehome.ihome.activity.NaviGuideActivity;
 import com.qhiehome.ihome.activity.ParkingListActivity;
+import com.qhiehome.ihome.activity.ParkingTimelineActivity;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.baiduMap.BaiduMapResponse;
 import com.qhiehome.ihome.network.model.base.ParkingResponse;
@@ -420,7 +423,8 @@ public class ParkFragment extends Fragment {
             @Override
             public boolean onMarkerClick(Marker marker1) {
                 mClickedMarker = marker1;
-                Intent intent = new Intent(getActivity(), ParkingListActivity.class);
+                //Intent intent = new Intent(getActivity(), ParkingListActivity.class);
+                Intent intent = new Intent(getActivity(), ParkingTimelineActivity.class);
                 Bundle bundle = marker1.getExtraInfo();
                 intent.putExtras(bundle);
                 startActivity(intent);
@@ -436,7 +440,7 @@ public class ParkFragment extends Fragment {
         mBaiduMap.clear();
         if (mIsSearch) {
             //添加图标
-            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.img_target);
+            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.ic_marker);
             int width = bm.getWidth();
             int height = bm.getHeight();
             int newWidth = 60;
@@ -467,12 +471,13 @@ public class ParkFragment extends Fragment {
 
                 View customMarker = View.inflate(mContext, R.layout.custom_map_marker, null);
                 TextView tv_marker = (TextView) customMarker.findViewById(R.id.tv_marker);
+                ImageView iv_marker = (ImageView) customMarker.findViewById(R.id.iv_marker);
                 if (mMapStateParkingNum) {
+                    iv_marker.setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_marker_numbers));
                     tv_marker.setText(String.valueOf(mEstateBeanList.get(i).getParking().size()));
-                    tv_marker.setTextColor(Resources.getSystem().getColor(android.R.color.holo_green_light));
                 } else {
+                    iv_marker.setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_marker_price));
                     tv_marker.setText(String.format("%d", mEstateBeanList.get(i).getUnitPrice()));
-                    tv_marker.setTextColor(Resources.getSystem().getColor(android.R.color.holo_red_light));
                 }
                 customMarker.setDrawingCacheEnabled(true);
                 customMarker.measure(
@@ -540,9 +545,9 @@ public class ParkFragment extends Fragment {
     public void onChangeMarkerClicked() {
         mMapStateParkingNum = !mMapStateParkingNum;
         if (mMapStateParkingNum) {
-            mBtnMapMarker.setText("显示单价");
+            mBtnMapMarker.setBackground(ContextCompat.getDrawable(mContext, R.drawable.btn_numbers_checked));
         } else {
-            mBtnMapMarker.setText("显示车位");
+            mBtnMapMarker.setBackground(ContextCompat.getDrawable(mContext, R.drawable.btn_price_checked));
         }
         addMarkers();
     }

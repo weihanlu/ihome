@@ -88,4 +88,15 @@
         android:layout_alignStart="@id/btn_reserve_map"
         />
 
+    <TextView
+        android:id="@+id/tv_reserve_state"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        tools:text="已取消"
+        android:layout_above="@+id/tv_reserve_fee"
+        android:layout_alignEnd="@+id/btn_reserve_navi"
+        android:layout_marginEnd="61dp" />
+
+
 </RelativeLayout>

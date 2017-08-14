@@ -46,6 +46,8 @@ import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
+import org.w3c.dom.Text;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -89,6 +91,8 @@ public class ReserveListActivity extends BaseActivity {
     private static final int ORDER_STATE_PARKED = 32;     //（显示预计金额）升降车位锁
     private static final int ORDER_STATE_NOT_PAID = 33;   //（显示金额）支付
     private static final int ORDER_STATE_PAID = 34;       //（显示金额）
+    private static final int ORDER_STATE_TIMEOUT = 38;    //超时取消
+    private static final int ORDER_STATE_CANCEL = 39;     //用户取消
 
 
     @Override
@@ -163,18 +167,20 @@ public class ReserveListActivity extends BaseActivity {
 
         @Override
         public void onBindViewHolder(MyViewHolder holder, final int position) {
-            switch (mOrderBeanList.get(position).getState()){
+            final int index = mOrderBeanList.size() - position - 1;
+            switch (mOrderBeanList.get(index).getState()){
                 case ORDER_STATE_RESERVED:
-                    holder.tv_estate.setText(mOrderBeanList.get(position).getEstate().getName());
-                    holder.tv_time.setText(TIME_FORMAT.format(mOrderBeanList.get(position).getStartTime()) + "~" + TIME_FORMAT.format(mOrderBeanList.get(position).getEndTime()));
+                    holder.tv_estate.setText(mOrderBeanList.get(index).getEstate().getName());
+                    holder.tv_time.setText(TIME_FORMAT.format(mOrderBeanList.get(index).getStartTime()) + "~" + TIME_FORMAT.format(mOrderBeanList.get(index).getEndTime()));
                     holder.tv_fee.setVisibility(View.INVISIBLE);
+                    holder.tv_state.setVisibility(View.INVISIBLE);
                     holder.btn_pay.setVisibility(View.INVISIBLE);
                     holder.btn_navi.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             //导航到小区
                             if (BaiduNaviManager.isNaviInited()) {
-                                routeplanToNavi(BNRoutePlanNode.CoordinateType.BD09LL, position);
+                                routeplanToNavi(BNRoutePlanNode.CoordinateType.BD09LL, index);
                             }
                         }
                     });
@@ -182,7 +188,7 @@ public class ReserveListActivity extends BaseActivity {
                         @Override
                         public void onClick(View v) {
                             //取消预约请求
-                            CancelReserve(position);
+                            CancelReserve(index);
                         }
                     });
 
@@ -201,9 +207,10 @@ public class ReserveListActivity extends BaseActivity {
                     });
                     break;
                 case ORDER_STATE_PARKED:
-                    holder.tv_estate.setText(mOrderBeanList.get(position).getEstate().getName());
-                    holder.tv_time.setText(TIME_FORMAT.format(mOrderBeanList.get(position).getStartTime()) + "~" + TIME_FORMAT.format(mOrderBeanList.get(position).getEndTime()));
+                    holder.tv_estate.setText(mOrderBeanList.get(index).getEstate().getName());
+                    holder.tv_time.setText(TIME_FORMAT.format(mOrderBeanList.get(index).getStartTime()) + "~" + TIME_FORMAT.format(mOrderBeanList.get(index).getEndTime()));
                     holder.tv_fee.setVisibility(View.INVISIBLE);
+                    holder.tv_state.setVisibility(View.INVISIBLE);
                     holder.btn_pay.setVisibility(View.INVISIBLE);
                     holder.btn_map.setVisibility(View.INVISIBLE);
                     holder.btn_cancel.setVisibility(View.INVISIBLE);
@@ -216,9 +223,10 @@ public class ReserveListActivity extends BaseActivity {
                     });
                     break;
                 case ORDER_STATE_NOT_PAID:
-                    holder.tv_estate.setText(mOrderBeanList.get(position).getEstate().getName());
-                    holder.tv_time.setText(TIME_FORMAT.format(mOrderBeanList.get(position).getStartTime()) + "~" + TIME_FORMAT.format(mOrderBeanList.get(position).getEndTime()));
-                    holder.tv_fee.setText("￥" + String.format("%.2f", mOrderBeanList.get(position).getPayFee()));
+                    holder.tv_estate.setText(mOrderBeanList.get(index).getEstate().getName());
+                    holder.tv_time.setText(TIME_FORMAT.format(mOrderBeanList.get(index).getStartTime()) + "~" + TIME_FORMAT.format(mOrderBeanList.get(index).getEndTime()));
+                    holder.tv_fee.setText("￥" + String.format("%.2f", mOrderBeanList.get(index).getPayFee()));
+                    holder.tv_state.setVisibility(View.INVISIBLE);
                     holder.btn_map.setVisibility(View.INVISIBLE);
                     holder.btn_cancel.setVisibility(View.INVISIBLE);
                     holder.btn_navi.setVisibility(View.INVISIBLE);
@@ -231,9 +239,32 @@ public class ReserveListActivity extends BaseActivity {
                     });
                     break;
                 case ORDER_STATE_PAID:
-                    holder.tv_estate.setText(mOrderBeanList.get(position).getEstate().getName());
-                    holder.tv_time.setText(TIME_FORMAT.format(mOrderBeanList.get(position).getStartTime()) + "~" + TIME_FORMAT.format(mOrderBeanList.get(position).getEndTime()));
-                    holder.tv_fee.setText("￥" + String.format("%.2f", mOrderBeanList.get(position).getPayFee()));
+                    holder.tv_estate.setText(mOrderBeanList.get(index).getEstate().getName());
+                    holder.tv_time.setText(TIME_FORMAT.format(mOrderBeanList.get(index).getStartTime()) + "~" + TIME_FORMAT.format(mOrderBeanList.get(index).getEndTime()));
+                    holder.tv_fee.setText("￥" + String.format("%.2f", mOrderBeanList.get(index).getPayFee()));
+                    holder.tv_state.setVisibility(View.INVISIBLE);
+                    holder.btn_map.setVisibility(View.INVISIBLE);
+                    holder.btn_cancel.setVisibility(View.INVISIBLE);
+                    holder.btn_navi.setVisibility(View.INVISIBLE);
+                    holder.btn_lock.setVisibility(View.INVISIBLE);
+                    holder.btn_pay.setVisibility(View.INVISIBLE);
+                    break;
+                case ORDER_STATE_TIMEOUT:
+                    holder.tv_estate.setText(mOrderBeanList.get(index).getEstate().getName());
+                    holder.tv_time.setText(TIME_FORMAT.format(mOrderBeanList.get(index).getStartTime()) + "~" + TIME_FORMAT.format(mOrderBeanList.get(index).getEndTime()));
+                    holder.tv_fee.setVisibility(View.INVISIBLE);
+                    holder.tv_state.setText("已超时");
+                    holder.btn_map.setVisibility(View.INVISIBLE);
+                    holder.btn_cancel.setVisibility(View.INVISIBLE);
+                    holder.btn_navi.setVisibility(View.INVISIBLE);
+                    holder.btn_lock.setVisibility(View.INVISIBLE);
+                    holder.btn_pay.setVisibility(View.INVISIBLE);
+                    break;
+                case ORDER_STATE_CANCEL:
+                    holder.tv_estate.setText(mOrderBeanList.get(index).getEstate().getName());
+                    holder.tv_time.setText(TIME_FORMAT.format(mOrderBeanList.get(index).getStartTime()) + "~" + TIME_FORMAT.format(mOrderBeanList.get(index).getEndTime()));
+                    holder.tv_fee.setVisibility(View.INVISIBLE);
+                    holder.tv_state.setText("已取消");
                     holder.btn_map.setVisibility(View.INVISIBLE);
                     holder.btn_cancel.setVisibility(View.INVISIBLE);
                     holder.btn_navi.setVisibility(View.INVISIBLE);
@@ -255,6 +286,7 @@ public class ReserveListActivity extends BaseActivity {
             TextView tv_estate;
             TextView tv_time;
             TextView tv_fee;
+            TextView tv_state;
             Button btn_navi;
             Button btn_cancel;
             Button btn_map;
@@ -266,6 +298,7 @@ public class ReserveListActivity extends BaseActivity {
                 tv_estate = (TextView) view.findViewById(R.id.tv_reserve_estate);
                 tv_time = (TextView) view.findViewById(R.id.tv_reserve_time);
                 tv_fee = (TextView) view.findViewById(R.id.tv_reserve_fee);
+                tv_state = (TextView) view.findViewById(R.id.tv_reserve_state);
 
                 btn_navi = (Button) view.findViewById(R.id.btn_reserve_navi);
                 btn_cancel = (Button) view.findViewById(R.id.btn_reserve_cancel);
@@ -309,15 +342,15 @@ public class ReserveListActivity extends BaseActivity {
     }
 
 
-    private void CancelReserve(final int position){
-        int orderId = mOrderBeanList.get(position).getId();
+    private void CancelReserve(final int index){
+        int orderId = mOrderBeanList.get(index).getId();
         ReserveCancelService reserveCancelService = ServiceGenerator.createService(ReserveCancelService.class);
         Call<ReserveCancelResponse> call = reserveCancelService.reserve(new ReserveCancelRequest(orderId));
         call.enqueue(new Callback<ReserveCancelResponse>() {
             @Override
             public void onResponse(Call<ReserveCancelResponse> call, Response<ReserveCancelResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
-                    mOrderBeanList.remove(position);
+                    mOrderBeanList.get(index).setState(ORDER_STATE_CANCEL);
                     mReserveAdapter.notifyDataSetChanged();
                 }
             }
