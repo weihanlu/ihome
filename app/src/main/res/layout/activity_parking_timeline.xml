@@ -43,13 +43,22 @@
         android:orientation="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <android.support.v7.widget.RecyclerView
+        <!--<android.support.v7.widget.RecyclerView-->
+            <!--android:id="@+id/rv_parking_timeline"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="0dp"-->
+            <!--android:layout_weight="1"-->
+            <!--android:background="@drawable/bg_purple">-->
+        <!--</android.support.v7.widget.RecyclerView>-->
+
+        <in.myinnos.alphabetsindexfastscrollrecycler.IndexFastScrollRecyclerView
             android:id="@+id/rv_parking_timeline"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:background="@drawable/bg_purple">
-        </android.support.v7.widget.RecyclerView>
+
+        </in.myinnos.alphabetsindexfastscrollrecycler.IndexFastScrollRecyclerView>
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -69,6 +78,7 @@
                 />
 
             <TextView
+                android:id="@+id/tv_parking_timeline_guaranteeFee_num"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_toEndOf="@id/tv_parking_timeline_guaranteeFee"
@@ -85,7 +95,7 @@
                 android:layout_alignParentEnd="true"
                 android:layout_marginRight="16dp"
                 android:layout_centerVertical="true"
-                android:background="@drawable/round_button"
+                android:background="@drawable/round_button_white"
                 android:text="确认预约"
                 android:textSize="18sp"
                 android:textColor="@color/pale_green"/>

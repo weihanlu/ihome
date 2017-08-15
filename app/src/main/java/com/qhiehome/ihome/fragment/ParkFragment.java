@@ -139,6 +139,7 @@ public class ParkFragment extends Fragment {
     private boolean mRefreshEstate;
     private LocationClient mLocationClient;
     private BDLocationListener mBDLocationListener;
+    private boolean mHasInit = false;
 
     /******百度地图导航******/
     private String mSDCardPath = null;
@@ -218,6 +219,10 @@ public class ParkFragment extends Fragment {
     public void onResume() {
         mMapView.onResume();
         super.onResume();
+        if (mHasInit){
+            mBtnMapRefresh.performClick();
+        }
+
     }
 
     @Override
@@ -305,7 +310,7 @@ public class ParkFragment extends Fragment {
                     @Override
                     public void run() {
                         if (!isGetCurrentCity) {
-                            mTvCurrentCity.append(mCity);
+                            mTvCurrentCity.setText("当前城市：" + mCity);
                             isGetCurrentCity = true;
                         }
                     }
@@ -433,6 +438,7 @@ public class ParkFragment extends Fragment {
             }
         };
         mBaiduMap.setOnMarkerClickListener(mOnMarkerClickListener);
+        mHasInit = true;
     }
 
 

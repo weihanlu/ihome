@@ -21,35 +21,82 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:orientation="vertical"
         android:padding="4dp">
+
+        <RelativeLayout
+            android:id="@+id/layout_pay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/btn_add_balance_1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginStart="40dp"
+                android:layout_marginTop="20dp"
+                android:text="10元"/>
+
+            <Button
+                android:id="@+id/btn_add_balance_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginEnd="40dp"
+                android:layout_marginTop="20dp"
+                android:text="30元"/>
+
+            <Button
+                android:id="@+id/btn_add_balance_3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_below="@id/btn_add_balance_1"
+                android:layout_alignStart="@id/btn_add_balance_1"
+                android:text="50元"/>
+
+            <Button
+                android:id="@+id/btn_add_balance_4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/btn_add_balance_3"
+                android:layout_alignStart="@id/btn_add_balance_2"
+                android:text="100元"/>
+
+
+        </RelativeLayout>
+
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/rv_pay"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/layout_pay">
 
         </android.support.v7.widget.RecyclerView>
 
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="40dp">
-
-        </ImageView>
 
         <Button
             android:id="@+id/btn_pay"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_below="@+id/rv_pay"
+            android:layout_marginTop="40dp"
+            android:layout_centerHorizontal="true"
+            android:layout_width="260dp"
+            android:layout_height="wrap_content"
+            android:textSize="22sp"
+            android:textColor="@color/white"
+            android:background="@drawable/round_button_green"/>
 
 
 
 
-    </LinearLayout>
+    </RelativeLayout>
 
 
 </android.support.design.widget.CoordinatorLayout>

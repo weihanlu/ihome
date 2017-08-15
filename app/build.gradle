@@ -32,6 +32,7 @@ android {
 }
 
 repositories {
+    maven { url "https://jitpack.io" }
     maven {
         url "http://repo.eclipse.org/content/repositories/paho-snapshots/"
     }
@@ -64,6 +65,7 @@ dependencies {
     compile 'com.github.fodroid:XStatusBarHelper:v1.1'
     compile 'de.hdodenhof:circleimageview:2.1.0'
     compile 'com.vivian.widgets:TimeLineItemDecoration:1.2'
+    compile 'com.github.myinnos:AlphabetIndex-Fast-Scroll-RecyclerView:1.0.8'
     testCompile 'junit:junit:4.12'
     apt 'com.jakewharton:butterknife-compiler:8.7.0'
 }
