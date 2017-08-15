@@ -474,7 +474,11 @@ public class ParkFragment extends Fragment {
                 ImageView iv_marker = (ImageView) customMarker.findViewById(R.id.iv_marker);
                 if (mMapStateParkingNum) {
                     iv_marker.setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_marker_numbers));
-                    tv_marker.setText(String.valueOf(mEstateBeanList.get(i).getParking().size()));
+                    int shareNum = 0;
+                    for (int j = 0; j<mEstateBeanList.get(i).getParking().size(); j++){
+                        shareNum += mEstateBeanList.get(i).getParking().get(j).getShare().size();
+                    }
+                    tv_marker.setText(String.valueOf(shareNum));
                 } else {
                     iv_marker.setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_marker_price));
                     tv_marker.setText(String.format("%d", mEstateBeanList.get(i).getUnitPrice()));

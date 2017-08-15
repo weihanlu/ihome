@@ -1,10 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/rv_parking_timeline"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.qhiehome.ihome.activity.ParkingTimelineActivity"
-    android:background="@drawable/bg_purple"
-    />
+    tools:context="com.qhiehome.ihome.activity.ParkingTimelineActivity">
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/toolbar_theme">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/tb_parking_timeline"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            android:minHeight="?attr/actionBarSize"
+            android:theme="?attr/actionBarTheme">
+
+            <TextView
+                android:id="@+id/tv_parking_name"
+                android:layout_width="240dp"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:marqueeRepeatLimit="-1"
+                android:textSize="18sp"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:singleLine="true"
+                android:ellipsize="marquee"/>
+
+
+        </android.support.v7.widget.Toolbar>
+
+
+    </android.support.design.widget.AppBarLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rv_parking_timeline"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_purple">
+        </android.support.v7.widget.RecyclerView>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@color/pale_green">
+
+            <TextView
+                android:id="@+id/tv_parking_timeline_guaranteeFee"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_marginLeft="16dp"
+                android:layout_centerVertical="true"
+                android:text="担保费    ￥"
+                android:textSize="16sp"
+                android:textColor="@color/white"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/tv_parking_timeline_guaranteeFee"
+                android:layout_marginLeft="4dp"
+                android:layout_centerVertical="true"
+                android:text="10.00"
+                android:textSize="22sp"
+                android:textColor="@color/white"/>
+
+            <Button
+                android:id="@+id/btn_parking_timeline_reserve"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_marginRight="16dp"
+                android:layout_centerVertical="true"
+                android:background="@drawable/round_button"
+                android:text="确认预约"
+                android:textSize="18sp"
+                android:textColor="@color/pale_green"/>
+
+
+
+        </RelativeLayout>
+    </LinearLayout>
+
+
+</android.support.design.widget.CoordinatorLayout>
