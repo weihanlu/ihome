@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
@@ -31,6 +32,8 @@ public class PayActivity extends AppCompatActivity {
     RecyclerView mRvPay;
     @BindView(R.id.btn_pay)
     Button mBtnPay;
+    @BindView(R.id.layout_pay)
+    RelativeLayout mLayoutPay;
 
     private Context mContext;
     private PayListAdapter mAdapter;
@@ -48,8 +51,16 @@ public class PayActivity extends AppCompatActivity {
         setContentView(R.layout.activity_pay);
         ButterKnife.bind(this);
         Intent intent = this.getIntent();
-        mFee = intent.getFloatExtra("grauFee", 0);
-        mBtnPay.setText("确认支付：" + String.format(DECIMAL_2, mFee) + "元");
+
+        boolean isPay = intent.getBooleanExtra("isPay", true);
+        //支付
+        if (isPay) {
+            mLayoutPay.setVisibility(View.GONE);
+            mFee = intent.getFloatExtra("grauFee", 0);
+            mBtnPay.setText("确认支付：" + String.format(DECIMAL_2, mFee) + "元");
+        }else {//充值
+
+        }
         mContext = this;
         mSelectedNum = ALI_PAY;
         initToolbar();
