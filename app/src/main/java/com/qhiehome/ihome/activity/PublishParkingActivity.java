@@ -10,7 +10,9 @@ import android.support.v7.app.ActionBar;
 import android.os.Bundle;
 import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +25,7 @@ import android.widget.TextView;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.adapter.DialogParkAdapter;
 import com.qhiehome.ihome.adapter.PublishParkingAdapter;
 import com.qhiehome.ihome.bean.PublishBean;
 import com.qhiehome.ihome.network.ServiceGenerator;
@@ -72,7 +75,8 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
     @BindView(R.id.rv_publish)
     RecyclerViewEmptySupport mRvPublish;
 
-    private List<String> mParkingIdList;
+    private ArrayList<String> mParkingIdList;
+    private ArrayList<Boolean> mSelected;
 
     private Context mContext;
 
@@ -80,7 +84,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
 
     LinearLayout mContainer;
 
-    AppCompatSpinner mParkSpinner;
+    RecyclerView mRvPark;
 
     private ArrayList<TimePeriod> mTimePeriods;
 
@@ -91,6 +95,8 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
     AppCompatSpinner mEndSpinner;
 
     private String mPhoneNum;
+
+    private int selectedPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,6 +118,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
 
     private void initData() {
         mParkingIdList = new ArrayList<>();
+        mSelected = new ArrayList<>();
         mPublishList = new ArrayList<>();
         mTimePeriods = new ArrayList<>();
         mPhoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, "");
@@ -134,6 +141,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                         List<ParkingResponse.DataBean.EstateBean.ParkingBean> parkingList = estateBean.getParking();
                         for (ParkingResponse.DataBean.EstateBean.ParkingBean parkingBean: parkingList) {
                             mParkingIdList.add(parkingBean.getId() + "");
+                            mSelected.add(false);
                             List<ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean> shareList = parkingBean.getShare();
                             for (ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean shareBean: shareList) {
                                 SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.CHINA);
@@ -258,6 +266,9 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
     }
 
     private void showPublishDialog() {
+        for (int i = 0; i < mSelected.size(); i++) {
+            mSelected.set(i, false);
+        }
         mPeriodTimes = 0;
         MaterialDialog.Builder dialogBuilder = new MaterialDialog.Builder(this);
         dialogBuilder.title("发布车位").customView(R.layout.dialog_publish_parking, true)
@@ -265,10 +276,20 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
         MaterialDialog dialog = dialogBuilder.build();
         View customView = dialog.getCustomView();
         if (customView != null) {
-            mParkSpinner = (AppCompatSpinner) customView.findViewById(R.id.spinner_dialog);
-            ArrayAdapter<String> parkAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, mParkingIdList);
-            parkAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            mParkSpinner.setAdapter(parkAdapter);
+            mRvPark = (RecyclerView) customView.findViewById(R.id.rv_dialog);
+            mRvPark.setHasFixedSize(true);
+            mRvPark.setLayoutManager(new GridLayoutManager(this, 3));
+            if (mSelected.size() > 0) {
+                mSelected.set(0, true);
+            }
+            DialogParkAdapter dialogParkAdapter = new DialogParkAdapter(this, mParkingIdList, mSelected);
+            dialogParkAdapter.setOnItemClickListener(new DialogParkAdapter.OnClickListener() {
+                @Override
+                public void onClick(View view, int i) {
+                    selectedPosition = i;
+                }
+            });
+            mRvPark.setAdapter(dialogParkAdapter);
             mContainer = (LinearLayout) customView.findViewById(R.id.container_period);
             final Button addBtn = (Button) customView.findViewById(R.id.btn_add);
             addBtn.setOnClickListener(new View.OnClickListener() {
@@ -332,7 +353,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
     }
 
     private void publishParking() {
-        long parkingId = Long.valueOf(mParkSpinner.getSelectedItem().toString());
+        long parkingId = Long.valueOf(mParkingIdList.get(selectedPosition));
         PublishParkService publishParkService = ServiceGenerator.createService(PublishParkService.class);
         PublishparkRequest publishparkRequest = new PublishparkRequest();
         publishparkRequest.setParkingId(parkingId);

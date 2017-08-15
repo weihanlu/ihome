@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
@@ -161,8 +162,7 @@ public class ReserveListActivity extends BaseActivity {
     class ReserveAdapter extends RecyclerView.Adapter<ReserveAdapter.MyViewHolder> {
         @Override
         public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            MyViewHolder viewHolder = new MyViewHolder(LayoutInflater.from(ReserveListActivity.this).inflate(R.layout.item_reserve_list, parent, false));
-            return viewHolder;
+            return new MyViewHolder(LayoutInflater.from(ReserveListActivity.this).inflate(R.layout.item_reserve_list, parent, false));
         }
 
         @Override
@@ -202,7 +202,8 @@ public class ReserveListActivity extends BaseActivity {
                     holder.btn_lock.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            //显示控制车位锁界面
+                            //显示控制车位锁界面 降车位锁
+
                         }
                     });
                     break;
@@ -218,7 +219,8 @@ public class ReserveListActivity extends BaseActivity {
                     holder.btn_lock.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            //显示控制车位锁界面
+                            //显示控制车位锁界面 升车位锁
+
                         }
                     });
                     break;
@@ -318,7 +320,7 @@ public class ReserveListActivity extends BaseActivity {
         Call<OrderResponse> call = orderService.order(orderRequest);
         call.enqueue(new Callback<OrderResponse>() {
             @Override
-            public void onResponse(Call<OrderResponse> call, Response<OrderResponse> response) {
+            public void onResponse(@NonNull Call<OrderResponse> call, @NonNull Response<OrderResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
                     mOrderBeanList = response.body().getData().getOrder();
                     if (mReserveAdapter != null) {

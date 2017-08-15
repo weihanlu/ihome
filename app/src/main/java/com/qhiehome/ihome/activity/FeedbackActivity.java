@@ -3,20 +3,31 @@ package com.qhiehome.ihome.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.network.ServiceGenerator;
+import com.qhiehome.ihome.network.model.feedback.FeedbackRequest;
+import com.qhiehome.ihome.network.model.feedback.FeedbackResponse;
+import com.qhiehome.ihome.network.service.feedback.FeedbackService;
+import com.qhiehome.ihome.util.CommonUtil;
+import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.ToastUtil;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class FeedbackActivity extends AppCompatActivity {
 
@@ -27,20 +38,46 @@ public class FeedbackActivity extends AppCompatActivity {
     @BindView(R.id.btn_feedback)
     Button mBtnFeedback;
 
+    private Context mContext;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_feedback);
         ButterKnife.bind(this);
         initToolbar();
+        mContext = this;
     }
 
     @OnClick(R.id.btn_feedback)
     public void onViewClicked() {
-        if (mEtFeedback.getText().toString().trim().isEmpty()){
+        String advice = mEtFeedback.getText().toString();
+        if (TextUtils.isEmpty(advice)){
             ToastUtil.showToast(this, "请输入反馈内容");
         }else {
-            // TODO: 2017/8/9 意见反馈接口
+            FeedbackService feedbackService = ServiceGenerator.createService(FeedbackService.class);
+            FeedbackRequest feedbackRequest = new FeedbackRequest(advice);
+            Call<FeedbackResponse> call = feedbackService.sendFeedback(feedbackRequest);
+            call.enqueue(new Callback<FeedbackResponse>() {
+                @Override
+                public void onResponse(@NonNull Call<FeedbackResponse> call, @NonNull Response<FeedbackResponse> response) {
+                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                ToastUtil.showToast(mContext, "意见发送成功");
+                                mEtFeedback.setText("");
+                                CommonUtil.hideKeyboard(FeedbackActivity.this);
+                            }
+                        });
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<FeedbackResponse> call, @NonNull Throwable t) {
+
+                }
+            });
         }
     }
 

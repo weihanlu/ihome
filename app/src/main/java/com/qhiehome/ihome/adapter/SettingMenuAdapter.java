@@ -31,7 +31,14 @@ public class SettingMenuAdapter extends RecyclerView.Adapter<SettingMenuAdapter.
 
     @Override
     public void onBindViewHolder(final SettingMenuHolder holder, int position) {
-        holder.mTextView.setText(mTitles[position]);
+        if (position == 0) {
+            holder.mTvVersion.setVisibility(View.VISIBLE);
+            String[] firstLine = mTitles[position].split(";");
+            holder.mTvItem.setText(firstLine[0]);
+            holder.mTvVersion.setText("V " + firstLine[1]);
+        }  else {
+            holder.mTvItem.setText(mTitles[position]);
+        }
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -47,11 +54,13 @@ public class SettingMenuAdapter extends RecyclerView.Adapter<SettingMenuAdapter.
 
     public static class SettingMenuHolder extends RecyclerView.ViewHolder {
 
-        TextView mTextView;
+        TextView mTvItem;
+        TextView mTvVersion;
 
         private SettingMenuHolder(View itemView) {
             super(itemView);
-            mTextView = (TextView) itemView.findViewById(R.id.tv_item);
+            mTvItem = (TextView) itemView.findViewById(R.id.tv_item);
+            mTvVersion = (TextView) itemView.findViewById(R.id.tv_version);
         }
     }
 

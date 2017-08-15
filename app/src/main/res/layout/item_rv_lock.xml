@@ -36,16 +36,6 @@
             android:layout_marginStart="12dp"/>
 
         <TextView
-            android:id="@+id/tv_lock_estate_name"
-            tools:text="今典花园"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@id/tv_user_lock"
-            android:layout_alignStart="@id/tv_lock_name"
-            android:textSize="14sp"
-            />
-
-        <TextView
             android:id="@+id/tv_rental_status"
             tools:text="已租用"
             android:layout_width="wrap_content"
@@ -62,6 +52,20 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/tv_rental_status"
             android:layout_alignEnd="@id/tv_rental_status"
+            />
+
+        <TextView
+            android:id="@+id/tv_lock_estate_name"
+            tools:text="今典花园"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="-1"
+            android:layout_alignBottom="@id/tv_user_lock"
+            android:layout_alignStart="@id/tv_lock_name"
+            android:layout_toStartOf="@id/bt_modify_pwd"
+            android:textSize="14sp"
             />
 
     </RelativeLayout>

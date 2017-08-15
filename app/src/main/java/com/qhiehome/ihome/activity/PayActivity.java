@@ -20,6 +20,8 @@ import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
 
+import java.util.Locale;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -57,7 +59,7 @@ public class PayActivity extends AppCompatActivity {
         if (isPay) {
             mLayoutPay.setVisibility(View.GONE);
             mFee = intent.getFloatExtra("grauFee", 0);
-            mBtnPay.setText("确认支付：" + String.format(DECIMAL_2, mFee) + "元");
+            mBtnPay.setText("确认支付：" + String.format(Locale.CHINA, DECIMAL_2, mFee) + "元");
         }else {//充值
 
         }

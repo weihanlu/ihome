@@ -45,10 +45,12 @@ import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedRequest
 import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedResponse;
 import com.qhiehome.ihome.network.model.lock.updatepwd.UpdateLockPwdRequest;
 import com.qhiehome.ihome.network.model.lock.updatepwd.UpdateLockPwdResponse;
+import com.qhiehome.ihome.network.service.avatar.UploadAvatarService;
 import com.qhiehome.ihome.network.service.inquiry.ParkingOwnedService;
 import com.qhiehome.ihome.network.service.lock.UpdateLockPwdService;
 import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
+import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.FileUtils;
 import com.qhiehome.ihome.util.NetworkUtils;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
@@ -64,6 +66,10 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import de.hdodenhof.circleimageview.CircleImageView;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -88,6 +94,9 @@ public class UserInfoActivity extends BaseActivity {
 
     @BindView(R.id.tv_balance)
     TextView mTvBalance;
+
+    @BindView(R.id.tv_add_balance)
+    TextView mTvAddBalance;
 
     @BindView(R.id.iv_avatar)
     CircleImageView mIvAvatar;
@@ -167,7 +176,7 @@ public class UserInfoActivity extends BaseActivity {
             Call<ParkingOwnedResponse> call = parkingOwnedService.parkingOwned(parkingOwnedRequest);
             call.enqueue(new Callback<ParkingOwnedResponse>() {
                 @Override
-                public void onResponse(@NonNull  Call<ParkingOwnedResponse> call,@NonNull Response<ParkingOwnedResponse> response) {
+                public void onResponse(@NonNull Call<ParkingOwnedResponse> call, @NonNull Response<ParkingOwnedResponse> response) {
                     if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                         // success and then inflate ViewStub
                         List<ParkingResponse.DataBean.EstateBean> estateList = response.body().getData().getEstate();
@@ -186,12 +195,12 @@ public class UserInfoActivity extends BaseActivity {
                 }
 
                 @Override
-                public void onFailure(@NonNull  Call<ParkingOwnedResponse> call,@NonNull Throwable t) {
+                public void onFailure(@NonNull Call<ParkingOwnedResponse> call, @NonNull Throwable t) {
 
                 }
             });
         } else {
-            // get lock info from local
+            // TODO: 2017/8/15 get lock from local
         }
     }
 
@@ -248,7 +257,7 @@ public class UserInfoActivity extends BaseActivity {
                 if (mControlLockDialog == null) {
                     mControlLockDialog = new MaterialDialog.Builder(mContext)
                             .title("已连接").titleGravity(GravityEnum.CENTER)
-                            .customView(controlLock ,false)
+                            .customView(controlLock, false)
                             .dismissListener(new DialogInterface.OnDismissListener() {
                                 @Override
                                 public void onDismiss(DialogInterface dialog) {
@@ -322,8 +331,8 @@ public class UserInfoActivity extends BaseActivity {
         mUserLocks.clear();
         UserLockBean userLockBean;
         boolean isRented = false;
-        for (ParkingResponse.DataBean.EstateBean estate: estateList) {
-            for (ParkingResponse.DataBean.EstateBean.ParkingBean parkingBean: estate.getParking()) {
+        for (ParkingResponse.DataBean.EstateBean estate : estateList) {
+            for (ParkingResponse.DataBean.EstateBean.ParkingBean parkingBean : estate.getParking()) {
                 List<ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean> share = parkingBean.getShare();
                 for (int i = 0; i < share.size(); i++) {
                     ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean shareBean = share.get(i);
@@ -359,7 +368,6 @@ public class UserInfoActivity extends BaseActivity {
             Bitmap avatarBitmap = BitmapFactory.decodeFile(mAvatarPath);
             mIvAvatar.setImageBitmap(avatarBitmap);
         }
-
     }
 
     private void initToolbar() {
@@ -381,12 +389,14 @@ public class UserInfoActivity extends BaseActivity {
                     mTvToolbarTitle.setAlpha(1.0f / 0.5f * (p - 0.5f));
                     mTvPhoneNum.setAlpha(0);
                     mTvBalance.setAlpha(0);
+                    mTvAddBalance.setAlpha(0);
                 } else {
                     mTvToolbarTitle.setAlpha(0);
                     mTvPhoneNum.setAlpha(1.0f - p / 0.5f);
                     mTvBalance.setAlpha(1.0f - p / 0.5f);
+                    mTvAddBalance.setAlpha(1.0f - p / 0.5f);
                 }
-                mIvAvatar.setVisibility(p == 1 ? View.INVISIBLE: View.VISIBLE);
+                mIvAvatar.setVisibility(p == 1 ? View.INVISIBLE : View.VISIBLE);
             }
         });
     }
@@ -497,9 +507,44 @@ public class UserInfoActivity extends BaseActivity {
         }
     }
 
+    private void uploadAvatar() {
+        File avatarDir = mAvatarFile.getParentFile();
+        if (avatarDir.isDirectory() && avatarDir.listFiles().length != 0) {
+            UploadAvatarService uploadAvatarService = ServiceGenerator.createService(UploadAvatarService.class);
+            String phoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, "");
+            RequestBody requestPhone = RequestBody.create(MediaType.parse("multipart/form-data"), EncryptUtil.encrypt(phoneNum, EncryptUtil.ALGO.SHA_256));
+            final RequestBody requestAvatar = RequestBody.create(MediaType.parse("multipart/form-data"), mAvatarFile);
+            String encryptedAvatarName = EncryptUtil.encrypt(mAvatarFile.getName(), EncryptUtil.ALGO.MD5);
+            MultipartBody.Part avatarPart = MultipartBody.Part.createFormData("photo", encryptedAvatarName, requestAvatar);
+
+            Call<ResponseBody> call = uploadAvatarService.uploadAvatar(avatarPart, requestPhone);
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
+                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                ToastUtil.showToast(mContext, "头像上传成功");
+                            }
+                        });
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+
+                }
+            });
+        }
+
+    }
+
+
     private void showOriginalImage() {
         final Bitmap portraitBitmap = getScaledImage(mAvatarPath, mIvAvatar);
         mIvAvatar.setImageBitmap(portraitBitmap);
+
     }
 
     private Bitmap getScaledImage(String filePath, ImageView imageView) {
@@ -554,13 +599,26 @@ public class UserInfoActivity extends BaseActivity {
 
         mIvAvatar.setImageBitmap(bitmap);
         // 将bitmap写入文件中
-        BitmapToFileTask bitmapToFileTask= new BitmapToFileTask();
+        BitmapToFileTask bitmapToFileTask = new BitmapToFileTask();
         bitmapToFileTask.execute(bitmap);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+//        uploadAvatar();
+    }
+
+    @OnClick(R.id.tv_add_balance)
+    public void onViewClicked() {
+        Intent intent = new Intent(this, PayActivity.class);
+        intent.putExtra("isPay", false);
+        startActivity(intent);
     }
 
     private class ConnectLockReceiver extends BroadcastReceiver {

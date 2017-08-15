@@ -19,6 +19,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.adapter.SettingMenuAdapter;
@@ -65,7 +66,9 @@ public class SettingActivity extends BaseActivity {
 
     private boolean cancelUpdate;
 
-    MaterialDialog mDialog;
+    MaterialDialog mUpdateInfoDialog;
+
+    MaterialDialog mUpdateProcessDialog;
 
     private String mSavedPath;
 
@@ -87,6 +90,12 @@ public class SettingActivity extends BaseActivity {
         mRvSetting.setLayoutManager(new LinearLayoutManager(this));
         mRvSetting.setHasFixedSize(true);
         mRvSetting.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
+        boolean canUpdate = SharedPreferenceUtil.getBoolean(this, Constant.UPDATE_ENABLED, false);
+        if (canUpdate) {
+            mSettingMenu[0] = mSettingMenu[0] + ";可更新";
+        } else {
+            mSettingMenu[0] = mSettingMenu[0] + ";" + CommonUtil.getVersionCode();
+        }
         SettingMenuAdapter settingMenuAdapter = new SettingMenuAdapter(this, mSettingMenu);
         initListener(settingMenuAdapter);
         mRvSetting.setAdapter(settingMenuAdapter);
@@ -137,25 +146,14 @@ public class SettingActivity extends BaseActivity {
                 if (body != null && body.getCode().equals("0")) {
                     List<CheckUpdateResponse.DataBean.ListBean> list = body.getData().getList();
                     int onLineAppVersionNo = Integer.valueOf(list.get(0).getAppVersionNo());
-                    LogUtil.d(TAG, "online version is " + onLineAppVersionNo + ", local version is " + CommonUtil.getVersionCode());
                     if (onLineAppVersionNo > CommonUtil.getVersionCode()) {
                         final String appKey = list.get(0).getAppKey();
+                        final String appUpdateDescription = list.get(0).getAppUpdateDescription();
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                mDialog = new MaterialDialog.Builder(mContext)
-                                        .title("正在更新")
-                                        .content("下载进度")
-                                        .progress(false, 100, true)
-                                        .dismissListener(new DialogInterface.OnDismissListener() {
-                                            @Override
-                                            public void onDismiss(DialogInterface dialog) {
-                                                dialog.dismiss();
-                                                cancelUpdate = true;
-                                            }
-                                        })
-                                        .show();
-                                downloadApk(String.format(Constant.APK_UPDATE_URL_PATTERN, appKey));
+                                if (mUpdateInfoDialog == null) buildUpdateInfoDialog(appUpdateDescription, appKey);
+                                mUpdateInfoDialog.show();
                             }
                         });
                     } else {
@@ -174,6 +172,43 @@ public class SettingActivity extends BaseActivity {
                 ToastUtil.showToast(mContext, "网络异常");
             }
         });
+    }
+
+    private void buildUpdateInfoDialog(String updateInfo, final String appKey) {
+        String[] updateInfoItems = updateInfo.split(";");
+        StringBuilder formatUpdateInfo = new StringBuilder();
+        for (int i = 0; i < updateInfoItems.length; i++) {
+            formatUpdateInfo.append(i + 1).append(". ").append(updateInfoItems[i]).append("\n");
+        }
+        formatUpdateInfo.deleteCharAt(formatUpdateInfo.length() - 1);
+        mUpdateInfoDialog = new MaterialDialog.Builder(this)
+               .title("新特性")
+               .content(formatUpdateInfo.toString())
+               .positiveText("立即更新")
+               .negativeText("取消")
+               .onPositive(new MaterialDialog.SingleButtonCallback() {
+                   @Override
+                   public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                       if (mUpdateProcessDialog == null) buildUpdateProcessDialog();
+                       mUpdateProcessDialog.show();
+                       downloadApk(String.format(Constant.APK_UPDATE_URL_PATTERN, appKey));
+                   }
+               })
+               .canceledOnTouchOutside(true).build();
+    }
+
+    private void buildUpdateProcessDialog() {
+        mUpdateProcessDialog = new MaterialDialog.Builder(this)
+                .title("正在更新")
+                .content("下载进度")
+                .progress(false, 100, true)
+                .dismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        dialog.dismiss();
+                        cancelUpdate = true;
+                    }
+                }).build();
     }
 
     private void downloadApk(String downloadUrl) {
@@ -253,7 +288,7 @@ public class SettingActivity extends BaseActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                mDialog.setProgress(progress);
+                                mUpdateProcessDialog.setProgress(progress);
                             }
                         });
                         if (numRead <= 0) {
@@ -273,12 +308,11 @@ public class SettingActivity extends BaseActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    mDialog.dismiss();
+                    mUpdateProcessDialog.dismiss();
                 }
             });
             return null;
         }
-
     }
 
 }

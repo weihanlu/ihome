@@ -16,7 +16,7 @@ public class EncryptUtil {
     private static final String TAG = "EncryptUtil";
 
     public enum ALGO {
-        SHA_256, SHA_512
+        SHA_256, SHA_512, MD5
     }
 
     /**
@@ -37,6 +37,8 @@ public class EncryptUtil {
             case SHA_512:
                 encrypted = new String(Hex.encodeHex(DigestUtils.sha512(text)));
                 break;
+            case MD5:
+                encrypted = new String(Hex.encodeHex(DigestUtils.md5(text)));
             default:
                 break;
         }
