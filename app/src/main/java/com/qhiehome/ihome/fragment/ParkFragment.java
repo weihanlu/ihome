@@ -301,15 +301,15 @@ public class ParkFragment extends Fragment {
 //        mBaiduMap.setMyLocationConfiguration(config);
         mBDLocationListener = new BDLocationListener() {
             @Override
-            public void onReceiveLocation(BDLocation bdLocation) {
+            public void onReceiveLocation(final BDLocation bdLocation) {
                 if (bdLocation == null || mMapView == null) {
                     return;
                 }
-                mCity = bdLocation.getCity();
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         if (!isGetCurrentCity) {
+                            mCity = bdLocation.getCity();
                             mTvCurrentCity.setText("当前城市：" + mCity);
                             isGetCurrentCity = true;
                         }
@@ -565,9 +565,7 @@ public class ParkFragment extends Fragment {
     @OnClick(R.id.rl_input_location)
     public void onViewClicked() {
         Intent intent = new Intent(getActivity(), MapSearchActivity.class);
-        Bundle bundle = new Bundle();
-        bundle.putString("city", mCity);
-        intent.putExtras(bundle);
+        intent.putExtra("city", mCity);
         getActivity().startActivityForResult(intent, REQUEST_CODE_SEARCH);
     }
 
@@ -601,9 +599,9 @@ public class ParkFragment extends Fragment {
                 updateMapState(searchPt);
             }
             if (requestCode == REQUEST_CODE_CITY){
-                mTvCurrentCity.setText("当前城市：" + data.getExtras().getString("city"));
+                mCity = data.getExtras().getString("city");
+                mTvCurrentCity.setText("当前城市：" + mCity);
                 String URLString;
-                String cityName = data.getExtras().getString("city");
                 String output = "json";
                 String key = "R6nE16pZMKymjr58SMBAPsU3wC8BD9RY";
 //                try {
@@ -611,10 +609,10 @@ public class ParkFragment extends Fragment {
 //                }catch (Exception e){
 //                    e.printStackTrace();
 //                }
-                if (!TextUtils.isEmpty(cityName)){
+                if (!TextUtils.isEmpty(mCity)){
                     BaiduMapService baiduMapService = BaiduMapServiceGenerator.createService(BaiduMapService.class);
                     Map<String, String> option = new HashMap<String, String>();
-                    option.put("address", cityName);
+                    option.put("address", mCity);
                     option.put("output", output);
                     option.put("key", key);
                     Call<BaiduMapResponse> call = baiduMapService.queryLatLnt(option);

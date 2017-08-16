@@ -34,6 +34,7 @@ import com.baidu.mapapi.search.sug.SuggestionSearchOption;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.persistence.DaoSession;
 import com.qhiehome.ihome.persistence.ParkingSQLHelper;
+import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.view.Search_ListView;
 
 import java.lang.ref.WeakReference;
@@ -48,6 +49,8 @@ import butterknife.OnClick;
 
 
 public class MapSearchActivity extends BaseActivity {
+
+    private static final String TAG = MapSearchActivity.class.getSimpleName();
 
 //    @BindView(R.id.et_search)
 //    EditText mEtSearch;
@@ -108,9 +111,8 @@ public class MapSearchActivity extends BaseActivity {
         ButterKnife.bind(this);
         mContext = this;
         mHandler = new SearchHandler(this);
-        Intent intent = this.getIntent();
-        Bundle bundle = intent.getExtras();
-        mCity = bundle.getString("city");
+        mCity = getIntent().getStringExtra("city");
+        LogUtil.d(TAG, "city is " + mCity);
         mSQLHelper = new ParkingSQLHelper(this);
         mFloatingSearchView.setSearchFocused(true);
         queryData("");
@@ -145,7 +147,6 @@ public class MapSearchActivity extends BaseActivity {
         mFloatingSearchView.setOnQueryChangeListener(new FloatingSearchView.OnQueryChangeListener() {
             @Override
             public void onSearchTextChanged(String oldQuery, String newQuery) {
-
                 if (newQuery.length() == 0) {
                     mTvSearchTip.setText("搜索历史");
                     isHistory = true;

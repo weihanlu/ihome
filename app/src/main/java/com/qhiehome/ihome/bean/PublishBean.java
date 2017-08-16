@@ -1,6 +1,8 @@
 package com.qhiehome.ihome.bean;
 
-public class PublishBean {
+import android.support.annotation.NonNull;
+
+public class PublishBean implements Comparable<PublishBean>{
 
     private String parkingId;
 
@@ -46,5 +48,10 @@ public class PublishBean {
 
     public void setShareId(int shareId) {
         this.shareId = shareId;
+    }
+
+    @Override
+    public int compareTo(@NonNull PublishBean o) {
+        return startTime.compareTo(o.startTime);
     }
 }
