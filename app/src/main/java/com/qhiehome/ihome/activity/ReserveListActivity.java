@@ -26,12 +26,15 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.baidu.navisdk.adapter.BNCommonSettingParam;
 import com.baidu.navisdk.adapter.BNOuterTTSPlayerCallback;
 import com.baidu.navisdk.adapter.BNRoutePlanNode;
 import com.baidu.navisdk.adapter.BNaviSettingManager;
 import com.baidu.navisdk.adapter.BaiduNaviManager;
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.bean.UserLockBean;
+import com.qhiehome.ihome.lock.ConnectLockService;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.inquiry.order.OrderRequest;
 import com.qhiehome.ihome.network.model.inquiry.order.OrderResponse;
@@ -44,6 +47,7 @@ import com.qhiehome.ihome.network.service.inquiry.ReserveOwnedService;
 import com.qhiehome.ihome.network.service.park.ReserveCancelService;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
+import com.qhiehome.ihome.util.NetworkUtils;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
@@ -166,7 +170,7 @@ public class ReserveListActivity extends BaseActivity {
         }
 
         @Override
-        public void onBindViewHolder(MyViewHolder holder, final int position) {
+        public void onBindViewHolder(final MyViewHolder holder, final int position) {
             final int index = mOrderBeanList.size() - position - 1;
             switch (mOrderBeanList.get(index).getState()){
                 case ORDER_STATE_RESERVED:
@@ -188,7 +192,7 @@ public class ReserveListActivity extends BaseActivity {
                         @Override
                         public void onClick(View v) {
                             //取消预约请求
-                            CancelReserve(index);
+                            CancelReserve(holder, index);
                         }
                     });
 
@@ -344,7 +348,7 @@ public class ReserveListActivity extends BaseActivity {
     }
 
 
-    private void CancelReserve(final int index){
+    private void CancelReserve(final ReserveAdapter.MyViewHolder holder, final int index){
         int orderId = mOrderBeanList.get(index).getId();
         ReserveCancelService reserveCancelService = ServiceGenerator.createService(ReserveCancelService.class);
         Call<ReserveCancelResponse> call = reserveCancelService.reserve(new ReserveCancelRequest(orderId));
@@ -353,7 +357,16 @@ public class ReserveListActivity extends BaseActivity {
             public void onResponse(Call<ReserveCancelResponse> call, Response<ReserveCancelResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
                     mOrderBeanList.get(index).setState(ORDER_STATE_CANCEL);
-                    mReserveAdapter.notifyDataSetChanged();
+                    holder.tv_estate.setText(mOrderBeanList.get(index).getEstate().getName());
+                    holder.tv_time.setText(TIME_FORMAT.format(mOrderBeanList.get(index).getStartTime()) + "~" + TIME_FORMAT.format(mOrderBeanList.get(index).getEndTime()));
+                    holder.tv_fee.setVisibility(View.INVISIBLE);
+                    holder.tv_state.setText("已取消");
+                    holder.btn_map.setVisibility(View.INVISIBLE);
+                    holder.btn_cancel.setVisibility(View.INVISIBLE);
+                    holder.btn_navi.setVisibility(View.INVISIBLE);
+                    holder.btn_lock.setVisibility(View.INVISIBLE);
+                    holder.btn_pay.setVisibility(View.INVISIBLE);
+                    //mReserveAdapter.notifyDataSetChanged();
                 }
             }
 
@@ -362,6 +375,10 @@ public class ReserveListActivity extends BaseActivity {
                 ToastUtil.showToast(mContext, "网络连接异常");
             }
         });
+    }
+
+    private void LockDown(final ReserveAdapter.MyViewHolder holder, final int index){
+
     }
 
     /*********导航功能**********/
