@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -30,8 +31,10 @@ public class CityActivity extends AppCompatActivity {
     Toolbar mTbCity;
     @BindView(R.id.rv_city)
     RecyclerView mRvCity;
+    @BindArray(R.array.cities)
+    String[] mCities;
 
-    private List<String> mCities = new ArrayList<>();
+//    private List<String> mCities = new ArrayList<>();
     private String mCurrentCity;
 
     @Override
@@ -42,18 +45,18 @@ public class CityActivity extends AppCompatActivity {
         Intent intent = this.getIntent();
         Bundle bundle = intent.getExtras();
         mCurrentCity = bundle.getString("city");
-        initCities();
+//        initCities();
         initToolbar();
         initRecyclerView();
     }
 
-    private void initCities(){
-        mCities.add("北京市");
-        mCities.add("上海市");
-        mCities.add("广州市");
-        mCities.add("深圳市");
-        mCities.add("杭州市");
-    }
+//    private void initCities(){
+//        mCities.add("北京市");
+//        mCities.add("上海市");
+//        mCities.add("广州市");
+//        mCities.add("深圳市");
+//        mCities.add("杭州市");
+//    }
 
     private void initToolbar() {
         setSupportActionBar(mTbCity);
@@ -82,7 +85,8 @@ public class CityActivity extends AppCompatActivity {
                 if (i == 0){
                     city_selected = mCurrentCity;
                 }else {
-                    city_selected = mCities.get(i-1);
+                    city_selected = mCities[i-1];
+//                    city_selected = mCities.get(i-1);
                 }
 
                 Bundle bundle = new Bundle();
@@ -110,7 +114,8 @@ public class CityActivity extends AppCompatActivity {
                 holder.tv_city.setText(mCurrentCity);
                 holder.tv_hint.setText("当前城市");
             }else {
-                holder.tv_city.setText(mCities.get(position-1));
+                holder.tv_city.setText(mCities[position-1]);
+//                holder.tv_city.setText(mCities.get(position-1));
                 holder.tv_hint.setText("");
             }
             holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -126,7 +131,7 @@ public class CityActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            return mCities.size() + 1;
+            return mCities.length + 1;
         }
 
         class MyViewHolder extends RecyclerView.ViewHolder {

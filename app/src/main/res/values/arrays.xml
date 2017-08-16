@@ -17,12 +17,12 @@
     </string-array>
 
     <string-array name="cities">
-        <item>北京</item>
-        <item>广州</item>
-        <item>深圳</item>
-        <item>上海</item>
-        <item>杭州</item>
-        <item>成都</item>
+        <item>北京市</item>
+        <item>广州市</item>
+        <item>深圳市</item>
+        <item>上海市</item>
+        <item>杭州市</item>
+        <item>成都市</item>
     </string-array>
 
     <string-array name="avatar_items">
