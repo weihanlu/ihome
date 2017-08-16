@@ -20,8 +20,11 @@ import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
+import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -36,11 +39,23 @@ public class PayActivity extends AppCompatActivity {
     Button mBtnPay;
     @BindView(R.id.layout_pay)
     RelativeLayout mLayoutPay;
+    @BindView(R.id.btn_add_balance_1)
+    Button mBtnAddBalance1;
+    @BindView(R.id.btn_add_balance_2)
+    Button mBtnAddBalance2;
+    @BindView(R.id.btn_add_balance_3)
+    Button mBtnAddBalance3;
+    @BindView(R.id.btn_add_balance_4)
+    Button mBtnAddBalance4;
+    @BindArray(R.array.add_balance)
+    String[] mPriceList;
 
     private Context mContext;
     private PayListAdapter mAdapter;
     private int mSelectedNum;
     private float mFee;
+    private int mButtonClicked = 1;
+    private List<Button> mBtnList = new ArrayList<>();
 
     private static final int ALI_PAY = 0;
     private static final int WECHAT_PAY = 1;
@@ -53,20 +68,27 @@ public class PayActivity extends AppCompatActivity {
         setContentView(R.layout.activity_pay);
         ButterKnife.bind(this);
         Intent intent = this.getIntent();
-
         boolean isPay = intent.getBooleanExtra("isPay", true);
+        mContext = this;
+        mSelectedNum = ALI_PAY;
+        initToolbar();
+        initRecyclerView();
+
         //支付
         if (isPay) {
             mLayoutPay.setVisibility(View.GONE);
             mFee = intent.getFloatExtra("grauFee", 0);
             mBtnPay.setText("确认支付：" + String.format(Locale.CHINA, DECIMAL_2, mFee) + "元");
-        }else {//充值
-
+        } else {//充值
+            mBtnList.add(mBtnAddBalance1);
+            mBtnList.add(mBtnAddBalance2);
+            mBtnList.add(mBtnAddBalance3);
+            mBtnList.add(mBtnAddBalance4);
+            mButtonClicked = 1;
+            mBtnAddBalance1.setTextColor(ContextCompat.getColor(mContext, R.color.pale_green));
+            mBtnPay.setText("确认支付：" + mPriceList[mButtonClicked-1] + "元");
         }
-        mContext = this;
-        mSelectedNum = ALI_PAY;
-        initToolbar();
-        initRecyclerView();
+
 
     }
 
@@ -108,6 +130,44 @@ public class PayActivity extends AppCompatActivity {
 
         // TODO: 2017/8/14 根据选择方式调用支付接口
 
+    }
+
+    @OnClick({R.id.btn_add_balance_1, R.id.btn_add_balance_2, R.id.btn_add_balance_3, R.id.btn_add_balance_4})
+    public void onViewClicked(View view) {
+        switch (view.getId()) {
+            case R.id.btn_add_balance_1:
+                if (mButtonClicked != 1){
+                    mBtnList.get(mButtonClicked-1).setTextColor(ContextCompat.getColor(mContext, R.color.black));
+                    mButtonClicked = 1;
+                    mBtnAddBalance1.setTextColor(ContextCompat.getColor(mContext, R.color.pale_green));
+                    mBtnPay.setText("确认支付：" + mPriceList[mButtonClicked-1] + "元");
+                }
+                break;
+            case R.id.btn_add_balance_2:
+                if (mButtonClicked != 2){
+                    mBtnList.get(mButtonClicked-1).setTextColor(ContextCompat.getColor(mContext, R.color.black));
+                    mButtonClicked = 2;
+                    mBtnAddBalance2.setTextColor(ContextCompat.getColor(mContext, R.color.pale_green));
+                    mBtnPay.setText("确认支付：" + mPriceList[mButtonClicked-1] + "元");
+                }
+                break;
+            case R.id.btn_add_balance_3:
+                if (mButtonClicked != 3){
+                    mBtnList.get(mButtonClicked-1).setTextColor(ContextCompat.getColor(mContext, R.color.black));
+                    mButtonClicked = 3;
+                    mBtnAddBalance3.setTextColor(ContextCompat.getColor(mContext, R.color.pale_green));
+                    mBtnPay.setText("确认支付：" + mPriceList[mButtonClicked-1] + "元");
+                }
+                break;
+            case R.id.btn_add_balance_4:
+                if (mButtonClicked != 4){
+                    mBtnList.get(mButtonClicked-1).setTextColor(ContextCompat.getColor(mContext, R.color.black));
+                    mButtonClicked = 4;
+                    mBtnAddBalance4.setTextColor(ContextCompat.getColor(mContext, R.color.pale_green));
+                    mBtnPay.setText("确认支付：" + mPriceList[mButtonClicked-1] + "元");
+                }
+                break;
+        }
     }
 
     private class PayListAdapter extends RecyclerView.Adapter<PayListAdapter.PayListHolder> {

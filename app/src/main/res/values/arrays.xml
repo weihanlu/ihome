@@ -29,4 +29,12 @@
         <item>拍照</item>
         <item>相册</item>
     </string-array>
+
+    <string-array name="add_balance">
+        <item>10.00</item>
+        <item>30.00</item>
+        <item>50.00</item>
+        <item>100.00</item>
+    </string-array>
+
 </resources>
