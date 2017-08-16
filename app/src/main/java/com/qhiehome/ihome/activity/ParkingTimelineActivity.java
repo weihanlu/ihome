@@ -229,40 +229,50 @@ public class ParkingTimelineActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(final ParkingViewHolder holder, int position) {
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (onClickListener != null) {
-                        onClickListener.onClick(holder.itemView, holder.getLayoutPosition());
+            if (mShareBeanList.size() == 1 && position == 1){//防崩溃
+                holder.tv_time.setText("");
+                holder.tv_info.setText("");
+                holder.itemView.setVisibility(View.INVISIBLE);
+            }else {
+                holder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (onClickListener != null) {
+                            onClickListener.onClick(holder.itemView, holder.getLayoutPosition());
+                        }
+                    }
+                });
+                Date startDate = TimeUtil.getInstance().millis2Date(mShareBeanList.get(position).getStartTime());
+                Date endDate = TimeUtil.getInstance().millis2Date(mShareBeanList.get(position).getEndTime());
+                String startTime = TIME_FORMAT.format(startDate);
+                String endTime = TIME_FORMAT.format(endDate);
+                holder.tv_time.setText(startTime + " - " + endTime);
+                long timePeriod = mShareBeanList.get(position).getEndTime() - mShareBeanList.get(position).getStartTime();
+                int minutes_total = (int) timePeriod/1000/60;
+                int hours = minutes_total/60;
+                int minutes = minutes_total%60;
+                String time_length = "";
+                if (hours == 0){
+                    time_length = minutes + "分";
+                }else {
+                    if (minutes == 0){
+                        time_length = hours + "小时";
+                    }else {
+                        time_length = hours + "小时" + minutes + "分";
                     }
                 }
-            });
-            Date startDate = TimeUtil.getInstance().millis2Date(mShareBeanList.get(position).getStartTime());
-            Date endDate = TimeUtil.getInstance().millis2Date(mShareBeanList.get(position).getEndTime());
-            String startTime = TIME_FORMAT.format(startDate);
-            String endTime = TIME_FORMAT.format(endDate);
-            holder.tv_time.setText(startTime + " - " + endTime);
-            long timePeriod = mShareBeanList.get(position).getEndTime() - mShareBeanList.get(position).getStartTime();
-            int minutes_total = (int) timePeriod/1000/60;
-            int hours = minutes_total/60;
-            int minutes = minutes_total%60;
-            String time_length = "";
-            if (hours == 0){
-                time_length = minutes + "分";
-            }else {
-                if (minutes == 0){
-                    time_length = hours + "小时";
-                }else {
-                    time_length = hours + "小时" + minutes + "分";
-                }
+                holder.tv_info.setText(time_length);
+                //holder.tv_time.setTextColor(COLORS[position % COLORS.length]);
             }
-            holder.tv_info.setText(time_length);
-            //holder.tv_time.setTextColor(COLORS[position % COLORS.length]);
         }
 
         @Override
         public int getItemCount() {
-            return mShareBeanList.size();
+            if (mShareBeanList.size() == 1){
+                return 2;
+            }else {
+                return mShareBeanList.size();
+            }
         }
 
         class ParkingViewHolder extends RecyclerView.ViewHolder {
