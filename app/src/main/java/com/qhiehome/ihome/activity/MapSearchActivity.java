@@ -32,6 +32,7 @@ import com.baidu.mapapi.search.sug.SuggestionResult;
 import com.baidu.mapapi.search.sug.SuggestionSearch;
 import com.baidu.mapapi.search.sug.SuggestionSearchOption;
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.persistence.DaoSession;
 import com.qhiehome.ihome.persistence.ParkingSQLHelper;
 import com.qhiehome.ihome.view.Search_ListView;
 
@@ -44,6 +45,7 @@ import java.util.Map;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+
 
 public class MapSearchActivity extends BaseActivity {
 
@@ -70,6 +72,8 @@ public class MapSearchActivity extends BaseActivity {
     private boolean isHistory;
     private Handler mHandler;
     private int mPosition;
+
+    private DaoSession mDaoSession;
 
     private static final int BACK_MSG = 1;
 
