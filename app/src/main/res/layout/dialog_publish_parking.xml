@@ -7,9 +7,19 @@
         android:id="@+id/rv_dialog"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp">
+        android:layout_marginBottom="16dp"
+        android:layout_gravity="center_horizontal">
 
     </android.support.v7.widget.RecyclerView>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@drawable/bg_separator"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="12dp"
+        />
+
 
     <LinearLayout
         android:id="@+id/container_period"
