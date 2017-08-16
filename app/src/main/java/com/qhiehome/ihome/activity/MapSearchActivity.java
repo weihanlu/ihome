@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -160,6 +161,9 @@ public class MapSearchActivity extends BaseActivity {
 
             @Override
             public void onSearchAction(String currentQuery) {
+                if (TextUtils.isEmpty(currentQuery)){
+                    return;
+                }
                 boolean hasData = hasData(mFloatingSearchView.getQuery());
                 if (!hasData) {
                     insertData(mFloatingSearchView.getQuery());
