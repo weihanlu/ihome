@@ -41,8 +41,6 @@ repositories {
 
 greendao {
     schemaVersion 1
-    daoPackage 'com.qhiehome.ihome.persistence'
-    targetGenDir 'src/main/java/com/qhiehome/ihome/persistence'
 }
 
 dependencies {

@@ -35,7 +35,7 @@ public class UserLockAdapter extends RecyclerView.Adapter<UserLockAdapter.UserLo
         holder.mTvLockName.setText(userLockBean.getParkingName());
         holder.mTvLockEstateName.setText(userLockBean.getLockEstateName());
         holder.mTvLockEstateName.setSelected(true);
-        final boolean isRented = userLockBean.isRented();
+        final boolean isRented = userLockBean.getIsRented();
         holder.mTvRentalStatus.setText(isRented? "已租用": "可使用");
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override

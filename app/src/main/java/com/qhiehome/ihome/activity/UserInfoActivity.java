@@ -37,7 +37,9 @@ import com.afollestad.materialdialogs.GravityEnum;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.adapter.UserLockAdapter;
+import com.qhiehome.ihome.application.IhomeApplication;
 import com.qhiehome.ihome.bean.UserLockBean;
+import com.qhiehome.ihome.bean.UserLockBeanDao;
 import com.qhiehome.ihome.lock.ConnectLockService;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.base.ParkingResponse;
@@ -48,6 +50,7 @@ import com.qhiehome.ihome.network.model.lock.updatepwd.UpdateLockPwdResponse;
 import com.qhiehome.ihome.network.service.avatar.UploadAvatarService;
 import com.qhiehome.ihome.network.service.inquiry.ParkingOwnedService;
 import com.qhiehome.ihome.network.service.lock.UpdateLockPwdService;
+import com.qhiehome.ihome.persistence.DaoSession;
 import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
@@ -55,6 +58,8 @@ import com.qhiehome.ihome.util.FileUtils;
 import com.qhiehome.ihome.util.NetworkUtils;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
+
+import org.greenrobot.greendao.query.Query;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -129,6 +134,10 @@ public class UserInfoActivity extends BaseActivity {
 
     private File mAvatarFile;
 
+    private UserLockBeanDao mUserLockBeanDao;
+
+    private Query<UserLockBean> mUserLockBeansQuery;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -155,6 +164,9 @@ public class UserInfoActivity extends BaseActivity {
     }
 
     private void initData() {
+        DaoSession daoSession = ((IhomeApplication)getApplication()).getDaoSession();
+        mUserLockBeanDao = daoSession.getUserLockBeanDao();
+        mUserLockBeansQuery = mUserLockBeanDao.queryBuilder().orderAsc(UserLockBeanDao.Properties.Id).build();
         String phoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, "");
         String avatarName = "portrait_" + phoneNum;
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
@@ -200,7 +212,20 @@ public class UserInfoActivity extends BaseActivity {
                 }
             });
         } else {
-            // TODO: 2017/8/15 get lock from local
+            List<UserLockBean> list = mUserLockBeansQuery.list();
+            if (list != null && list.size() > 0) {
+                mViewStub.inflate();
+                RecyclerView rvUserLocks = (RecyclerView) findViewById(R.id.rv_user_locks);
+                rvUserLocks.setHasFixedSize(true);
+                LinearLayoutManager llm = new LinearLayoutManager(mContext);
+                rvUserLocks.setLayoutManager(llm);
+                for (UserLockBean userLockBean: list) {
+                    mUserLocks.add(userLockBean);
+                }
+                UserLockAdapter userLockAdapter = new UserLockAdapter(mContext, mUserLocks);
+                rvUserLocks.setAdapter(userLockAdapter);
+                initListener(userLockAdapter);
+            }
         }
     }
 
@@ -342,9 +367,10 @@ public class UserInfoActivity extends BaseActivity {
                         isRented = true;
                     }
                 }
-                userLockBean = new UserLockBean(estate.getName(), parkingBean.getName(), parkingBean.getId(), parkingBean.getGatewayId(),
+                userLockBean = new UserLockBean(null, estate.getName(), parkingBean.getName(), parkingBean.getId(), parkingBean.getGatewayId(),
                         parkingBean.getLockMac(), isRented);
                 mUserLocks.add(userLockBean);
+                mUserLockBeanDao.insertOrReplace(userLockBean);
                 mParkingIds.append(parkingBean.getId()).append(",");
             }
         }
@@ -515,7 +541,7 @@ public class UserInfoActivity extends BaseActivity {
             RequestBody requestPhone = RequestBody.create(MediaType.parse("multipart/form-data"), EncryptUtil.encrypt(phoneNum, EncryptUtil.ALGO.SHA_256));
             final RequestBody requestAvatar = RequestBody.create(MediaType.parse("multipart/form-data"), mAvatarFile);
             String encryptedAvatarName = EncryptUtil.encrypt(mAvatarFile.getName(), EncryptUtil.ALGO.MD5);
-            MultipartBody.Part avatarPart = MultipartBody.Part.createFormData("photo", encryptedAvatarName, requestAvatar);
+            MultipartBody.Part avatarPart = MultipartBody.Part.createFormData("file", encryptedAvatarName, requestAvatar);
 
             Call<ResponseBody> call = uploadAvatarService.uploadAvatar(avatarPart, requestPhone);
             call.enqueue(new Callback<ResponseBody>() {

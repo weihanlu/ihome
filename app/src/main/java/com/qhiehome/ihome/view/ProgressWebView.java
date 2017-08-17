@@ -63,6 +63,8 @@ public class ProgressWebView extends LinearLayout {
         webSettings.setSupportZoom(false);
         webSettings.setBuiltInZoomControls(false);
         webSettings.setDefaultFontSize(12);
+        webSettings.setSaveFormData(false);
+        webSettings.setSavePassword(false);
 
         mWebView.loadUrl(url);
 
