@@ -16,7 +16,7 @@ import retrofit2.http.POST;
 
 public class ServiceGenerator {
 
-    private static final String BASE_URL = "http://39.108.77.50:3389/";
+    private static final String BASE_URL = "http://39.108.77.50:3389/api/";
 
     private static Retrofit.Builder retrofitBuilder
             = new Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(GsonConverterFactory.create());
