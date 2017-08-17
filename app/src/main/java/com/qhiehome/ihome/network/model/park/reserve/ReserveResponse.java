@@ -8,7 +8,6 @@ import com.qhiehome.ihome.network.model.base.Response;
 
 public class ReserveResponse extends Response {
 
-
     /**
      * data : {"order":{"id":123456789,"parking":{"id":123456789,"name":"xxxxxx"},"estate":{"id":123456789,"name":"xxxxxx","x":12.345678,"y":87.654321},"startTime":1499826992574,"endTime":1499826992574,"state":31}}
      */

@@ -39,6 +39,12 @@ repositories {
     }
 }
 
+greendao {
+    schemaVersion 1
+    daoPackage 'com.qhiehome.ihome.persistence'
+    targetGenDir 'src/main/java/com/qhiehome/ihome/persistence'
+}
+
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {

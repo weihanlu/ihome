@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -17,9 +18,19 @@ import android.widget.Button;
 import android.widget.SectionIndexer;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.indexable_recyclerview.AlphabetItem;
+import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.base.ParkingResponse;
+import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyResponse;
+import com.qhiehome.ihome.network.model.park.reserve.ReserveRequest;
+import com.qhiehome.ihome.network.model.park.reserve.ReserveResponse;
+import com.qhiehome.ihome.network.service.park.ReserveService;
+import com.qhiehome.ihome.util.Constant;
+import com.qhiehome.ihome.util.EncryptUtil;
+import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.TimeUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 import com.vivian.timelineitemdecoration.itemdecoration.DotItemDecoration;
@@ -37,6 +48,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import in.myinnos.alphabetsindexfastscrollrecycler.IndexFastScrollRecyclerView;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ParkingTimelineActivity extends AppCompatActivity {
 
@@ -58,11 +72,13 @@ public class ParkingTimelineActivity extends AppCompatActivity {
     private DotItemDecoration mItemDecoration;
     private ArrayList<Integer> mSectionPositions;
     private List<AlphabetItem> mAlphabetItems;
-    private ParkingResponse.DataBean.EstateBean mEstateBean;
-    private List<ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean> mShareBeanList = new ArrayList<>();
+    private ParkingEmptyResponse.DataBean.EstateBean mEstateBean;
+    private List<ParkingEmptyResponse.DataBean.EstateBean.ParkingBean.ShareBean> mShareBeanList = new ArrayList<>();
     private List<Boolean> mSelectedList = new ArrayList<>();
     private int mSelectedNum = 0;
     private float mGruaranteeFee = 0;
+    private int mReserveNum = 0;
+    private int mReserveFailedNum = 0;
 
     private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm");
     private static final SimpleDateFormat HOUR_FORMAT = new SimpleDateFormat("HH");
@@ -77,7 +93,7 @@ public class ParkingTimelineActivity extends AppCompatActivity {
         mContext = this;
         Intent intent = this.getIntent();
         Bundle bundle = intent.getExtras();
-        mEstateBean = (ParkingResponse.DataBean.EstateBean) bundle.get("estate");
+        mEstateBean = (ParkingEmptyResponse.DataBean.EstateBean) bundle.get("estate");
         mGruaranteeFee = mEstateBean.getGuaranteeFee();
         initToolbar();
         initData();
@@ -212,11 +228,12 @@ public class ParkingTimelineActivity extends AppCompatActivity {
             ToastUtil.showToast(mContext, "请选择车位");
         }else {
             //// TODO: 2017/8/15 预约请求，post shareId数组
-            Intent intent = new Intent(ParkingTimelineActivity.this, PayActivity.class);
-            intent.putExtra("grauFee", mGruaranteeFee * mSelectedNum);
-            intent.putExtra("isPay", true);
-            startActivity(intent);
-            ParkingTimelineActivity.this.finish();
+            for (int i = 0; i<mSelectedList.size(); i++){
+                if (mSelectedList.get(i)){
+                    reserve_request(mShareBeanList.get(i), false);
+                }
+            }
+
         }
     }
 
@@ -318,5 +335,87 @@ public class ParkingTimelineActivity extends AppCompatActivity {
 
     public interface OnClickListener {
         void onClick(View view, int i);
+    }
+
+    private void reserve_request(ParkingEmptyResponse.DataBean.EstateBean.ParkingBean.ShareBean shareBean, boolean isLast){
+        ReserveService reserveService = ServiceGenerator.createService(ReserveService.class);
+        ReserveRequest reserveRequest = new ReserveRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256), shareBean.getId(), shareBean.getStartTime(), shareBean.getEndTime());
+        Call<ReserveResponse> call = reserveService.reserve(reserveRequest);
+        call.enqueue(new Callback<ReserveResponse>() {
+            @Override
+            public void onResponse(Call<ReserveResponse> call, Response<ReserveResponse> response) {
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                    mReserveNum ++;
+                }else {
+                    mReserveFailedNum ++;
+                }
+                if (mReserveFailedNum + mReserveNum == mSelectedNum){//全部请求发出
+                    reserveResult();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ReserveResponse> call, Throwable t) {
+                ToastUtil.showToast(mContext, "网络连接异常");
+                mReserveFailedNum ++;
+                if (mReserveFailedNum + mReserveNum == mSelectedNum){//全部请求发出
+                    reserveResult();
+                }
+            }
+        });
+    }
+
+    private void reserveResult(){
+        if (mReserveFailedNum == 0){//全部预约成功->跳转支付
+            Intent intent = new Intent(ParkingTimelineActivity.this, PayActivity.class);
+            intent.putExtra("grauFee", mGruaranteeFee * mSelectedNum);
+            intent.putExtra("isPay", true);
+            startActivity(intent);
+            ParkingTimelineActivity.this.finish();
+        }else if (mReserveNum > 0){//部分预约失败->确认预约或重新选择
+            int red = ContextCompat.getColor(mContext, android.R.color.holo_red_light);
+            new MaterialDialog.Builder(mContext)
+                    .title("预约失败")
+                    .titleColor(red)
+                    .content("您有"+ mReserveFailedNum + "个车位预约失败")
+                    .contentColor(red)
+                    .positiveText("确认预约")
+                    .positiveColor(red)
+                    .negativeText("重新选择")
+                    .canceledOnTouchOutside(false)
+                    .onPositive(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            Intent intent = new Intent(ParkingTimelineActivity.this, PayActivity.class);
+                            intent.putExtra("grauFee", mGruaranteeFee * mReserveNum);
+                            intent.putExtra("isPay", true);
+                            startActivity(intent);
+                            ParkingTimelineActivity.this.finish();
+                        }
+                    })
+                    .onNegative(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            ParkingTimelineActivity.this.finish();
+                        }
+                    })
+                    .show();
+        }else {//全部预约失败
+            int red = ContextCompat.getColor(mContext, android.R.color.holo_red_light);
+            new MaterialDialog.Builder(mContext)
+                    .title("预约失败")
+                    .titleColor(red)
+                    .content("您有"+ mReserveFailedNum + "个车位预约失败")
+                    .contentColor(red)
+                    .negativeText("重新选择")
+                    .canceledOnTouchOutside(false)
+                    .onNegative(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            ParkingTimelineActivity.this.finish();
+                        }
+                    })
+                    .show();
+        }
     }
 }

@@ -166,8 +166,8 @@ public class ParkFragment extends Fragment {
     private static final SimpleDateFormat START_DATE_FORMATE = new SimpleDateFormat("MM-dd HH:mm");
     private static final SimpleDateFormat END_DATE_FORMATE = new SimpleDateFormat("HH:mm");
 
-    private List<ParkingResponse.DataBean.EstateBean> mEstateBeanList = new ArrayList<>();
-    private List<ParkingResponse.DataBean.EstateBean.ParkingBean> mParkingBeanList = new ArrayList<>();
+    private List<ParkingEmptyResponse.DataBean.EstateBean> mEstateBeanList = new ArrayList<>();
+    private List<ParkingEmptyResponse.DataBean.EstateBean.ParkingBean> mParkingBeanList = new ArrayList<>();
 
     //private ParkingSQLHelper mParkingSQLHelper;
     //private SQLiteDatabase mParkingReadDB;
