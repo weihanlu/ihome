@@ -79,11 +79,15 @@ public class ParkingTimelineActivity extends AppCompatActivity {
     private float mGruaranteeFee = 0;
     private int mReserveNum = 0;
     private int mReserveFailedNum = 0;
+    private int mSelectedIndex = -1;
 
     private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm");
     private static final SimpleDateFormat HOUR_FORMAT = new SimpleDateFormat("HH");
     private static final int[] COLORS = {0xffFFAD6C, 0xff62f434, 0xffdeda78, 0xff7EDCFF, 0xff58fdea, 0xfffdc75f};//颜色组
     private static final String DECIMAL_2 = "%.2f";
+
+    private static final int ERROR_CODE_UNPAY = 300;
+    private static final int ERROR_CODE_RESERVED = 301;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -152,24 +156,25 @@ public class ParkingTimelineActivity extends AppCompatActivity {
         mAdapter.setOnItemClickListener(new OnClickListener() {
             @Override
             public void onClick(View view, int i) {
-                //预约请求
-//                Intent intent = new Intent(ParkingTimelineActivity.this, PayActivity.class);
-//                intent.putExtra("grauFee", (float) mEstateBean.getGuaranteeFee());
-//                startActivity(intent);
-                TextView tv_time = (TextView) view.findViewById(R.id.tv_parking_timeline_time);
-                TextView tv_info = (TextView) view.findViewById(R.id.tv_parking_timeline_info);
-                mSelectedList.set(i, !mSelectedList.get(i));
-                if (mSelectedList.get(i)) {
-                    //view.setBackgroundColor(ContextCompat.getColor(mContext, R.color.white));
-                    mSelectedNum++;
-                    tv_time.setTextColor(ContextCompat.getColor(mContext, R.color.white));
-                    tv_info.setTextColor(ContextCompat.getColor(mContext, R.color.white));
-                } else {
-                    mSelectedNum--;
-                    tv_time.setTextColor(ContextCompat.getColor(mContext, R.color.black));
-                    tv_info.setTextColor(ContextCompat.getColor(mContext, R.color.black));
-                }
-                mTvGuaranteeFee.setText(String.format(DECIMAL_2, mSelectedNum * mGruaranteeFee));
+                /**********预约单个车位**********/
+                mSelectedIndex = i;
+                mAdapter.notifyDataSetChanged();
+                mTvGuaranteeFee.setText(String.format(DECIMAL_2, mGruaranteeFee));
+                /*********预约多个车位***********/
+//                TextView tv_time = (TextView) view.findViewById(R.id.tv_parking_timeline_time);
+//                TextView tv_info = (TextView) view.findViewById(R.id.tv_parking_timeline_info);
+//                mSelectedList.set(i, !mSelectedList.get(i));
+//                if (mSelectedList.get(i)) {
+//                    //view.setBackgroundColor(ContextCompat.getColor(mContext, R.color.white));
+//                    mSelectedNum++;
+//                    tv_time.setTextColor(ContextCompat.getColor(mContext, R.color.white));
+//                    tv_info.setTextColor(ContextCompat.getColor(mContext, R.color.white));
+//                } else {
+//                    mSelectedNum--;
+//                    tv_time.setTextColor(ContextCompat.getColor(mContext, R.color.black));
+//                    tv_info.setTextColor(ContextCompat.getColor(mContext, R.color.black));
+//                }
+//                mTvGuaranteeFee.setText(String.format(DECIMAL_2, mSelectedNum * mGruaranteeFee));
             }
         });
         mRvParkingTimeline.setAdapter(mAdapter);
@@ -224,17 +229,24 @@ public class ParkingTimelineActivity extends AppCompatActivity {
 
     @OnClick(R.id.btn_parking_timeline_reserve)
     public void onReserveClicked() {
-        if (mSelectedNum == 0){
+        /*********预约单个车位*********/
+        if (mSelectedIndex == -1){
             ToastUtil.showToast(mContext, "请选择车位");
         }else {
-            //// TODO: 2017/8/15 预约请求，post shareId数组
-            for (int i = 0; i<mSelectedList.size(); i++){
-                if (mSelectedList.get(i)){
-                    reserve_request(mShareBeanList.get(i), false);
-                }
-            }
-
+            reserve_single_request();
         }
+        /*********预约多个车位*********/
+//        if (mSelectedNum == 0){
+//            ToastUtil.showToast(mContext, "请选择车位");
+//        }else {
+//
+//            for (int i = 0; i<mSelectedList.size(); i++){
+//                if (mSelectedList.get(i)){
+//                    reserve_request(mShareBeanList.get(i), false);
+//                }
+//            }
+//
+//        }
     }
 
     class ParkingAdapter extends RecyclerView.Adapter<ParkingAdapter.ParkingViewHolder> implements SectionIndexer {
@@ -280,6 +292,16 @@ public class ParkingTimelineActivity extends AppCompatActivity {
                 }
                 holder.tv_info.setText(time_length);
                 //holder.tv_time.setTextColor(COLORS[position % COLORS.length]);
+
+                /**********预约单个车位**********/
+                if (position != mSelectedIndex) {
+                    holder.tv_info.setTextColor(ContextCompat.getColor(mContext, R.color.black));
+                    holder.tv_time.setTextColor(ContextCompat.getColor(mContext, R.color.black));
+                }else {
+                    holder.tv_info.setTextColor(ContextCompat.getColor(mContext, R.color.white));
+                    holder.tv_time.setTextColor(ContextCompat.getColor(mContext, R.color.white));
+                }
+
             }
         }
 
@@ -337,85 +359,166 @@ public class ParkingTimelineActivity extends AppCompatActivity {
         void onClick(View view, int i);
     }
 
-    private void reserve_request(ParkingEmptyResponse.DataBean.EstateBean.ParkingBean.ShareBean shareBean, boolean isLast){
+    private void reserve_single_request(){
         ReserveService reserveService = ServiceGenerator.createService(ReserveService.class);
-        ReserveRequest reserveRequest = new ReserveRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256), shareBean.getId(), shareBean.getStartTime(), shareBean.getEndTime());
+        final ReserveRequest reserveRequest = new ReserveRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256), mShareBeanList.get(mSelectedIndex).getId(), mShareBeanList.get(mSelectedIndex).getStartTime(), mShareBeanList.get(mSelectedIndex).getEndTime());
         Call<ReserveResponse> call = reserveService.reserve(reserveRequest);
         call.enqueue(new Callback<ReserveResponse>() {
             @Override
             public void onResponse(Call<ReserveResponse> call, Response<ReserveResponse> response) {
+                int red = ContextCompat.getColor(mContext, android.R.color.holo_red_light);
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                    mReserveNum ++;
+                    Intent intent = new Intent(ParkingTimelineActivity.this, PayActivity.class);
+                    intent.putExtra("grauFee", mGruaranteeFee);
+                    intent.putExtra("isPay", true);
+                    startActivity(intent);
+                    ParkingTimelineActivity.this.finish();
+                }else if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == ERROR_CODE_UNPAY){
+                    new MaterialDialog.Builder(mContext)
+                            .title("预约失败")
+                            .titleColor(red)
+                            .content("您有尚未支付的订单")
+                            .contentColor(red)
+                            .positiveText("去支付")
+                            .positiveColor(red)
+                            .negativeText("取消")
+                            .canceledOnTouchOutside(false)
+                            .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                @Override
+                                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                    Intent intent = new Intent(ParkingTimelineActivity.this, ReserveListActivity.class);
+                                    startActivity(intent);
+                                    ParkingTimelineActivity.this.finish();
+                                }
+                            })
+                            .show();
+                }else if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == ERROR_CODE_RESERVED){
+                    new MaterialDialog.Builder(mContext)
+                            .title("预约失败")
+                            .titleColor(red)
+                            .content("您有已预约的订单")
+                            .contentColor(red)
+                            .positiveText("去停车")
+                            .positiveColor(red)
+                            .negativeText("取消")
+                            .canceledOnTouchOutside(false)
+                            .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                @Override
+                                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                    Intent intent = new Intent(ParkingTimelineActivity.this, ReserveListActivity.class);
+                                    startActivity(intent);
+                                    ParkingTimelineActivity.this.finish();
+                                }
+                            })
+                            .show();
                 }else {
-                    mReserveFailedNum ++;
-                }
-                if (mReserveFailedNum + mReserveNum == mSelectedNum){//全部请求发出
-                    reserveResult();
+                    new MaterialDialog.Builder(mContext)
+                            .title("预约失败")
+                            .titleColor(red)
+                            .content("您的车位已被预约")
+                            .contentColor(red)
+                            .negativeText("重新选择")
+                            .canceledOnTouchOutside(false)
+                            .onNegative(new MaterialDialog.SingleButtonCallback() {
+                                @Override
+                                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                    ParkingTimelineActivity.this.finish();
+                                }
+                            })
+                            .show();
                 }
             }
 
             @Override
             public void onFailure(Call<ReserveResponse> call, Throwable t) {
                 ToastUtil.showToast(mContext, "网络连接异常");
-                mReserveFailedNum ++;
-                if (mReserveFailedNum + mReserveNum == mSelectedNum){//全部请求发出
-                    reserveResult();
-                }
             }
         });
     }
 
-    private void reserveResult(){
-        if (mReserveFailedNum == 0){//全部预约成功->跳转支付
-            Intent intent = new Intent(ParkingTimelineActivity.this, PayActivity.class);
-            intent.putExtra("grauFee", mGruaranteeFee * mSelectedNum);
-            intent.putExtra("isPay", true);
-            startActivity(intent);
-            ParkingTimelineActivity.this.finish();
-        }else if (mReserveNum > 0){//部分预约失败->确认预约或重新选择
-            int red = ContextCompat.getColor(mContext, android.R.color.holo_red_light);
-            new MaterialDialog.Builder(mContext)
-                    .title("预约失败")
-                    .titleColor(red)
-                    .content("您有"+ mReserveFailedNum + "个车位预约失败")
-                    .contentColor(red)
-                    .positiveText("确认预约")
-                    .positiveColor(red)
-                    .negativeText("重新选择")
-                    .canceledOnTouchOutside(false)
-                    .onPositive(new MaterialDialog.SingleButtonCallback() {
-                        @Override
-                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                            Intent intent = new Intent(ParkingTimelineActivity.this, PayActivity.class);
-                            intent.putExtra("grauFee", mGruaranteeFee * mReserveNum);
-                            intent.putExtra("isPay", true);
-                            startActivity(intent);
-                            ParkingTimelineActivity.this.finish();
-                        }
-                    })
-                    .onNegative(new MaterialDialog.SingleButtonCallback() {
-                        @Override
-                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                            ParkingTimelineActivity.this.finish();
-                        }
-                    })
-                    .show();
-        }else {//全部预约失败
-            int red = ContextCompat.getColor(mContext, android.R.color.holo_red_light);
-            new MaterialDialog.Builder(mContext)
-                    .title("预约失败")
-                    .titleColor(red)
-                    .content("您有"+ mReserveFailedNum + "个车位预约失败")
-                    .contentColor(red)
-                    .negativeText("重新选择")
-                    .canceledOnTouchOutside(false)
-                    .onNegative(new MaterialDialog.SingleButtonCallback() {
-                        @Override
-                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                            ParkingTimelineActivity.this.finish();
-                        }
-                    })
-                    .show();
-        }
-    }
+
+    /********预约多个车位*********/
+//    private void reserve_request(ParkingEmptyResponse.DataBean.EstateBean.ParkingBean.ShareBean shareBean, boolean isLast){
+//        ReserveService reserveService = ServiceGenerator.createService(ReserveService.class);
+//        ReserveRequest reserveRequest = new ReserveRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256), shareBean.getId(), shareBean.getStartTime(), shareBean.getEndTime());
+//        Call<ReserveResponse> call = reserveService.reserve(reserveRequest);
+//        call.enqueue(new Callback<ReserveResponse>() {
+//            @Override
+//            public void onResponse(Call<ReserveResponse> call, Response<ReserveResponse> response) {
+//                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+//                    mReserveNum ++;
+//                }else {
+//                    mReserveFailedNum ++;
+//                }
+//                if (mReserveFailedNum + mReserveNum == mSelectedNum){//全部请求发出
+//                    reserveResult();
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<ReserveResponse> call, Throwable t) {
+//                ToastUtil.showToast(mContext, "网络连接异常");
+//                mReserveFailedNum ++;
+//                if (mReserveFailedNum + mReserveNum == mSelectedNum){//全部请求发出
+//                    reserveResult();
+//                }
+//            }
+//        });
+//    }
+
+
+    /********预约多个车位*********/
+//    private void reserveResult(){
+//        if (mReserveFailedNum == 0){//全部预约成功->跳转支付
+//            Intent intent = new Intent(ParkingTimelineActivity.this, PayActivity.class);
+//            intent.putExtra("grauFee", mGruaranteeFee * mSelectedNum);
+//            intent.putExtra("isPay", true);
+//            startActivity(intent);
+//            ParkingTimelineActivity.this.finish();
+//        }else if (mReserveNum > 0){//部分预约失败->确认预约或重新选择
+//            int red = ContextCompat.getColor(mContext, android.R.color.holo_red_light);
+//            new MaterialDialog.Builder(mContext)
+//                    .title("预约失败")
+//                    .titleColor(red)
+//                    .content("您有"+ mReserveFailedNum + "个车位预约失败")
+//                    .contentColor(red)
+//                    .positiveText("确认预约")
+//                    .positiveColor(red)
+//                    .negativeText("重新选择")
+//                    .canceledOnTouchOutside(false)
+//                    .onPositive(new MaterialDialog.SingleButtonCallback() {
+//                        @Override
+//                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+//                            Intent intent = new Intent(ParkingTimelineActivity.this, PayActivity.class);
+//                            intent.putExtra("grauFee", mGruaranteeFee * mReserveNum);
+//                            intent.putExtra("isPay", true);
+//                            startActivity(intent);
+//                            ParkingTimelineActivity.this.finish();
+//                        }
+//                    })
+//                    .onNegative(new MaterialDialog.SingleButtonCallback() {
+//                        @Override
+//                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+//                            ParkingTimelineActivity.this.finish();
+//                        }
+//                    })
+//                    .show();
+//        }else {//全部预约失败
+//            int red = ContextCompat.getColor(mContext, android.R.color.holo_red_light);
+//            new MaterialDialog.Builder(mContext)
+//                    .title("预约失败")
+//                    .titleColor(red)
+//                    .content("您有"+ mReserveFailedNum + "个车位预约失败")
+//                    .contentColor(red)
+//                    .negativeText("重新选择")
+//                    .canceledOnTouchOutside(false)
+//                    .onNegative(new MaterialDialog.SingleButtonCallback() {
+//                        @Override
+//                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+//                            ParkingTimelineActivity.this.finish();
+//                        }
+//                    })
+//                    .show();
+//        }
+//    }
 }

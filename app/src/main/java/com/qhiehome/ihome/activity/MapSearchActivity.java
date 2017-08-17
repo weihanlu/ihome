@@ -340,7 +340,6 @@ public class MapSearchActivity extends BaseActivity {
 //        mDB.close();
 //    }
     public void insertData(String search) {
-
         mSearchDao.insert(new MapSearch(null, search));
     }
 
