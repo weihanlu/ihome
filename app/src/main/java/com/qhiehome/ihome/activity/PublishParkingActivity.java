@@ -49,6 +49,8 @@ import com.qhiehome.ihome.view.RecyclerViewEmptySupport;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -71,9 +73,6 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
 
     @BindView(R.id.srf_publish)
     SwipeRefreshLayout mSrfPublish;
-
-    @BindView(R.id.rv_publish)
-    RecyclerViewEmptySupport mRvPublish;
 
     private ArrayList<String> mParkingIdList;
     private ArrayList<Boolean> mSelected;
@@ -154,6 +153,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                         }
                     }
                     if (mPublishAdapter != null) {
+                        Collections.sort(mPublishList);
                         mPublishAdapter.notifyDataSetChanged();
                     }
                     runOnUiThread(new Runnable() {
@@ -202,6 +202,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
           public void onCallbackPublish(View view, final int position) {
               final PublishBean publishBean = mPublishList.get(position);
               final int shareId = publishBean.getShareId();
+              LogUtil.d(TAG, "callback share id is " + shareId);
               int red = ContextCompat.getColor(mContext, android.R.color.holo_red_light);
               new MaterialDialog.Builder(mContext)
                       .title("警告")
@@ -266,6 +267,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
     }
 
     private void showPublishDialog() {
+        selectedPosition = 0;
         for (int i = 0; i < mSelected.size(); i++) {
             mSelected.set(i, false);
         }
@@ -378,14 +380,16 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     // get sharedId
                     List<Integer> shareIdList = response.body().getData().getShareId();
-                    for (int i = 0; i < shareIdList.size(); i++) {
-                        PublishBean publishBean = mPublishList.get(i);
-                        publishBean.setShareId(shareIdList.get(i));
+                    int N = shareIdList.size();
+                    for (int j = 0; j < N; j++) {
+                        PublishBean publishBean = mPublishList.get(mPublishList.size() - 1 - j);
+                        publishBean.setShareId(shareIdList.get(N - 1 - j));
                     }
+                    Collections.sort(mPublishList);
                     mPublishAdapter.notifyDataSetChanged();
                 } else {
                     inquiryParkingInfo();
-                    ToastUtil.showToast(mContext, "发布失败");
+                    ToastUtil.showToast(mContext, "请勿重复发布同一时间段");
                 }
             }
             @Override

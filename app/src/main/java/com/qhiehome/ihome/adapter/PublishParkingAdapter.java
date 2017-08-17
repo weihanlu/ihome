@@ -12,6 +12,7 @@ import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.bean.PublishBean;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class PublishParkingAdapter extends RecyclerView.Adapter<PublishParkingAdapter.PublishParkingHolder>{
 
@@ -31,9 +32,9 @@ public class PublishParkingAdapter extends RecyclerView.Adapter<PublishParkingAd
 
     @Override
     public void onBindViewHolder(final PublishParkingHolder holder, final int position) {
-        PublishBean requestBean = mPublishList.get(position);
-        holder.mTvParkingId.setText(requestBean.getParkingId());
-        holder.mTvParkingPeriod.setText("发布时间段 " + requestBean.getStartTime() + " ~ " + requestBean.getEndTime());
+        PublishBean publishBean = mPublishList.get(position);
+        holder.mTvParkingId.setText(publishBean.getParkingId());
+        holder.mTvParkingPeriod.setText("发布时间段 " + publishBean.getStartTime() + " ~ " + publishBean.getEndTime());
         holder.mIvCallbackPublish.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -56,6 +57,7 @@ public class PublishParkingAdapter extends RecyclerView.Adapter<PublishParkingAd
 
     public void removeItem(int position) {
         mPublishList.remove(position);
+        Collections.sort(mPublishList);
         notifyItemRemoved(position);
     }
 

@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'android-apt'
+apply plugin: 'org.greenrobot.greendao'
 
 android {
     compileSdkVersion 25
@@ -8,7 +9,7 @@ android {
         applicationId "com.qhiehome.ihome"
         minSdkVersion 19
         targetSdkVersion 22
-        versionCode 10
+        versionCode 11
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -38,12 +39,6 @@ repositories {
     }
 }
 
-apply plugin: 'com.android.application'
-apply plugin: 'org.greenrobot.greendao'
-greendao {
-    schemaVersion 1
-}
-
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
@@ -67,7 +62,6 @@ dependencies {
     compile 'com.contrarywind:Android-PickerView:3.2.5'
     compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2'
     compile 'com.github.arimorty:floatingsearchview:2.1.1'
-    compile 'com.github.arcadefire:nice-spinner:1.2'
     compile 'com.github.fodroid:XStatusBarHelper:v1.1'
     compile 'de.hdodenhof:circleimageview:2.1.0'
     compile 'com.vivian.widgets:TimeLineItemDecoration:1.2'

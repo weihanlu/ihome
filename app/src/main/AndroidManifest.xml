@@ -73,7 +73,8 @@
         <service
             android:name="com.baidu.location.f"
             android:enabled="true"
-            android:process=":remote" />
+            android:process=":remote"
+            android:exported="false"/>
 
         <activity
             android:name=".activity.BluetoothScanActivity"
@@ -88,7 +89,7 @@
         <receiver
             android:name=".persistence.AlarmReceiver"
             android:enabled="true"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="TIMER_ACTION" />
             </intent-filter>
@@ -99,7 +100,8 @@
         <service
             android:name=".lock.ConnectLockService"
             android:exported="false" />
-        <service android:name="org.eclipse.paho.android.service.MqttService" />
+        <service android:name="org.eclipse.paho.android.service.MqttService"
+            android:exported="false"/>
 
         <activity android:name=".activity.SettingActivity" />
         <activity android:name=".activity.MapSearchActivity" />

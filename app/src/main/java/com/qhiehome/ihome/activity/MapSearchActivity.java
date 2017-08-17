@@ -37,6 +37,7 @@ import com.qhiehome.ihome.persistence.DaoSession;
 import com.qhiehome.ihome.persistence.ParkingSQLHelper;
 import com.qhiehome.ihome.persistence.SearchDao;
 import com.qhiehome.ihome.persistence.SearchDaoDao;
+import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.view.Search_ListView;
 
 import org.greenrobot.greendao.database.Database;
@@ -54,6 +55,8 @@ import butterknife.OnClick;
 
 
 public class MapSearchActivity extends BaseActivity {
+
+    private static final String TAG = MapSearchActivity.class.getSimpleName();
 
 //    @BindView(R.id.et_search)
 //    EditText mEtSearch;
@@ -117,6 +120,8 @@ public class MapSearchActivity extends BaseActivity {
         ButterKnife.bind(this);
         mContext = this;
         mHandler = new SearchHandler(this);
+        mCity = getIntent().getStringExtra("city");
+        LogUtil.d(TAG, "city is " + mCity);
         Intent intent = this.getIntent();
         Bundle bundle = intent.getExtras();
         mCity = bundle.getString("city");
@@ -316,7 +321,6 @@ public class MapSearchActivity extends BaseActivity {
 
     /*插入数据*/
     private void insertData(String tempName) {
-
         mDB = mSQLHelper.getWritableDatabase();
         mDB.execSQL("insert into history(name) values('" + tempName + "')");
         mDB.close();
