@@ -3,6 +3,7 @@ package com.qhiehome.ihome.application;
 import android.app.Application;
 
 
+
 /**
  * This is the global entrance of the app
  *
@@ -18,6 +19,9 @@ public class IhomeApplication extends Application {
 
     private static IhomeApplication ihomeApplication;
 
+    public static final boolean ENCRYPTED = true;
+
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -27,4 +31,5 @@ public class IhomeApplication extends Application {
     public static IhomeApplication getInstance() {
         return ihomeApplication;
     }
+
 }

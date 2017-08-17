@@ -6,28 +6,27 @@ import org.greenrobot.greendao.annotation.Transient;
 import org.greenrobot.greendao.annotation.Generated;
 
 /**
- * Created by YueMa on 2017/8/16.
+ * Created by YueMa on 2017/8/17.
  */
 @Entity
-public class SearchDao {
-    @Id
-    private long id;
+public class MapSearch {
+    @Id(autoincrement = true)
+    private Long id;
     private String name;
     @Transient
     private int tempUsageCount; // not persisted
-
-    @Generated(hash = 207259576)
-    public SearchDao(long id, String name) {
+    @Generated(hash = 515128928)
+    public MapSearch(Long id, String name) {
         this.id = id;
         this.name = name;
     }
-    @Generated(hash = 1159997855)
-    public SearchDao() {
+    @Generated(hash = 271113666)
+    public MapSearch() {
     }
-    public long getId() {
+    public Long getId() {
         return this.id;
     }
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
     public String getName() {
@@ -36,4 +35,9 @@ public class SearchDao {
     public void setName(String name) {
         this.name = name;
     }
+
+    
+    
+
+
 }

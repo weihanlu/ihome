@@ -7,19 +7,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.app.AppCompatActivity;
-import android.text.Editable;
 import android.text.TextUtils;
-import android.text.TextWatcher;
-import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.CursorAdapter;
-import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.SimpleAdapter;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
@@ -32,10 +24,19 @@ import com.baidu.mapapi.search.sug.SuggestionResult;
 import com.baidu.mapapi.search.sug.SuggestionSearch;
 import com.baidu.mapapi.search.sug.SuggestionSearchOption;
 import com.qhiehome.ihome.R;
+
+import com.qhiehome.ihome.application.IhomeApplication;
+import com.qhiehome.ihome.persistence.DaoMaster;
 import com.qhiehome.ihome.persistence.DaoSession;
+import com.qhiehome.ihome.persistence.MapSearch;
+import com.qhiehome.ihome.persistence.MapSearchDao;
 import com.qhiehome.ihome.persistence.ParkingSQLHelper;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.view.Search_ListView;
+
+import org.greenrobot.greendao.annotation.Entity;
+import org.greenrobot.greendao.database.Database;
+import org.greenrobot.greendao.query.Query;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -77,8 +78,11 @@ public class MapSearchActivity extends BaseActivity {
     private int mPosition;
 
     private DaoSession mDaoSession;
+    private MapSearchDao mSearchDao;
+    private Query<MapSearch> mSearchQuery;
 
     private static final int BACK_MSG = 1;
+    public static final boolean ENCRYPTED = false;
 
     private static class SearchHandler extends Handler {
         private final WeakReference<MapSearchActivity> mActivity;
@@ -113,6 +117,15 @@ public class MapSearchActivity extends BaseActivity {
         mHandler = new SearchHandler(this);
         mCity = getIntent().getStringExtra("city");
         LogUtil.d(TAG, "city is " + mCity);
+        Intent intent = this.getIntent();
+        Bundle bundle = intent.getExtras();
+        mCity = bundle.getString("city");
+
+        DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, ENCRYPTED ? "search-db-encrypted" : "search-db");
+        Database db = ENCRYPTED ? helper.getEncryptedWritableDb("super-secret") : helper.getWritableDb();
+        mDaoSession = new DaoMaster(db).newSession();
+        mSearchDao = mDaoSession.getMapSearchDao();
+
         mSQLHelper = new ParkingSQLHelper(this);
         mFloatingSearchView.setSearchFocused(true);
         queryData("");
@@ -147,6 +160,7 @@ public class MapSearchActivity extends BaseActivity {
         mFloatingSearchView.setOnQueryChangeListener(new FloatingSearchView.OnQueryChangeListener() {
             @Override
             public void onSearchTextChanged(String oldQuery, String newQuery) {
+
                 if (newQuery.length() == 0) {
                     mTvSearchTip.setText("搜索历史");
                     isHistory = true;
@@ -272,38 +286,70 @@ public class MapSearchActivity extends BaseActivity {
 
 
     /*模糊查询数据 并显示在ListView列表上*/
-    private void queryData(String tempName) {
-
-        //模糊搜索
-        Cursor cursor = mSQLHelper.getReadableDatabase().rawQuery(
-                "select id as _id,name from history where name like '%" + tempName + "%' order by id desc ", null);
-        // 创建adapter适配器对象,装入模糊搜索的结果
-        mAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1, cursor, new String[]{"name"},
-                new int[]{android.R.id.text1}, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
-        // 设置适配器
+//    private void queryData(String tempName) {
+//
+//        //模糊搜索
+//        Cursor cursor = mSQLHelper.getReadableDatabase().rawQuery(
+//                "select id as _id,name from history where name like '%" + tempName + "%' order by id desc ", null);
+//        // 创建adapter适配器对象,装入模糊搜索的结果
+//        mAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1, cursor, new String[]{"name"},
+//                new int[]{android.R.id.text1}, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
+//        // 设置适配器
+//        mLvSearch.setAdapter(mAdapter);
+//        mAdapter.notifyDataSetChanged();
+//    }
+    private void queryData(String search){
+        if (TextUtils.isEmpty(search)){
+            mSearchQuery = mSearchDao.queryBuilder().orderDesc(MapSearchDao.Properties.Id).build();
+        }
+        List<MapSearch> searchList = mSearchQuery.list();
+        List<Map<String, String>> list = new ArrayList<Map<String, String>>();
+        for (int i = 0; i < searchList.size(); i++) {
+            Map<String, String> item = new HashMap<String, String>();
+            item.put("result", searchList.get(i).getName());
+            list.add(item);
+        }
+        mAdapter = new SimpleAdapter(mContext, list, android.R.layout.simple_list_item_1, new String[]{"result"}, new int[]{android.R.id.text1});
         mLvSearch.setAdapter(mAdapter);
-        mAdapter.notifyDataSetChanged();
+
     }
 
-    private void deleteData() {
-        mDB = mSQLHelper.getWritableDatabase();
-        mDB.execSQL("delete from history");
-        mDB.close();
+//    private void deleteData() {
+//        mDB = mSQLHelper.getWritableDatabase();
+//        mDB.execSQL("delete from history");
+//        mDB.close();
+//    }
+
+    private void deleteData(){
+        mSearchDao.deleteAll();
     }
 
-    private boolean hasData(String tempName) {
-        //从Record这个表里找到name=tempName的id
-        Cursor cursor = mSQLHelper.getReadableDatabase().rawQuery(
-                "select id as _id,name from history where name =?", new String[]{tempName});
-        //判断是否有下一个
-        return cursor.moveToNext();
+//    private boolean hasData(String tempName) {
+//        //从Record这个表里找到name=tempName的id
+//        Cursor cursor = mSQLHelper.getReadableDatabase().rawQuery(
+//                "select id as _id,name from history where name =?", new String[]{tempName});
+//        //判断是否有下一个
+//        return cursor.moveToNext();
+//    }
+
+    private boolean hasData(String search){
+        mSearchQuery = mSearchDao.queryBuilder().where(MapSearchDao.Properties.Name.eq(search)).build();
+        if (mSearchQuery.list().size() > 0){
+            return true;
+        }else {
+            return false;
+        }
     }
 
     /*插入数据*/
-    private void insertData(String tempName) {
-        mDB = mSQLHelper.getWritableDatabase();
-        mDB.execSQL("insert into history(name) values('" + tempName + "')");
-        mDB.close();
+//    private void insertData(String tempName) {
+//        mDB = mSQLHelper.getWritableDatabase();
+//        mDB.execSQL("insert into history(name) values('" + tempName + "')");
+//        mDB.close();
+//    }
+    public void insertData(String search) {
+
+        mSearchDao.insert(new MapSearch(null, search));
     }
 
     private void suggestionSearch(String input) {
