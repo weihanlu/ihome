@@ -73,8 +73,8 @@
         <service
             android:name="com.baidu.location.f"
             android:enabled="true"
-            android:process=":remote"
-            android:exported="false"/>
+            android:exported="false"
+            android:process=":remote" />
 
         <activity
             android:name=".activity.BluetoothScanActivity"
@@ -82,7 +82,7 @@
         <activity android:name=".activity.UserInfoActivity" />
         <activity android:name=".activity.ParkingListActivity" />
         <activity android:name=".activity.PublishParkingActivity" />
-        <!--<activity android:name=".activity.OrderListActivity" />-->
+        <!-- <activity android:name=".activity.OrderListActivity" /> -->
         <activity android:name=".activity.NaviGuideActivity" />
         <activity android:name=".activity.BaseActivity" />
 
@@ -100,8 +100,9 @@
         <service
             android:name=".lock.ConnectLockService"
             android:exported="false" />
-        <service android:name="org.eclipse.paho.android.service.MqttService"
-            android:exported="false"/>
+        <service
+            android:name="org.eclipse.paho.android.service.MqttService"
+            android:exported="false" />
 
         <activity android:name=".activity.SettingActivity" />
         <activity android:name=".activity.MapSearchActivity" />
@@ -123,7 +124,7 @@
         </provider>
 
         <activity android:name=".activity.PayActivity" />
-        <activity android:name=".activity.ParkingTimelineActivity"></activity>
+        <activity android:name=".activity.ParkingTimelineActivity" />
     </application>
 
 </manifest>
