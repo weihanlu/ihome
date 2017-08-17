@@ -66,8 +66,6 @@ public class MapSearchActivity extends BaseActivity {
     @BindView(R.id.floating_search_view)
     FloatingSearchView mFloatingSearchView;
 
-    private ParkingSQLHelper mSQLHelper;
-    private SQLiteDatabase mDB;
     private Context mContext;
     private BaseAdapter mAdapter;
     private SuggestionSearch mSuggestionSearch = SuggestionSearch.newInstance();
@@ -126,7 +124,6 @@ public class MapSearchActivity extends BaseActivity {
         mDaoSession = new DaoMaster(db).newSession();
         mSearchDao = mDaoSession.getMapSearchDao();
 
-        mSQLHelper = new ParkingSQLHelper(this);
         mFloatingSearchView.setSearchFocused(true);
         queryData("");
         init();

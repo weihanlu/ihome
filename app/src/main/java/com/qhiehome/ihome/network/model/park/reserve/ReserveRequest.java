@@ -7,20 +7,20 @@ package com.qhiehome.ihome.network.model.park.reserve;
 public class ReserveRequest {
 
     /**
-     * phone : f8cfd23a25811570298c8773bdca4d4d538d0d7fe52f6e5b3aefd08b907c8df2
-     * estateId : 1
-     * startTime : 1600000000000
-     * endTime : 1600000000001
+     * phone : xxxx...xxxx
+     * shareId : 123456789
+     * startTime : 1499826000000
+     * endTime : 1499828000000
      */
 
     private String phone;
-    private int estateId;
+    private int shareId;
     private long startTime;
     private long endTime;
 
-    public ReserveRequest(String phone, int estateId, long startTime, long endTime) {
+    public ReserveRequest(String phone, int shareId, long startTime, long endTime) {
         this.phone = phone;
-        this.estateId = estateId;
+        this.shareId = shareId;
         this.startTime = startTime;
         this.endTime = endTime;
     }
@@ -33,12 +33,12 @@ public class ReserveRequest {
         this.phone = phone;
     }
 
-    public int getEstateId() {
-        return estateId;
+    public int getShareId() {
+        return shareId;
     }
 
-    public void setEstateId(int estateId) {
-        this.estateId = estateId;
+    public void setShareId(int shareId) {
+        this.shareId = shareId;
     }
 
     public long getStartTime() {
