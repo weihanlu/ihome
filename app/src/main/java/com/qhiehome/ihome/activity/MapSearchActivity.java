@@ -32,9 +32,15 @@ import com.baidu.mapapi.search.sug.SuggestionResult;
 import com.baidu.mapapi.search.sug.SuggestionSearch;
 import com.baidu.mapapi.search.sug.SuggestionSearchOption;
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.persistence.DaoMaster;
 import com.qhiehome.ihome.persistence.DaoSession;
 import com.qhiehome.ihome.persistence.ParkingSQLHelper;
+import com.qhiehome.ihome.persistence.SearchDao;
+import com.qhiehome.ihome.persistence.SearchDaoDao;
 import com.qhiehome.ihome.view.Search_ListView;
+
+import org.greenrobot.greendao.database.Database;
+import org.greenrobot.greendao.query.Query;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -74,8 +80,11 @@ public class MapSearchActivity extends BaseActivity {
     private int mPosition;
 
     private DaoSession mDaoSession;
+    private SearchDaoDao mSearchDao;
+    private Query<SearchDao> mSearchQuery;
 
     private static final int BACK_MSG = 1;
+    public static final boolean ENCRYPTED = true;
 
     private static class SearchHandler extends Handler {
         private final WeakReference<MapSearchActivity> mActivity;
@@ -111,6 +120,13 @@ public class MapSearchActivity extends BaseActivity {
         Intent intent = this.getIntent();
         Bundle bundle = intent.getExtras();
         mCity = bundle.getString("city");
+
+        DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, ENCRYPTED ? "notes-db-encrypted" : "notes-db");
+        Database db = ENCRYPTED ? helper.getEncryptedWritableDb("super-secret") : helper.getWritableDb();
+        mDaoSession = new DaoMaster(db).newSession();
+        mSearchDao = mDaoSession.getSearchDaoDao();
+        mSearchQuery = mSearchDao.queryBuilder().orderAsc(SearchDaoDao.Properties.Id).build();
+
         mSQLHelper = new ParkingSQLHelper(this);
         mFloatingSearchView.setSearchFocused(true);
         queryData("");
@@ -300,6 +316,7 @@ public class MapSearchActivity extends BaseActivity {
 
     /*插入数据*/
     private void insertData(String tempName) {
+
         mDB = mSQLHelper.getWritableDatabase();
         mDB.execSQL("insert into history(name) values('" + tempName + "')");
         mDB.close();
