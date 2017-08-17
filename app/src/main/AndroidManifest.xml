@@ -76,9 +76,6 @@
             android:process=":remote"
             android:exported="false"/>
 
-        <activity
-            android:name=".activity.BluetoothScanActivity"
-            android:windowSoftInputMode="adjustPan" />
         <activity android:name=".activity.UserInfoActivity" />
         <activity android:name=".activity.ParkingListActivity" />
         <activity android:name=".activity.PublishParkingActivity" />

@@ -10,6 +10,6 @@ import retrofit2.http.Part;
 
 public interface UploadAvatarService {
     @Multipart
-    @POST("uploadPhoto")
+    @POST("pic/upload")
     Call<ResponseBody> uploadAvatar(@Part MultipartBody.Part image, @Part("phone") RequestBody phoneNum);
 }

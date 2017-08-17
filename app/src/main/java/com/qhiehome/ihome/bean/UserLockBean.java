@@ -1,30 +1,71 @@
 package com.qhiehome.ihome.bean;
 
+import org.greenrobot.greendao.annotation.Entity;
+import org.greenrobot.greendao.annotation.Id;
+import org.greenrobot.greendao.annotation.NotNull;
+import org.greenrobot.greendao.annotation.Generated;
+import org.greenrobot.greendao.annotation.Unique;
+
+@Entity
 public class UserLockBean {
 
+    @Id(autoincrement = true)
+    private Long id;
+
+    @NotNull
     private String lockEstateName;
 
+    @NotNull
     private String parkingName;
 
+    @NotNull
     private int parkingId;
 
+    @NotNull
+    @Unique
     private String gatewayId;
 
+    @NotNull
     private String lockMac;
 
+    @NotNull
     private boolean isRented;
 
-    public UserLockBean(String lockEstateName, String parkingName, int parkingId, String gatewayId, String lockMac, boolean isRented) {
+    @Generated(hash = 502793901)
+    public UserLockBean(Long id, @NotNull String lockEstateName,
+            @NotNull String parkingName, int parkingId, @NotNull String gatewayId,
+            @NotNull String lockMac, boolean isRented) {
+        this.id = id;
+        this.lockEstateName = lockEstateName;
         this.parkingName = parkingName;
         this.parkingId = parkingId;
-        this.lockEstateName = lockEstateName;
         this.gatewayId = gatewayId;
         this.lockMac = lockMac;
         this.isRented = isRented;
     }
 
+    @Generated(hash = 513674444)
+    public UserLockBean() {
+    }
+
+    public Long getId() {
+        return this.id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getLockEstateName() {
+        return this.lockEstateName;
+    }
+
+    public void setLockEstateName(String lockEstateName) {
+        this.lockEstateName = lockEstateName;
+    }
+
     public String getParkingName() {
-        return parkingName;
+        return this.parkingName;
     }
 
     public void setParkingName(String parkingName) {
@@ -32,31 +73,15 @@ public class UserLockBean {
     }
 
     public int getParkingId() {
-        return parkingId;
+        return this.parkingId;
     }
 
     public void setParkingId(int parkingId) {
         this.parkingId = parkingId;
     }
 
-    public String getLockEstateName() {
-        return lockEstateName;
-    }
-
-    public void setLockEstateName(String lockEstateName) {
-        this.lockEstateName = lockEstateName;
-    }
-
-    public boolean isRented() {
-        return isRented;
-    }
-
-    public void setRented(boolean rented) {
-        isRented = rented;
-    }
-
     public String getGatewayId() {
-        return gatewayId;
+        return this.gatewayId;
     }
 
     public void setGatewayId(String gatewayId) {
@@ -64,10 +89,20 @@ public class UserLockBean {
     }
 
     public String getLockMac() {
-        return lockMac;
+        return this.lockMac;
     }
 
     public void setLockMac(String lockMac) {
         this.lockMac = lockMac;
     }
+
+    public boolean getIsRented() {
+        return this.isRented;
+    }
+
+    public void setIsRented(boolean isRented) {
+        this.isRented = isRented;
+    }
+
+    
 }

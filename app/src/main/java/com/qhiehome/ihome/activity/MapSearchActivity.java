@@ -75,18 +75,16 @@ public class MapSearchActivity extends BaseActivity {
     private Handler mHandler;
     private int mPosition;
 
-    private DaoSession mDaoSession;
     private MapSearchDao mSearchDao;
     private Query<MapSearch> mSearchQuery;
 
     private static final int BACK_MSG = 1;
-    public static final boolean ENCRYPTED = false;
 
     private static class SearchHandler extends Handler {
         private final WeakReference<MapSearchActivity> mActivity;
 
         private SearchHandler(MapSearchActivity mapSearchActivity) {
-            mActivity = new WeakReference<MapSearchActivity>(mapSearchActivity);
+            mActivity = new WeakReference<>(mapSearchActivity);
         }
 
         @Override
@@ -119,10 +117,7 @@ public class MapSearchActivity extends BaseActivity {
         Bundle bundle = intent.getExtras();
         mCity = bundle.getString("city");
 
-        DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, ENCRYPTED ? "search-db-encrypted" : "search-db");
-        Database db = ENCRYPTED ? helper.getEncryptedWritableDb("super-secret") : helper.getWritableDb();
-        mDaoSession = new DaoMaster(db).newSession();
-        mSearchDao = mDaoSession.getMapSearchDao();
+        mSearchDao = ((IhomeApplication)getApplication()).getDaoSession().getMapSearchDao();
 
         mFloatingSearchView.setSearchFocused(true);
         queryData("");
