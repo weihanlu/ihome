@@ -71,6 +71,7 @@ dependencies {
     compile 'com.vivian.widgets:TimeLineItemDecoration:1.2'
     compile 'com.github.myinnos:AlphabetIndex-Fast-Scroll-RecyclerView:1.0.8'
     compile 'org.greenrobot:greendao:3.2.2'
+    compile 'com.ericliu.asyncexpandablelist:asyncexpandablelist:1.1.0'
     testCompile 'junit:junit:4.12'
     apt 'com.jakewharton:butterknife-compiler:8.7.0'
 }
