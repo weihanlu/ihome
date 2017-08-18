@@ -1,5 +1,6 @@
 package com.qhiehome.ihome.util;
 
+import android.content.Context;
 import android.util.ArrayMap;
 
 import java.lang.reflect.Array;
@@ -70,6 +71,8 @@ public class TimeUtil {
         return new Date(millis);
     }
 
-
+    public void recordTime(Context context, boolean isStart){
+        SharedPreferenceUtil.setLong(context, isStart ? Constant.PARKING_START_TIME : Constant.PARKING_END_TIME, System.currentTimeMillis());
+    }
 
 }

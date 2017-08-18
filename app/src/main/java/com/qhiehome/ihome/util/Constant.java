@@ -40,6 +40,10 @@ public class Constant {
 
     public static final String CONTRACT_URL = "http://weixin.qq.com/agreement?lang=zh_CN";
 
+    public static final String PARKING_START_TIME = "startTime";
+
+    public static final String PARKING_END_TIME = "endTime";
+
     // update module
 
     public static final String APK_UPDATE_UKEY = "ce208a1437998ef0a8e5f60b7dc4aac1";
