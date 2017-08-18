@@ -52,9 +52,9 @@ public class FeedbackActivity extends AppCompatActivity {
     @OnClick(R.id.btn_feedback)
     public void onViewClicked() {
         String advice = mEtFeedback.getText().toString();
-        if (TextUtils.isEmpty(advice)){
+        if (TextUtils.isEmpty(advice)) {
             ToastUtil.showToast(this, "请输入反馈内容");
-        }else {
+        } else {
             FeedbackService feedbackService = ServiceGenerator.createService(FeedbackService.class);
             FeedbackRequest feedbackRequest = new FeedbackRequest(advice);
             Call<FeedbackResponse> call = feedbackService.sendFeedback(feedbackRequest);
@@ -81,7 +81,7 @@ public class FeedbackActivity extends AppCompatActivity {
         }
     }
 
-    private void initToolbar(){
+    private void initToolbar() {
         setSupportActionBar(mTbFeedback);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -101,5 +101,11 @@ public class FeedbackActivity extends AppCompatActivity {
     public static void start(Context context) {
         Intent intent = new Intent(context, FeedbackActivity.class);
         context.startActivity(intent);
+    }
+
+    @OnClick(R.id.fl_feedback)
+    public void onFeedbackClick() {
+        mEtFeedback.requestFocus();
+        CommonUtil.toggleKeyboard(this);
     }
 }

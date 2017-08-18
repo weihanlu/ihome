@@ -24,7 +24,9 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewStub;
@@ -123,8 +125,8 @@ public class UserInfoActivity extends BaseActivity {
     private ConnectLockReceiver mReceiver;
 
     EditText mEtOldPwd;
-
     EditText mEtNewPwd;
+    EditText mEtReassurePwd;
 
     MaterialDialog mProgressDialog;
 
@@ -250,7 +252,8 @@ public class UserInfoActivity extends BaseActivity {
                                         connectLock.putExtra(ConnectLockService.EXTRA_GATEWAY_ID, gatewayId);
                                     } else {
                                         connectLock.setAction(ConnectLockService.ACTION_BLUETOOTH_CONNECT);
-                                        connectLock.putExtra(ConnectLockService.EXTRA_LOCK_PWD, Constant.DEFAULT_PASSWORD);
+                                        String password = SharedPreferenceUtil.getString(mContext, Constant.LOCK_PASSWORD_KEY, Constant.DEFAULT_PASSWORD);
+                                        connectLock.putExtra(ConnectLockService.EXTRA_LOCK_PWD, password);
                                     }
                                     connectLock.putExtra(ConnectLockService.EXTRA_LOCK_MAC, lockMac);
                                     startService(connectLock);
@@ -307,6 +310,7 @@ public class UserInfoActivity extends BaseActivity {
                 if (customView != null) {
                     mEtOldPwd = (EditText) customView.findViewById(R.id.et_old_pwd);
                     mEtNewPwd = (EditText) customView.findViewById(R.id.et_new_pwd);
+                    mEtReassurePwd = (EditText) customView.findViewById(R.id.et_reassure_new_pwd);
                 }
                 dialog.getBuilder()
                         .showListener(new DialogInterface.OnShowListener() {
@@ -321,7 +325,16 @@ public class UserInfoActivity extends BaseActivity {
                                 int parkingId = userLockBean.getParkingId();
                                 String oldPwd = mEtOldPwd.getText().toString();
                                 String newPwd = mEtNewPwd.getText().toString();
-                                if (!(TextUtils.isEmpty(oldPwd) || TextUtils.isEmpty(newPwd))) {
+                                String reAssurePwd = mEtReassurePwd.getText().toString();
+                                if (TextUtils.isEmpty(oldPwd) || TextUtils.isEmpty(newPwd) || TextUtils.isEmpty(reAssurePwd)) {
+                                    ToastUtil.showToast(mContext, "密码输入框不能为空");
+                                } else if (newPwd.equals(oldPwd)){
+                                    ToastUtil.showToast(mContext, "新密码与旧密码不能相同");
+                                } else if (newPwd.length() != 6 || oldPwd.length() != 6){
+                                    ToastUtil.showToast(mContext, "新密码或旧密码不是6位");
+                                } else if (! newPwd.equals(reAssurePwd)){
+                                    ToastUtil.showToast(mContext, "确认密码与新密码不一致");
+                                } else {
                                     modifyLockPwd(parkingId, mEtOldPwd.getText().toString(), mEtNewPwd.getText().toString());
                                 }
                             }
@@ -332,7 +345,7 @@ public class UserInfoActivity extends BaseActivity {
         });
     }
 
-    private void modifyLockPwd(int parkingId, String oldPwd, String newPwd) {
+    private void modifyLockPwd(int parkingId, String oldPwd, final String newPwd) {
         UpdateLockPwdService updateLockPwdService = ServiceGenerator.createService(UpdateLockPwdService.class);
         UpdateLockPwdRequest updateLockPwdRequest = new UpdateLockPwdRequest(parkingId, oldPwd, newPwd);
         Call<UpdateLockPwdResponse> call = updateLockPwdService.updateLockPwd(updateLockPwdRequest);
@@ -340,13 +353,16 @@ public class UserInfoActivity extends BaseActivity {
             @Override
             public void onResponse(@NonNull Call<UpdateLockPwdResponse> call, @NonNull Response<UpdateLockPwdResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                    ToastUtil.showToast(mContext, "modify password successfully");
+                    ToastUtil.showToast(mContext, "修改密码成功");
+                    SharedPreferenceUtil.setString(mContext, Constant.LOCK_PASSWORD_KEY, newPwd);
+                } else {
+                    ToastUtil.showToast(mContext, "密码错误或修改失败");
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<UpdateLockPwdResponse> call, @NonNull Throwable t) {
-
+                ToastUtil.showToast(mContext, "请检查您的网络");
             }
         });
     }
@@ -603,7 +619,7 @@ public class UserInfoActivity extends BaseActivity {
                     && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
                 getPhotoByCamera();
             } else {
-                ToastUtil.showToast(mContext, "permission denied");
+                ToastUtil.showToast(mContext, "没有相应的权限");
             }
         } else if (requestCode == REQUEST_FOR_COPY_LOCAL_FILE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {

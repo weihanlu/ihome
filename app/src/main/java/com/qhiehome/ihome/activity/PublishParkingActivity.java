@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.text.TextUtilsCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -91,8 +93,6 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
 
     private PublishParkingAdapter mPublishAdapter;
 
-    AppCompatSpinner mEndSpinner;
-
     private String mPhoneNum;
 
     private int selectedPosition;
@@ -106,6 +106,14 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
         initData();
         initView();
         mContext = this;
+        checkFab();
+    }
+
+    private void checkFab() {
+        int passedHalfHour = TimeUtil.getInstance().getPassedHalfHour(System.currentTimeMillis());
+        if (passedHalfHour == 47) {
+            mFab.setVisibility(View.INVISIBLE);
+        }
     }
 
     private void initSwiperRefreshLayout() {
@@ -273,8 +281,8 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
         }
         mPeriodTimes = 0;
         MaterialDialog.Builder dialogBuilder = new MaterialDialog.Builder(this);
-        dialogBuilder.title("发布车位").customView(R.layout.dialog_publish_parking, true)
-                .positiveText("确定").negativeText("取消");
+        dialogBuilder.title("已有车位").customView(R.layout.dialog_publish_parking, true)
+                .positiveText("发布").negativeText("取消");
         MaterialDialog dialog = dialogBuilder.build();
         View customView = dialog.getCustomView();
         if (customView != null) {
@@ -303,7 +311,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                     ArrayAdapter<String> startAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, startData);
                     startAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     startSpinner.setAdapter(startAdapter);
-                    mEndSpinner = (AppCompatSpinner) itemContainer.findViewById(R.id.spinner_end);
+                    final AppCompatSpinner endSpinner = (AppCompatSpinner) itemContainer.findViewById(R.id.spinner_end);
                     mContainer.addView(itemContainer);
                     startSpinner.setSelection(0);
                     startSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -313,20 +321,19 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                             endData.remove(0);
                             ArrayAdapter<String> endAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, endData);
                             endAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                            mEndSpinner.setAdapter(endAdapter);
+                            endSpinner.setAdapter(endAdapter);
                             for (int j = 0; j < i; j++){
                                 endData.remove(0);
                             }
                             endAdapter.notifyDataSetChanged();
-                            mEndSpinner.setSelection(0);
+                            endSpinner.setSelection(0);
                         }
                         @Override
                         public void onNothingSelected(AdapterView<?> adapterView) {
 
                         }
                     });
-                    mPeriodTimes++;
-                    if (mPeriodTimes == Constant.TIME_PERIOD_LIMIT) {
+                    if (++ mPeriodTimes == Constant.TIME_PERIOD_LIMIT) {
                         addBtn.setVisibility(View.GONE);
                     }
                 }
@@ -348,9 +355,13 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
             View item = mContainer.getChildAt(i);
             AppCompatSpinner startSpinner = (AppCompatSpinner) item.findViewById(R.id.spinner_start);
             AppCompatSpinner endSpinner = (AppCompatSpinner) item.findViewById(R.id.spinner_end);
-            TimePeriod timePeriod = new TimePeriod(TimeUtil.getInstance().getTimeStamp(startSpinner.getSelectedItem().toString()),
-                    TimeUtil.getInstance().getTimeStamp(endSpinner.getSelectedItem().toString()));
-            mTimePeriods.add(timePeriod);
+            if (endSpinner.getSelectedItem() != null) {
+                TimePeriod timePeriod = new TimePeriod(TimeUtil.getInstance().getTimeStamp(startSpinner.getSelectedItem().toString()),
+                        TimeUtil.getInstance().getTimeStamp(endSpinner.getSelectedItem().toString()));
+                mTimePeriods.add(timePeriod);
+            } else {
+                ToastUtil.showToast(mContext, "开始时间不可设为23:30");
+            }
         }
     }
 
