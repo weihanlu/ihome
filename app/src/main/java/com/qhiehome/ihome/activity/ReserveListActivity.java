@@ -259,6 +259,7 @@ public class ReserveListActivity extends BaseActivity {
                     holder.tv_estate.setText(mOrderBeanList.get(index).getEstate().getName());
                     holder.tv_time.setText(TIME_FORMAT.format(mOrderBeanList.get(index).getStartTime()) + "~" + TIME_FORMAT.format(mOrderBeanList.get(index).getEndTime()));
                     holder.tv_fee.setVisibility(View.INVISIBLE);
+                    holder.tv_state.setVisibility(View.VISIBLE);
                     holder.tv_state.setText("已超时");
                     holder.btn_map.setVisibility(View.INVISIBLE);
                     holder.btn_cancel.setVisibility(View.INVISIBLE);
@@ -270,6 +271,7 @@ public class ReserveListActivity extends BaseActivity {
                     holder.tv_estate.setText(mOrderBeanList.get(index).getEstate().getName());
                     holder.tv_time.setText(TIME_FORMAT.format(mOrderBeanList.get(index).getStartTime()) + "~" + TIME_FORMAT.format(mOrderBeanList.get(index).getEndTime()));
                     holder.tv_fee.setVisibility(View.INVISIBLE);
+                    holder.tv_state.setVisibility(View.VISIBLE);
                     holder.tv_state.setText("已取消");
                     holder.btn_map.setVisibility(View.INVISIBLE);
                     holder.btn_cancel.setVisibility(View.INVISIBLE);
@@ -357,16 +359,7 @@ public class ReserveListActivity extends BaseActivity {
             public void onResponse(Call<ReserveCancelResponse> call, Response<ReserveCancelResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
                     mOrderBeanList.get(index).setState(ORDER_STATE_CANCEL);
-                    holder.tv_estate.setText(mOrderBeanList.get(index).getEstate().getName());
-                    holder.tv_time.setText(TIME_FORMAT.format(mOrderBeanList.get(index).getStartTime()) + "~" + TIME_FORMAT.format(mOrderBeanList.get(index).getEndTime()));
-                    holder.tv_fee.setVisibility(View.INVISIBLE);
-                    holder.tv_state.setText("已取消");
-                    holder.btn_map.setVisibility(View.INVISIBLE);
-                    holder.btn_cancel.setVisibility(View.INVISIBLE);
-                    holder.btn_navi.setVisibility(View.INVISIBLE);
-                    holder.btn_lock.setVisibility(View.INVISIBLE);
-                    holder.btn_pay.setVisibility(View.INVISIBLE);
-                    //mReserveAdapter.notifyDataSetChanged();
+                    mReserveAdapter.notifyDataSetChanged();
                 }
             }
 

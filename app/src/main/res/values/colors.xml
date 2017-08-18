@@ -17,4 +17,5 @@
     <color name="light_purple">#917fF2</color>
     <color name="dark_green">#28a746</color>
     <color name="pale_green">#66CD00</color>
+    <color name="card">#fff</color>
 </resources>
