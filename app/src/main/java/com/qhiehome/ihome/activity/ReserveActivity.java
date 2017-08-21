@@ -290,7 +290,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                     detailItemHolder.getBtnFunction().setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            LockControl(groupOrdinal);
+                            LockControl(groupOrdinal, true);
                         }
                     });
 
@@ -350,7 +350,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                     detailItemHolder.getBtnFunction().setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            LockControl(groupOrdinal);
+                            LockControl(groupOrdinal, false);
                         }
                     });
 
@@ -713,7 +713,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
         startActivity(intent);
     }
 
-    private void LockControl(int index){      //控制车位锁
+    private void LockControl(int index, final boolean downLock){      //控制车位锁
         final String gateWayId = SharedPreferenceUtil.getString(this, Constant.RESERVE_GATEWAY_ID, "");
         final String lockMac = SharedPreferenceUtil.getString(this, Constant.RESERVE_LOCK_MAC, "");
         final String lockPwd = SharedPreferenceUtil.getString(this, Constant.RESERVE_LOCK_PWD, "");
@@ -741,42 +741,22 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                             connectLock.putExtra(ConnectLockService.EXTRA_LOCK_MAC, lockMac);
                             startService(connectLock);
                         }
+                    }).dismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialog) {
+                            if (downLock) {
+                                Intent downLock = new Intent(mContext, ConnectLockService.class);
+                                downLock.setAction(ConnectLockService.ACTION_DOWN_LOCK);
+                                startService(downLock);
+                            } else {
+                                Intent upLock = new Intent(mContext, ConnectLockService.class);
+                                upLock.setAction(ConnectLockService.ACTION_UP_LOCK);
+                                startService(upLock);
+                            }
+                        }
                     }).build();
         }
         mProgressDialog.show();
-        View controlLock = LayoutInflater.from(mContext).inflate(R.layout.dialog_control_lock, null);
-        ImageView imgUpLock = (ImageView) controlLock.findViewById(R.id.img_up_lock);
-        ImageView imgDownLock = (ImageView) controlLock.findViewById(R.id.img_down_Lock);
-        imgUpLock.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent upLock = new Intent(mContext, ConnectLockService.class);
-                upLock.setAction(ConnectLockService.ACTION_UP_LOCK);
-                startService(upLock);
-            }
-        });
-        imgDownLock.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent downLock = new Intent(mContext, ConnectLockService.class);
-                downLock.setAction(ConnectLockService.ACTION_DOWN_LOCK);
-                startService(downLock);
-            }
-        });
-        if (mControlLockDialog == null) {
-            mControlLockDialog = new MaterialDialog.Builder(mContext)
-                    .title("已连接").titleGravity(GravityEnum.CENTER)
-                    .customView(controlLock, false)
-                    .dismissListener(new DialogInterface.OnDismissListener() {
-                        @Override
-                        public void onDismiss(DialogInterface dialog) {
-                            Intent disconnect = new Intent(mContext, ConnectLockService.class);
-                            disconnect.setAction(ConnectLockService.ACTION_DISCONNECT);
-                            startService(disconnect);
-                        }
-                    })
-                    .build();
-        }
     }
 
 

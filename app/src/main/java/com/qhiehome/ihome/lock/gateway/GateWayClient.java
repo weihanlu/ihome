@@ -31,9 +31,13 @@ public class GateWayClient {
 
     private MqttAndroidClient mqttAndroidClient;
 
-    private String subscribeTopic = "/status/lock/ap/v2/";
+    private static final String SUBSCRIBE_PREFIX = "/status/lock/ap/v2/";
 
-    private String publishTopic = "/set/lock/ap/v2/";
+    private static final String PUBLISH_PREFIX = "/set/lock/ap/v2/";
+
+    private String publishTopic;
+
+    private String subscribeTopic;
 
     private MqttConnectOptions mqttConnectOptions;
 
@@ -70,8 +74,8 @@ public class GateWayClient {
 
     public void setGateWayId(String gateWayId) {
         this.gateWayId = gateWayId;
-        publishTopic += this.gateWayId;
-        subscribeTopic += this.gateWayId;
+        publishTopic = PUBLISH_PREFIX + gateWayId;
+        subscribeTopic = SUBSCRIBE_PREFIX + gateWayId;
     }
 
 
@@ -171,8 +175,6 @@ public class GateWayClient {
         @Override
         public void connectionLost(Throwable cause) {
             LogUtil.d(TAG, "The connection was lost");
-            subscribeTopic = "/status/lock/ap/v2/";
-            publishTopic = "/set/lock/ap/v2/";
         }
 
         @Override
