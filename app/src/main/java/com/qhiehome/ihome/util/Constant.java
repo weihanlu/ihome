@@ -47,6 +47,8 @@ public class Constant {
     public static final String SHARE_ID = "shareId";
     public static final String ORDER_ID = "orderId";
 
+    public static final String ORDER_STATE = "ORDER_STATE";
+
     public static final String PARKING_START_TIME = "startTime";
 
     public static final String PARKING_END_TIME = "endTime";

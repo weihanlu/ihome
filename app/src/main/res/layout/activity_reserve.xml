@@ -35,6 +35,15 @@
             android:layout_height="match_parent">
         </com.ericliu.asyncexpandablelist.async.AsyncExpandableListView>
 
+        <ViewStub
+            android:id="@+id/viewstub_reserve_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:inflatedId="@+id/iv_VsContent"
+            android:layout="@layout/layout_reserve_nonetwork">
+
+        </ViewStub>
+
     </android.support.v4.widget.SwipeRefreshLayout>
 
 
