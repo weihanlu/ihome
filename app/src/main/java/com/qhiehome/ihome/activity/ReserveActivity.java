@@ -287,6 +287,12 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
 
                     detailItemHolder.getBtnFunction().setText("降车位锁");
                     detailItemHolder.getBtnFunction().setVisibility(View.VISIBLE);
+                    detailItemHolder.getBtnFunction().setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            LockControl(groupOrdinal);
+                        }
+                    });
 
                     detailItemHolder.getBtnNavi().setVisibility(View.VISIBLE);
                     detailItemHolder.getBtnNavi().setOnClickListener(new View.OnClickListener() {
@@ -341,6 +347,12 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
 
                     detailItemHolder.getBtnFunction().setText("升车位锁");
                     detailItemHolder.getBtnFunction().setVisibility(View.VISIBLE);
+                    detailItemHolder.getBtnFunction().setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            LockControl(groupOrdinal);
+                        }
+                    });
 
                     detailItemHolder.btnCancel.setVisibility(View.INVISIBLE);
                     break;
