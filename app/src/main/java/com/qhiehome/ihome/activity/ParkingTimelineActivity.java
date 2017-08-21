@@ -369,8 +369,11 @@ public class ParkingTimelineActivity extends AppCompatActivity {
                 int red = ContextCompat.getColor(mContext, android.R.color.holo_red_light);
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     Intent intent = new Intent(ParkingTimelineActivity.this, PayActivity.class);
-                    intent.putExtra("grauFee", mGruaranteeFee);
-                    intent.putExtra("isPay", true);
+                    intent.putExtra("fee", mGruaranteeFee);
+                    intent.putExtra("payState", Constant.PAY_STATE_GUARANTEE);
+                    SharedPreferenceUtil.setLong(mContext, Constant.ORDER_CREATE_TIME, System.currentTimeMillis());
+                    SharedPreferenceUtil.setInt(mContext, Constant.SHARE_ID, mShareBeanList.get(mSelectedIndex).getId());
+                    SharedPreferenceUtil.setInt(mContext, Constant.ORDER_ID, response.body().getData().getOrder().getId());
                     startActivity(intent);
                     ParkingTimelineActivity.this.finish();
                 }else if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == ERROR_CODE_UNPAY){

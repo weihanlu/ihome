@@ -42,9 +42,18 @@ public class Constant {
 
     public static final String CONTRACT_URL = "http://weixin.qq.com/agreement?lang=zh_CN";
 
+    public static final String ORDER_CREATE_TIME = "orderCreateTime";
+
+    public static final String SHARE_ID = "shareId";
+    public static final String ORDER_ID = "orderId";
+
     public static final String PARKING_START_TIME = "startTime";
 
     public static final String PARKING_END_TIME = "endTime";
+
+    public static final int PAY_STATE_ADD_ACCOUNT = 0;
+    public static final int PAY_STATE_GUARANTEE = 1;
+    public static final int PAY_STATE_TOTAL = 2;
 
     // update module
 
