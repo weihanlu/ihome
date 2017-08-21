@@ -175,6 +175,9 @@ public class PayActivity extends AppCompatActivity {
                             @Override
                             public void onResponse(Call<PayGuaranteeResponse> call, Response<PayGuaranteeResponse> response) {
                                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                                    SharedPreferenceUtil.setString(mContext, Constant.RESERVE_LOCK_MAC, response.body().getData().getEstate().getSingleParking().getLockMac());
+                                    SharedPreferenceUtil.setString(mContext, Constant.RESERVE_LOCK_PWD, response.body().getData().getEstate().getSingleParking().getPassword());
+                                    SharedPreferenceUtil.setString(mContext, Constant.RESERVE_GATEWAY_ID, response.body().getData().getEstate().getSingleParking().getGatewayId());
                                     Intent intent = new Intent(PayActivity.this, ReserveActivity.class);
                                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                     startActivity(intent);

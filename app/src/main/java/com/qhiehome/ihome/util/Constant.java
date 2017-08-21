@@ -51,6 +51,7 @@ public class Constant {
 
     public static final String PARKING_END_TIME = "endTime";
 
+
     public static final int PAY_STATE_ADD_ACCOUNT = 0;
     public static final int PAY_STATE_GUARANTEE = 1;
     public static final int PAY_STATE_TOTAL = 2;
