@@ -13,6 +13,8 @@ import java.util.Locale;
 
 public class TimeUtil {
 
+    private static final String TAG = "TimeUtil";
+
     private ArrayMap<String, Integer> timeMap;
 
     private TimeUtil(){
@@ -21,7 +23,7 @@ public class TimeUtil {
         for (int i = getPassedHalfHour(System.currentTimeMillis()); i <= 47; i++) {
             Date current = new Date(getTimeStamp(i));
             timeMap.put(format.format(current), i);
-            LogUtil.d("TimeUtil", format.format(current));
+            LogUtil.d(TAG, "first init: " + format.format(current));
         }
     }
 
@@ -54,6 +56,18 @@ public class TimeUtil {
         return cal.getTimeInMillis();
     }
 
+    public void update() {
+        if (timeMap != null) {
+            timeMap.clear();
+            SimpleDateFormat format = new SimpleDateFormat("HH:mm", Locale.CHINA);
+            for (int i = getPassedHalfHour(System.currentTimeMillis()); i <= 47; i++) {
+                Date current = new Date(getTimeStamp(i));
+                timeMap.put(format.format(current), i);
+                LogUtil.d(TAG, "update: " + format.format(current));
+            }
+        }
+    }
+
     public long getTimeStamp(String str) {
         int passHalfHour = timeMap.get(str);
         return getTimeStamp(passHalfHour);
@@ -63,7 +77,7 @@ public class TimeUtil {
         return (int)(timeStamp - getTimesmorning()) / (1800 * 1000) + 1;
     }
 
-    public long getTimeStamp(int passHalfHour) {
+    private long getTimeStamp(int passHalfHour) {
         return getTimesmorning() + passHalfHour * 1800 * 1000;
     }
 

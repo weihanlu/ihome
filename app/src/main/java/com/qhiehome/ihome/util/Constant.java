@@ -59,6 +59,11 @@ public class Constant {
     public static final int PAY_STATE_GUARANTEE = 1;
     public static final int PAY_STATE_TOTAL = 2;
 
+    // reserve lock
+    public static final String RESERVE_LOCK_MAC = "RESERVE_LOCK_MAC";
+    public static final String RESERVE_LOCK_PWD = "RESERVE_LOCK_PWD";
+    public static final String RESERVE_GATEWAY_ID = "RESERVE_GATEWAY_ID";
+
     // update module
 
     public static final String APK_UPDATE_UKEY = "ce208a1437998ef0a8e5f60b7dc4aac1";
