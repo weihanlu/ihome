@@ -276,6 +276,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
 
     private void showPublishDialog() {
         selectedPosition = 0;
+        TimeUtil.getInstance().update();
         for (int i = 0; i < mSelected.size(); i++) {
             mSelected.set(i, false);
         }

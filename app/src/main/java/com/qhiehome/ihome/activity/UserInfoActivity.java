@@ -251,9 +251,14 @@ public class UserInfoActivity extends BaseActivity {
                                         connectLock.setAction(ConnectLockService.ACTION_GATEWAY_CONNECT);
                                         connectLock.putExtra(ConnectLockService.EXTRA_GATEWAY_ID, gatewayId);
                                     } else {
-                                        connectLock.setAction(ConnectLockService.ACTION_BLUETOOTH_CONNECT);
-                                        String password = SharedPreferenceUtil.getString(mContext, Constant.LOCK_PASSWORD_KEY, Constant.DEFAULT_PASSWORD);
-                                        connectLock.putExtra(ConnectLockService.EXTRA_LOCK_PWD, password);
+                                        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+                                            ToastUtil.showToast(mContext, "不支持蓝牙低能耗特性");
+                                            dialog.dismiss();
+                                        } else {
+                                            connectLock.setAction(ConnectLockService.ACTION_BLUETOOTH_CONNECT);
+                                            String password = SharedPreferenceUtil.getString(mContext, Constant.LOCK_PASSWORD_KEY, Constant.DEFAULT_PASSWORD);
+                                            connectLock.putExtra(ConnectLockService.EXTRA_LOCK_PWD, password);
+                                        }
                                     }
                                     connectLock.putExtra(ConnectLockService.EXTRA_LOCK_MAC, lockMac);
                                     startService(connectLock);

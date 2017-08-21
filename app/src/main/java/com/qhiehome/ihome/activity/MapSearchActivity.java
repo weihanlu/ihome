@@ -236,7 +236,7 @@ public class MapSearchActivity extends BaseActivity {
                 TextView textView = (TextView) view.findViewById(android.R.id.text1);
                 String name = textView.getText().toString();
                 boolean tmp;
-                if (isHistory == true) {
+                if (isHistory) {
                     tmp = true;
                 } else {
                     tmp = false;
@@ -326,11 +326,7 @@ public class MapSearchActivity extends BaseActivity {
 
     private boolean hasData(String search){
         mSearchQuery = mSearchDao.queryBuilder().where(MapSearchDao.Properties.Name.eq(search)).build();
-        if (mSearchQuery.list().size() > 0){
-            return true;
-        }else {
-            return false;
-        }
+        return mSearchQuery.list().size() > 0;
     }
 
     /*插入数据*/

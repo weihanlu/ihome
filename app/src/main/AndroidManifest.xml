@@ -122,7 +122,7 @@
 
         <activity android:name=".activity.PayActivity" />
         <activity android:name=".activity.ParkingTimelineActivity" />
-        <activity android:name=".activity.ReserveActivity"></activity>
+        <activity android:name=".activity.ReserveActivity"/>
     </application>
 
 </manifest>

@@ -2,8 +2,11 @@ package com.qhiehome.ihome.activity;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -34,6 +37,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.GravityEnum;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.baidu.navisdk.adapter.BNCommonSettingParam;
 import com.baidu.navisdk.adapter.BNOuterTTSPlayerCallback;
 import com.baidu.navisdk.adapter.BNRoutePlanNode;
@@ -45,6 +50,7 @@ import com.ericliu.asyncexpandablelist.async.AsyncExpandableListViewCallbacks;
 import com.ericliu.asyncexpandablelist.async.AsyncHeaderViewHolder;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.adapter.ReserveViewPagerAdapter;
+import com.qhiehome.ihome.lock.ConnectLockService;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.inquiry.order.OrderRequest;
 import com.qhiehome.ihome.network.model.inquiry.order.OrderResponse;
@@ -54,6 +60,7 @@ import com.qhiehome.ihome.network.service.inquiry.OrderService;
 import com.qhiehome.ihome.network.service.park.ReserveCancelService;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
+import com.qhiehome.ihome.util.NetworkUtils;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.TimeUtil;
 import com.qhiehome.ihome.util.ToastUtil;
@@ -81,6 +88,11 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
     AsyncExpandableListView mLvReserve;
     @BindView(R.id.srl_reserve_list)
     SwipeRefreshLayout mSrlReserve;
+
+    MaterialDialog mProgressDialog;
+    MaterialDialog mControlLockDialog;
+
+    private ConnectLockReceiver mReceiver;
 
     private Context mContext;
     private List<OrderResponse.DataBean.OrderBean> mOrderBeanList = new ArrayList<>();
@@ -136,6 +148,21 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
             initNavi();
         }
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mReceiver = new ConnectLockReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ConnectLockService.BROADCAST_CONNECT);
+        registerReceiver(mReceiver, intentFilter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(mReceiver);
     }
 
     @Override
@@ -672,8 +699,70 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
         startActivity(intent);
     }
 
-    private void LockControl(final int index){      //控制车位锁
-
+    private void LockControl(int index){      //控制车位锁
+        final String gateWayId = SharedPreferenceUtil.getString(this, Constant.RESERVE_GATEWAY_ID, "");
+        final String lockMac = SharedPreferenceUtil.getString(this, Constant.RESERVE_LOCK_MAC, "");
+        final String lockPwd = SharedPreferenceUtil.getString(this, Constant.RESERVE_LOCK_PWD, "");
+        if (mProgressDialog == null) {
+            mProgressDialog = new MaterialDialog.Builder(mContext)
+                    .title("连接中")
+                    .content("请等待...")
+                    .progress(true, 0)
+                    .showListener(new DialogInterface.OnShowListener() {
+                        @Override
+                        public void onShow(DialogInterface dialog) {
+                            Intent connectLock = new Intent(mContext, ConnectLockService.class);
+                            if (NetworkUtils.isConnected(mContext)) {
+                                connectLock.setAction(ConnectLockService.ACTION_GATEWAY_CONNECT);
+                                connectLock.putExtra(ConnectLockService.EXTRA_GATEWAY_ID, gateWayId);
+                            } else {
+                                if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+                                    ToastUtil.showToast(mContext, "不支持蓝牙低能耗特性");
+                                    dialog.dismiss();
+                                } else {
+                                    connectLock.setAction(ConnectLockService.ACTION_BLUETOOTH_CONNECT);
+                                    connectLock.putExtra(ConnectLockService.EXTRA_LOCK_PWD, lockPwd);
+                                }
+                            }
+                            connectLock.putExtra(ConnectLockService.EXTRA_LOCK_MAC, lockMac);
+                            startService(connectLock);
+                        }
+                    }).build();
+        }
+        mProgressDialog.show();
+        View controlLock = LayoutInflater.from(mContext).inflate(R.layout.dialog_control_lock, null);
+        ImageView imgUpLock = (ImageView) controlLock.findViewById(R.id.img_up_lock);
+        ImageView imgDownLock = (ImageView) controlLock.findViewById(R.id.img_down_Lock);
+        imgUpLock.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent upLock = new Intent(mContext, ConnectLockService.class);
+                upLock.setAction(ConnectLockService.ACTION_UP_LOCK);
+                startService(upLock);
+            }
+        });
+        imgDownLock.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent downLock = new Intent(mContext, ConnectLockService.class);
+                downLock.setAction(ConnectLockService.ACTION_DOWN_LOCK);
+                startService(downLock);
+            }
+        });
+        if (mControlLockDialog == null) {
+            mControlLockDialog = new MaterialDialog.Builder(mContext)
+                    .title("已连接").titleGravity(GravityEnum.CENTER)
+                    .customView(controlLock, false)
+                    .dismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialog) {
+                            Intent disconnect = new Intent(mContext, ConnectLockService.class);
+                            disconnect.setAction(ConnectLockService.ACTION_DISCONNECT);
+                            startService(disconnect);
+                        }
+                    })
+                    .build();
+        }
     }
 
 
@@ -984,7 +1073,19 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
             }
             routeplanToNavi(mCoordinateType, -1);
         }
+    }
 
+    private class ConnectLockReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (mProgressDialog != null && mProgressDialog.isShowing()) {
+                mProgressDialog.dismiss();
+                if (mControlLockDialog != null && !mControlLockDialog.isShowing()) {
+                    mControlLockDialog.show();
+                }
+            }
+        }
     }
 
 }
