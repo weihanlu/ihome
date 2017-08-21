@@ -1,13 +1,21 @@
 package com.qhiehome.ihome.activity;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.Image;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
@@ -24,7 +32,13 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.baidu.navisdk.adapter.BNCommonSettingParam;
+import com.baidu.navisdk.adapter.BNOuterTTSPlayerCallback;
+import com.baidu.navisdk.adapter.BNRoutePlanNode;
+import com.baidu.navisdk.adapter.BNaviSettingManager;
+import com.baidu.navisdk.adapter.BaiduNaviManager;
 import com.ericliu.asyncexpandablelist.CollectionView;
 import com.ericliu.asyncexpandablelist.async.AsyncExpandableListView;
 import com.ericliu.asyncexpandablelist.async.AsyncExpandableListViewCallbacks;
@@ -34,17 +48,22 @@ import com.qhiehome.ihome.adapter.ReserveViewPagerAdapter;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.inquiry.order.OrderRequest;
 import com.qhiehome.ihome.network.model.inquiry.order.OrderResponse;
+import com.qhiehome.ihome.network.model.park.reservecancel.ReserveCancelRequest;
+import com.qhiehome.ihome.network.model.park.reservecancel.ReserveCancelResponse;
 import com.qhiehome.ihome.network.service.inquiry.OrderService;
+import com.qhiehome.ihome.network.service.park.ReserveCancelService;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.TimeUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
@@ -66,11 +85,32 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
     private Context mContext;
     private List<OrderResponse.DataBean.OrderBean> mOrderBeanList = new ArrayList<>();
     private CollectionView.Inventory<String, Bitmap> mInventory;
+    private TextView mTvCountDown;
+    private MyCountDownTimer mCountDownTimer;
 
     private static final SimpleDateFormat START_TIME_FORMAT = new SimpleDateFormat("yyyy.MM.dd HH:mm", Locale.CHINA);
     private static final SimpleDateFormat END_TIME_FORMAT = new SimpleDateFormat("HH:mm", Locale.CHINA);
     private static final String DECIMAL_2 = "%.2f";
+    private final long INTERVAL = 1000L;
+    private final long QUARTER = 1000*60*15L;
 
+    /********BaiduNavi********/
+    private BNRoutePlanNode.CoordinateType mCoordinateType;
+    private String mSDCardPath = null;
+    private static final String APP_FOLDER_NAME = "ihome";
+    private final static String authBaseArr[] =
+            {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_FINE_LOCATION};
+    private final static String authComArr[] = {Manifest.permission.READ_PHONE_STATE};
+    private final static int authBaseRequestCode = 1;
+    private final static int authComRequestCode = 2;
+    private boolean hasInitSuccess = false;
+    private boolean hasRequestComAuth = false;
+    public static final String ROUTE_PLAN_NODE = "routePlanNode";
+    public static List<Activity> activityList = new LinkedList<Activity>();
+    public static final String RESET_END_NODE = "resetEndNode";
+    private static final String APP_ID = "9901662";
+
+    /********OrderState********/
     private static final int ORDER_STATE_TEMP_RESERVED = 30;//btn：取消+支付  info：剩余支付时间，支付金额
     private static final int ORDER_STATE_RESERVED = 31;//取消+导航+升降车位锁+小区地图+出入证  info：最晚停车时间
     private static final int ORDER_STATE_PARKED = 32;//导航+升降车位锁+小区地图  info：停车时间+最晚离开时间
@@ -92,11 +132,18 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
         initSwiperRefreshLayout();
         orderRequest();
 
+        if (initDirs()) {
+            initNavi();
+        }
+
     }
 
     @Override
     public void onStartLoadingGroup(int groupOrdinal) {
-        new LoadDataTask(groupOrdinal, mLvReserve).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        //只有第一项且第一项不是已取消、已支付订单时展开显示详细内容
+        if (groupOrdinal == 0 && mOrderBeanList.get(0).getState() != ORDER_STATE_CANCEL && mOrderBeanList.get(0).getState() != ORDER_STATE_PAID){
+            new LoadDataTask(groupOrdinal, mLvReserve).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
     }
 
     @Override
@@ -119,6 +166,24 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
     @Override
     public void bindCollectionHeaderView(Context context, AsyncHeaderViewHolder holder, int groupOrdinal, String headerItem) {
         MyHeaderViewHolder myHeaderViewHolder = (MyHeaderViewHolder) holder;
+        myHeaderViewHolder.setIndex(groupOrdinal);
+        if (groupOrdinal != 0 || mOrderBeanList.get(0).getState() == ORDER_STATE_CANCEL || mOrderBeanList.get(0).getState() == ORDER_STATE_PAID){
+            myHeaderViewHolder.getIvExpansionIndicator().setVisibility(View.INVISIBLE);
+            myHeaderViewHolder.getmProgressBar().setVisibility(View.INVISIBLE);
+        }
+        switch (mOrderBeanList.get(groupOrdinal).getState()){
+            case ORDER_STATE_CANCEL:
+                myHeaderViewHolder.getIvState().setVisibility(View.VISIBLE);
+                myHeaderViewHolder.getIvState().setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_order_cancel));
+                break;
+            case ORDER_STATE_PAID:
+                myHeaderViewHolder.getIvState().setVisibility(View.VISIBLE);
+                myHeaderViewHolder.getIvState().setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_order_finish));
+                break;
+            default:
+                myHeaderViewHolder.getIvState().setVisibility(View.INVISIBLE);
+                break;
+        }
         myHeaderViewHolder.getTv_parking().setText(headerItem);
         myHeaderViewHolder.getTv_time().setText(START_TIME_FORMAT.format(mOrderBeanList.get(groupOrdinal).getStartTime()) + " - " + END_TIME_FORMAT.format(mOrderBeanList.get(groupOrdinal).getEndTime()));
         myHeaderViewHolder.getTv_orderId().setText("订单号：" + String.valueOf(mOrderBeanList.get(groupOrdinal).getId()));
@@ -129,22 +194,47 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
     }
 
     @Override
-    public void bindCollectionItemView(Context context, RecyclerView.ViewHolder holder, int groupOrdinal, Bitmap item) {
+    public void bindCollectionItemView(Context context, RecyclerView.ViewHolder holder, final int groupOrdinal, Bitmap item) {
         if (groupOrdinal == 0){
             DetailItemHolder detailItemHolder = (DetailItemHolder) holder;
             String info;
+            String info2;
             switch (mOrderBeanList.get(0).getState()){
                 case ORDER_STATE_TEMP_RESERVED:
                     detailItemHolder.getVpReserve().setVisibility(View.GONE);
-                    info = "需支付担保费：" + String.format(DECIMAL_2, mOrderBeanList.get(0).getPayFee()) + "元";
-                    info += "\n";
-                    info += "剩余时间：" + "15：00分钟";
+
+                    info = "需支付担保费   " + String.format(Locale.CHINA, DECIMAL_2, (float)mOrderBeanList.get(0).getPayFee()) + "元";
                     detailItemHolder.getTvDetailInfo().setText(info);
+                    mTvCountDown = detailItemHolder.getTvDetailInfo2();
+                    long timeRemaining = SharedPreferenceUtil.getLong(mContext, Constant.ORDER_CREATE_TIME, System.currentTimeMillis()) + QUARTER - System.currentTimeMillis();
+                    if (mCountDownTimer == null) {
+                        mCountDownTimer = new MyCountDownTimer(timeRemaining, INTERVAL);
+                    }
+                    mCountDownTimer.start();
+
+
                     detailItemHolder.getBtnCancel().setVisibility(View.VISIBLE);
+                    detailItemHolder.getBtnCancel().setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            CancelReserve(groupOrdinal);
+                        }
+                    });
+
                     detailItemHolder.getBtnFunction().setText("去支付");
+                    detailItemHolder.getBtnFunction().setVisibility(View.VISIBLE);
+                    detailItemHolder.getBtnFunction().setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Pay(groupOrdinal, Constant.PAY_STATE_GUARANTEE);
+                        }
+                    });
+
                     detailItemHolder.getBtnNavi().setVisibility(View.INVISIBLE);
+
                     break;
                 case ORDER_STATE_RESERVED:
+                    detailItemHolder.getVpReserve().setVisibility(View.VISIBLE);
                     /*********临时数据**********/
                     List<View> viewList = new ArrayList<>();
                     View view1 =  LayoutInflater.from(mContext).inflate(R.layout.item_reserve_viewpager, null);
@@ -161,12 +251,33 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                         e.printStackTrace();
                         viewPagerAdapter.notifyDataSetChanged();
                     }
-                    info = "最晚停车时间：";
+
+                    info = "最晚停车时间   ";
                     info += END_TIME_FORMAT.format(mOrderBeanList.get(0).getStartTime() + 15*60*1000);
                     detailItemHolder.getTvDetailInfo().setText(info);
+
                     detailItemHolder.getBtnFunction().setText("降车位锁");
+                    detailItemHolder.getBtnFunction().setVisibility(View.VISIBLE);
+
+                    detailItemHolder.getBtnNavi().setVisibility(View.VISIBLE);
+                    detailItemHolder.getBtnNavi().setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Navigation(groupOrdinal);
+                        }
+                    });
+
+                    detailItemHolder.getBtnCancel().setVisibility(View.VISIBLE);
+                    detailItemHolder.getBtnCancel().setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            CancelReserve(groupOrdinal);
+                        }
+                    });
+
                     break;
                 case ORDER_STATE_PARKED:
+                    detailItemHolder.getVpReserve().setVisibility(View.VISIBLE);
                     /*********临时数据**********/
                     List<View> viewList2 = new ArrayList<>();
                     View view12 =  LayoutInflater.from(mContext).inflate(R.layout.item_reserve_viewpager, null);
@@ -183,24 +294,41 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                         e.printStackTrace();
                         viewPagerAdapter2.notifyDataSetChanged();
                     }
-                    info = "停车时间：";
+
+                    info = "停车时间   ";
                     info += START_TIME_FORMAT.format(SharedPreferenceUtil.getLong(mContext, Constant.PARKING_START_TIME, 0));
                     info += "\n";
-                    info += "最晚可停至：";
+                    info += "最晚可停至   ";
                     info += START_TIME_FORMAT.format(mOrderBeanList.get(0).getEndTime());
                     detailItemHolder.getTvDetailInfo().setText(info);
+
+                    detailItemHolder.getBtnNavi().setVisibility(View.VISIBLE);
+                    detailItemHolder.getBtnNavi().setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Navigation(groupOrdinal);
+                        }
+                    });
+
                     detailItemHolder.getBtnFunction().setText("升车位锁");
+                    detailItemHolder.getBtnFunction().setVisibility(View.VISIBLE);
+
                     detailItemHolder.btnCancel.setVisibility(View.INVISIBLE);
                     break;
                 case ORDER_STATE_NOT_PAID:
                     detailItemHolder.getVpReserve().setVisibility(View.GONE);
-                    info = "停车时间：" + START_TIME_FORMAT.format(SharedPreferenceUtil.getLong(mContext, Constant.PARKING_START_TIME, 0));
+
+                    info = "停车时间   " + START_TIME_FORMAT.format(SharedPreferenceUtil.getLong(mContext, Constant.PARKING_START_TIME, 0));
                     info += "\n";
-                    info += "离开时间：" + START_TIME_FORMAT.format(SharedPreferenceUtil.getLong(mContext, Constant.PARKING_END_TIME, 0));
+                    info += "离开时间   " + START_TIME_FORMAT.format(SharedPreferenceUtil.getLong(mContext, Constant.PARKING_END_TIME, 0));
                     info += "\n";
-                    info += "总金额：" + String.format(DECIMAL_2, mOrderBeanList.get(0).getPayFee()) + "元";
+                    info += "总金额   " + String.format(Locale.CHINA, DECIMAL_2, mOrderBeanList.get(0).getPayFee()) + "元";
                     detailItemHolder.getTvDetailInfo().setText(info);
+
                     detailItemHolder.getBtnCancel().setVisibility(View.INVISIBLE);
+
+                    detailItemHolder.getBtnNavi().setVisibility(View.INVISIBLE);
+
                     detailItemHolder.getBtnFunction().setText("去支付");
                     break;
                 case ORDER_STATE_PAID:
@@ -254,6 +382,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
 
         private final ViewPager vpReserve;
         private final TextView tvDetailInfo;
+        private final TextView tvDetailInfo2;
         private final Button btnNavi;
         private final Button btnCancel;
         private final Button btnFunction;
@@ -265,6 +394,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
             super(v);
             vpReserve = (ViewPager) v.findViewById(R.id.vp_item_reserve);
             tvDetailInfo = (TextView) v.findViewById(R.id.tv_item_reserve_info);
+            tvDetailInfo2 = (TextView) v.findViewById(R.id.tv_item_reserve_info2);
             btnNavi = (Button) v.findViewById(R.id.btn_item_reserve_navi);
             btnFunction = (Button) v.findViewById(R.id.btn_item_reserve_function);
             btnCancel = (Button) v.findViewById(R.id.btn_item_reserve_cancel);
@@ -278,6 +408,10 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
 
         public TextView getTvDetailInfo() {
             return tvDetailInfo;
+        }
+
+        public TextView getTvDetailInfo2() {
+            return tvDetailInfo2;
         }
 
         public Button getBtnNavi() {
@@ -302,7 +436,6 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
     }
 
 
-    // TODO: 2017/8/18 从第二项开始取消点击事件,增加导航，取消预约按键功能
     /*********列表holoder**********/
     public static class MyHeaderViewHolder extends AsyncHeaderViewHolder implements AsyncExpandableListView.OnGroupStateChangeListener {
 
@@ -312,6 +445,8 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
         private final ProgressBar mProgressBar;
         private ImageView ivExpansionIndicator;
         private RelativeLayout relativeLayout;
+        private final ImageView ivState;
+        private int index;
 
         public MyHeaderViewHolder(View v, int groupOrdinal, AsyncExpandableListView asyncExpandableListView) {
             super(v, groupOrdinal, asyncExpandableListView);
@@ -323,6 +458,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                     android.graphics.PorterDuff.Mode.MULTIPLY);
             ivExpansionIndicator = (ImageView) v.findViewById(R.id.iv_item_reserve);
             relativeLayout = (RelativeLayout) v.findViewById(R.id.layout_item_reserve_header);
+            ivState = (ImageView) v.findViewById(R.id.iv_item_reserve_cancel);
         }
 
         public TextView getTv_parking() {
@@ -349,29 +485,78 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
             return ivExpansionIndicator;
         }
 
+        public ImageView getIvState() {
+            return ivState;
+        }
+
+        public void setIndex(int index) {
+            this.index = index;
+        }
+
         @Override
         public void onGroupStartExpending() {
-            mProgressBar.setVisibility(View.VISIBLE);
-            ivExpansionIndicator.setVisibility(View.INVISIBLE);
+            if (index == 0){
+                mProgressBar.setVisibility(View.VISIBLE);
+                ivExpansionIndicator.setVisibility(View.INVISIBLE);
+            }
         }
 
         @Override
         public void onGroupExpanded() {
-            mProgressBar.setVisibility(View.GONE);
-            ivExpansionIndicator.setVisibility(View.VISIBLE);
-            //ivExpansionIndicator.setImageResource(R.drawable.ic_arrow_up);
+            if (index == 0){
+                mProgressBar.setVisibility(View.GONE);
+                ivExpansionIndicator.setVisibility(View.VISIBLE);
+                //ivExpansionIndicator.setImageResource(R.drawable.ic_arrow_up);
+            }
         }
 
         @Override
         public void onGroupCollapsed() {
-            mProgressBar.setVisibility(View.GONE);
-            ivExpansionIndicator.setVisibility(View.VISIBLE);
-            //ivExpansionIndicator.setImageResource(R.drawable.ic_arrow_down);
-
+            if (index == 0){
+                mProgressBar.setVisibility(View.GONE);
+                ivExpansionIndicator.setVisibility(View.VISIBLE);
+                //ivExpansionIndicator.setImageResource(R.drawable.ic_arrow_down);
+            }
         }
     }
 
 
+    public class MyCountDownTimer extends CountDownTimer {
+        public MyCountDownTimer(long millisInFuture, long countDownInterval) {
+            super(millisInFuture, countDownInterval);
+        }
+
+        @Override
+        public void onTick(long millisUntilFinished) {
+            long time = millisUntilFinished / 1000;
+
+            if (time <= 59) {
+                mTvCountDown.setText(String.format(Locale.CHINA, "剩余支付时间   00:%02d", time));
+            } else {
+                mTvCountDown.setText(String.format(Locale.CHINA, "剩余支付时间   %02d:%02d", time / 60, time % 60));
+            }
+        }
+
+        @Override
+        public void onFinish() {
+            mTvCountDown.setText("剩余支付时间   00:00");
+            cancelTimer();
+        }
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        cancelTimer();
+    }
+
+    private void cancelTimer() {
+        if (mCountDownTimer != null) {
+            mCountDownTimer.cancel();
+            mCountDownTimer = null;
+        }
+    }
 
     public void initSwiperRefreshLayout() {
         mSrlReserve = (SwipeRefreshLayout) findViewById(R.id.srl_reserve_list);
@@ -453,5 +638,353 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
         mLvReserve.updateInventory(mInventory);
     }
 
+    /***********按钮功能*************/
+    private void CancelReserve(final int index){        //取消预约
+        int orderId = mOrderBeanList.get(index).getId();
+        ReserveCancelService reserveCancelService = ServiceGenerator.createService(ReserveCancelService.class);
+        Call<ReserveCancelResponse> call = reserveCancelService.reserve(new ReserveCancelRequest(orderId));
+        call.enqueue(new Callback<ReserveCancelResponse>() {
+            @Override
+            public void onResponse(Call<ReserveCancelResponse> call, Response<ReserveCancelResponse> response) {
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
+                    mOrderBeanList.get(index).setState(ORDER_STATE_CANCEL);
+                    updateData();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ReserveCancelResponse> call, Throwable t) {
+                ToastUtil.showToast(mContext, "网络连接异常");
+            }
+        });
+    }
+
+    public void Navigation(final int index){       //导航
+        if (BaiduNaviManager.isNaviInited()) {
+            routeplanToNavi(BNRoutePlanNode.CoordinateType.BD09LL, index);
+        }
+    }
+
+    private void Pay(final int index, int state){              //支付
+        Intent intent = new Intent(ReserveActivity.this, PayActivity.class);
+        intent.putExtra("fee", (float) mOrderBeanList.get(index).getPayFee());
+        intent.putExtra("payState", state);
+        startActivity(intent);
+    }
+
+    private void LockControl(final int index){      //控制车位锁
+
+    }
+
+
+    /*******导航模块*******/
+    /*********导航功能**********/
+    private boolean initDirs() {
+        mSDCardPath = getSdcardDir();
+        if (mSDCardPath == null) {
+            return false;
+        }
+        File f = new File(mSDCardPath, APP_FOLDER_NAME);
+        if (!f.exists()) {
+            try {
+                f.mkdir();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    String authinfo = null;
+    /**
+     * 内部TTS播报状态回传handler
+     */
+    private Handler ttsHandler = new Handler() {
+        public void handleMessage(Message msg) {
+            int type = msg.what;
+            switch (type) {
+                case BaiduNaviManager.TTSPlayMsgType.PLAY_START_MSG: {
+                    // showToastMsg("Handler : TTS play start");
+                    break;
+                }
+                case BaiduNaviManager.TTSPlayMsgType.PLAY_END_MSG: {
+                    // showToastMsg("Handler : TTS play end");
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+    };
+
+    /**
+     * 内部TTS播报状态回调接口
+     */
+    private BaiduNaviManager.TTSPlayStateListener ttsPlayStateListener = new BaiduNaviManager.TTSPlayStateListener() {
+
+        @Override
+        public void playEnd() {
+            // showToastMsg("TTSPlayStateListener : TTS play end");
+        }
+
+        @Override
+        public void playStart() {
+            // showToastMsg("TTSPlayStateListener : TTS play start");
+        }
+    };
+
+    public void showToastMsg(final String msg) {
+
+        this.runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+                Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private boolean hasBasePhoneAuth() {
+
+        PackageManager pm = this.getPackageManager();
+        for (String auth : authBaseArr) {
+            if (pm.checkPermission(auth, this.getPackageName()) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean hasCompletePhoneAuth() {
+
+        PackageManager pm = this.getPackageManager();
+        for (String auth : authComArr) {
+            if (pm.checkPermission(auth, this.getPackageName()) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void initNavi() {
+
+        BNOuterTTSPlayerCallback ttsCallback = null;
+
+        // 申请权限
+        if (Build.VERSION.SDK_INT >= 23) {
+
+            if (!hasBasePhoneAuth()) {
+
+                this.requestPermissions(authBaseArr, authBaseRequestCode);
+                return;
+
+            }
+        }
+
+        BaiduNaviManager.getInstance().init(this, mSDCardPath, APP_FOLDER_NAME, new BaiduNaviManager.NaviInitListener() {
+            @Override
+            public void onAuthResult(int status, String msg) {
+                if (0 == status) {
+                    authinfo = "key校验成功!";
+                } else {
+                    authinfo = "key校验失败, " + msg;
+                }
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+//                        Toast.makeText(mContext, authinfo, Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+
+            public void initSuccess() {
+//                Toast.makeText(mContext, "百度导航引擎初始化成功", Toast.LENGTH_SHORT).show();
+                hasInitSuccess = true;
+                initSetting();
+            }
+
+            public void initStart() {
+//                Toast.makeText(mContext, "百度导航引擎初始化开始", Toast.LENGTH_SHORT).show();
+            }
+
+            public void initFailed() {
+//                Toast.makeText(mContext, "百度导航引擎初始化失败", Toast.LENGTH_SHORT).show();
+            }
+
+        }, null, ttsHandler, ttsPlayStateListener);
+
+    }
+
+    private void initSetting() {
+        // BNaviSettingManager.setDayNightMode(BNaviSettingManager.DayNightMode.DAY_NIGHT_MODE_DAY);
+        BNaviSettingManager
+                .setShowTotalRoadConditionBar(BNaviSettingManager.PreViewRoadCondition.ROAD_CONDITION_BAR_SHOW_ON);
+        BNaviSettingManager.setVoiceMode(BNaviSettingManager.VoiceMode.Veteran);
+        // BNaviSettingManager.setPowerSaveMode(BNaviSettingManager.PowerSaveMode.DISABLE_MODE);
+        BNaviSettingManager.setRealRoadCondition(BNaviSettingManager.RealRoadCondition.NAVI_ITS_ON);
+        BNaviSettingManager.setIsAutoQuitWhenArrived(true);
+        Bundle bundle = new Bundle();
+        // 必须设置APPID，否则会静音
+        bundle.putString(BNCommonSettingParam.TTS_APP_ID, APP_ID);
+        BNaviSettingManager.setNaviSdkParam(bundle);
+    }
+
+    private String getSdcardDir() {
+        if (Environment.getExternalStorageState().equalsIgnoreCase(Environment.MEDIA_MOUNTED)) {
+            return Environment.getExternalStorageDirectory().toString();
+        }
+        return null;
+    }
+
+
+    private void routeplanToNavi(BNRoutePlanNode.CoordinateType coType, int position) {
+        mCoordinateType = coType;
+        if (!hasInitSuccess) {
+            Toast.makeText(mContext, "还未初始化!", Toast.LENGTH_SHORT).show();
+        }
+        // 权限申请
+        if (Build.VERSION.SDK_INT >= 23) {
+            // 保证导航功能完备
+            if (!hasCompletePhoneAuth()) {
+                if (!hasRequestComAuth) {
+                    hasRequestComAuth = true;
+                    this.requestPermissions(authComArr, authComRequestCode);
+                    return;
+                } else {
+                    Toast.makeText(mContext, "没有完备的权限!", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+        }
+        BNRoutePlanNode sNode = null;
+        BNRoutePlanNode eNode = null;
+        switch (coType) {
+//            case GCJ02: {
+//                sNode = new BNRoutePlanNode(116.30142, 40.05087, "百度大厦", null, coType);
+//                eNode = new BNRoutePlanNode(116.39750, 39.90882, "北京天安门", null, coType);
+//                break;
+//            }
+//            case WGS84: {
+//                sNode = new BNRoutePlanNode(116.300821, 40.050969, "百度大厦", null, coType);
+//                eNode = new BNRoutePlanNode(116.397491, 39.908749, "北京天安门", null, coType);
+//                break;
+//            }
+//            case BD09_MC: {
+//                sNode = new BNRoutePlanNode(12947471, 4846474, "百度大厦", null, coType);
+//                eNode = new BNRoutePlanNode(12958160, 4825947, "北京天安门", null, coType);
+//                break;
+//            }
+            case BD09LL: {
+                sNode = new BNRoutePlanNode((double) SharedPreferenceUtil.getFloat(mContext, Constant.CURRENT_LONGITUDE, 0), (double) SharedPreferenceUtil.getFloat(mContext, Constant.CURRENT_LATITUDE, 0), "我的位置", null, coType);
+                try{
+                    eNode = new BNRoutePlanNode(mOrderBeanList.get(position).getEstate().getX(), mOrderBeanList.get(position).getEstate().getY(), mOrderBeanList.get(position).getEstate().getName(), null, coType);
+                }catch (Exception e){
+                    e.printStackTrace();
+                    ToastUtil.showToast(this, e.getMessage());
+                }
+                //查询数据库得到目的地经纬度
+//                mParkingReadDB = mParkingSQLHelper.getReadableDatabase();
+//                Cursor cursor = mParkingReadDB.query(ParkingSQLHelper.TABLE_NAME,
+//                        new String[]{"startTime", "estateName", "x", "y"},
+//                        null, null, null, null, "startTime ASC");
+//                while (cursor.moveToNext()) {
+//                    long startTime = cursor.getLong(cursor.getColumnIndex("startTime"));
+//                    if (startTime >= System.currentTimeMillis()) {
+//                        String estateName = cursor.getString(cursor.getColumnIndex("estateName"));
+//                        double x = cursor.getDouble(cursor.getColumnIndex("x"));
+//                        double y = cursor.getDouble(cursor.getColumnIndex("y"));
+//                        eNode = new BNRoutePlanNode(x, y, estateName, null, coType);
+//                        break;
+//                    }
+//                }
+
+
+//                mParkingReadDB.close();
+                break;
+            }
+            default:
+                ;
+        }
+        if (sNode != null && eNode != null) {
+            List<BNRoutePlanNode> list = new ArrayList<BNRoutePlanNode>();
+            list.add(sNode);
+            list.add(eNode);
+
+            // 开发者可以使用旧的算路接口，也可以使用新的算路接口,可以接收诱导信息等
+            BaiduNaviManager.getInstance().launchNavigator(this, list, 1, true, new DemoRoutePlanListener(sNode));
+            //BaiduNaviManager.getInstance().launchNavigator(this.getActivity(), list, 1, true, new DemoRoutePlanListener(sNode),
+            //        eventListerner);
+        }
+    }
+
+    BaiduNaviManager.NavEventListener eventListerner = new BaiduNaviManager.NavEventListener() {
+
+        @Override
+        public void onCommonEventCall(int what, int arg1, int arg2, Bundle bundle) {
+            //BNEventHandler.getInstance().handleNaviEvent(what, arg1, arg2, bundle);
+        }
+    };
+
+
+    public class DemoRoutePlanListener implements BaiduNaviManager.RoutePlanListener {
+
+        private BNRoutePlanNode mBNRoutePlanNode = null;
+
+        public DemoRoutePlanListener(BNRoutePlanNode node) {
+            mBNRoutePlanNode = node;
+        }
+
+        @Override
+        public void onJumpToNavigator() {
+            /*
+             * 设置途径点以及resetEndNode会回调该接口
+             */
+
+            for (Activity ac : activityList) {
+
+                if (ac.getClass().getName().endsWith("BNDemoGuideActivity")) {
+
+                    return;
+                }
+            }
+            Intent intent = new Intent(ReserveActivity.this, NaviGuideActivity.class);
+            Bundle bundle = new Bundle();
+            bundle.putSerializable(ROUTE_PLAN_NODE, (BNRoutePlanNode) mBNRoutePlanNode);
+            intent.putExtras(bundle);
+            startActivity(intent);
+
+        }
+
+        @Override
+        public void onRoutePlanFailed() {
+            Toast.makeText(mContext, "算路失败", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == authBaseRequestCode) {
+            for (int ret : grantResults) {
+                if (ret == 0) {
+                    continue;
+                } else {
+                    Toast.makeText(mContext, "缺少导航基本的权限!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            }
+            initNavi();
+        } else if (requestCode == authComRequestCode) {
+            for (int ret : grantResults) {
+                if (ret == 0) {
+                    continue;
+                }
+            }
+            routeplanToNavi(mCoordinateType, -1);
+        }
+
+    }
 
 }

@@ -659,7 +659,7 @@ public class UserInfoActivity extends BaseActivity {
     @OnClick(R.id.tv_add_balance)
     public void onViewClicked() {
         Intent intent = new Intent(this, PayActivity.class);
-        intent.putExtra("isPay", false);
+        intent.putExtra("payState", Constant.PAY_STATE_ADD_ACCOUNT);
         startActivity(intent);
     }
 

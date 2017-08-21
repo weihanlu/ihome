@@ -87,6 +87,13 @@
             android:layout_marginRight="10dp"
             android:src="@drawable/spinner_arrow" />
 
+        <ImageView
+            android:id="@+id/iv_item_reserve_cancel"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_alignTop="@+id/tv_item_reserve_parking"
+            android:layout_alignEnd="@+id/iv_item_reserve"
+            tools:background="@drawable/ic_order_cancel"/>
 
     </RelativeLayout>
 </android.support.v7.widget.CardView>
