@@ -166,10 +166,12 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
     @Override
     public void bindCollectionHeaderView(Context context, AsyncHeaderViewHolder holder, int groupOrdinal, String headerItem) {
         MyHeaderViewHolder myHeaderViewHolder = (MyHeaderViewHolder) holder;
-        myHeaderViewHolder.setIndex(groupOrdinal);
         if (groupOrdinal != 0 || mOrderBeanList.get(0).getState() == ORDER_STATE_CANCEL || mOrderBeanList.get(0).getState() == ORDER_STATE_PAID){
             myHeaderViewHolder.getIvExpansionIndicator().setVisibility(View.INVISIBLE);
             myHeaderViewHolder.getmProgressBar().setVisibility(View.INVISIBLE);
+            myHeaderViewHolder.setEnableClick(false);
+        }else {
+            myHeaderViewHolder.setEnableClick(true);
         }
         switch (mOrderBeanList.get(groupOrdinal).getState()){
             case ORDER_STATE_CANCEL:
@@ -253,7 +255,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                     }
 
                     info = "最晚停车时间   ";
-                    info += END_TIME_FORMAT.format(mOrderBeanList.get(0).getStartTime() + 15*60*1000);
+                    info += END_TIME_FORMAT.format(mOrderBeanList.get(0).getStartTime() + QUARTER);
                     detailItemHolder.getTvDetailInfo().setText(info);
 
                     detailItemHolder.getBtnFunction().setText("降车位锁");
@@ -446,7 +448,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
         private ImageView ivExpansionIndicator;
         private RelativeLayout relativeLayout;
         private final ImageView ivState;
-        private int index;
+        private boolean enableClick;
 
         public MyHeaderViewHolder(View v, int groupOrdinal, AsyncExpandableListView asyncExpandableListView) {
             super(v, groupOrdinal, asyncExpandableListView);
@@ -489,13 +491,13 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
             return ivState;
         }
 
-        public void setIndex(int index) {
-            this.index = index;
+        public void setEnableClick(boolean enableClick) {
+            this.enableClick = enableClick;
         }
 
         @Override
         public void onGroupStartExpending() {
-            if (index == 0){
+            if (enableClick){
                 mProgressBar.setVisibility(View.VISIBLE);
                 ivExpansionIndicator.setVisibility(View.INVISIBLE);
             }
@@ -503,7 +505,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
 
         @Override
         public void onGroupExpanded() {
-            if (index == 0){
+            if (enableClick){
                 mProgressBar.setVisibility(View.GONE);
                 ivExpansionIndicator.setVisibility(View.VISIBLE);
                 //ivExpansionIndicator.setImageResource(R.drawable.ic_arrow_up);
@@ -512,7 +514,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
 
         @Override
         public void onGroupCollapsed() {
-            if (index == 0){
+            if (enableClick){
                 mProgressBar.setVisibility(View.GONE);
                 ivExpansionIndicator.setVisibility(View.VISIBLE);
                 //ivExpansionIndicator.setImageResource(R.drawable.ic_arrow_down);

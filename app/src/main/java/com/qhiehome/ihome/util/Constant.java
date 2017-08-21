@@ -51,6 +51,10 @@ public class Constant {
 
     public static final String PARKING_END_TIME = "endTime";
 
+    public static final String RESERVE_LOCK_MAC = "RESERVE_LOCK_MAC";
+    public static final String RESERVE_LOCK_PWD = "RESERVE_LOCK_PWD";
+    public static final String RESERVE_GATEWAY_ID = "RESERVE_GATEWAY_ID";
+
     public static final int PAY_STATE_ADD_ACCOUNT = 0;
     public static final int PAY_STATE_GUARANTEE = 1;
     public static final int PAY_STATE_TOTAL = 2;
