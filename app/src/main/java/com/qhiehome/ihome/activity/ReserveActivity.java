@@ -86,7 +86,6 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
     SwipeRefreshLayout mSrlReserve;
 
     MaterialDialog mProgressDialog;
-    MaterialDialog mControlLockDialog;
     @BindView(R.id.viewstub_reserve_list)
     ViewStub mViewStub;
 
@@ -1111,9 +1110,6 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
         public void onReceive(Context context, Intent intent) {
             if (mProgressDialog != null && mProgressDialog.isShowing()) {
                 mProgressDialog.dismiss();
-                if (mControlLockDialog != null && !mControlLockDialog.isShowing()) {
-                    mControlLockDialog.show();
-                }
             }
         }
     }

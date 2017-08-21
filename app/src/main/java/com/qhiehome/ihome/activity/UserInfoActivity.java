@@ -49,6 +49,7 @@ import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedRequest
 import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedResponse;
 import com.qhiehome.ihome.network.model.lock.updatepwd.UpdateLockPwdRequest;
 import com.qhiehome.ihome.network.model.lock.updatepwd.UpdateLockPwdResponse;
+import com.qhiehome.ihome.network.service.avatar.DownloadAvatarService;
 import com.qhiehome.ihome.network.service.avatar.UploadAvatarService;
 import com.qhiehome.ihome.network.service.inquiry.ParkingOwnedService;
 import com.qhiehome.ihome.network.service.lock.UpdateLockPwdService;
@@ -57,6 +58,7 @@ import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.FileUtils;
+import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.NetworkUtils;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
@@ -65,7 +67,10 @@ import org.greenrobot.greendao.query.Query;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -157,6 +162,8 @@ public class UserInfoActivity extends BaseActivity {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ConnectLockService.BROADCAST_CONNECT);
         registerReceiver(mReceiver, intentFilter);
+
+        initAvatar();
     }
 
     @Override
@@ -406,7 +413,6 @@ public class UserInfoActivity extends BaseActivity {
     private void initView() {
         initToolbar();
         initAppBarLayout();
-        initAvatar();
     }
 
     private void initAvatar() {
@@ -414,6 +420,65 @@ public class UserInfoActivity extends BaseActivity {
         if (avatarDir.isDirectory() && avatarDir.listFiles().length != 0) {
             Bitmap avatarBitmap = BitmapFactory.decodeFile(mAvatarPath);
             mIvAvatar.setImageBitmap(avatarBitmap);
+        } else {
+            DownloadAvatarService downloadAvatarService = ServiceGenerator.createService(DownloadAvatarService.class);
+            String encryptedAvatarName = EncryptUtil.encrypt(mAvatarFile.getName(), EncryptUtil.ALGO.MD5);
+            Call<ResponseBody> call = downloadAvatarService.downloadAvatar(encryptedAvatarName + ".jpg");
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
+                    if (response.isSuccessful()) {
+                        try {
+                            mAvatarFile.createNewFile();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        writtenToAvatarFile(response.body());
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+
+                }
+            });
+        }
+    }
+
+    private void writtenToAvatarFile(ResponseBody body) {
+        InputStream is = null;
+        OutputStream os = null;
+        try {
+            byte[] fileReader = new byte[4096];
+
+            is = body.byteStream();
+            os = new FileOutputStream(mAvatarFile);
+            int read;
+            while ((read = is.read(fileReader)) != -1) {
+                os.write(fileReader, 0, read);
+            }
+            os.flush();
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Bitmap avatarBitmap = BitmapFactory.decodeFile(mAvatarPath);
+                    mIvAvatar.setImageBitmap(avatarBitmap);
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (is != null) {
+                    is.close();
+                }
+                if (os != null) {
+                    os.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -551,6 +616,7 @@ public class UserInfoActivity extends BaseActivity {
             } else if (requestCode == CODE_PICTURES_REQUEST_SRC) {
                 showLocalImage(data);
             }
+            uploadAvatar();
         }
     }
 
@@ -562,7 +628,7 @@ public class UserInfoActivity extends BaseActivity {
             RequestBody requestPhone = RequestBody.create(MediaType.parse("multipart/form-data"), EncryptUtil.encrypt(phoneNum, EncryptUtil.ALGO.SHA_256));
             final RequestBody requestAvatar = RequestBody.create(MediaType.parse("multipart/form-data"), mAvatarFile);
             String encryptedAvatarName = EncryptUtil.encrypt(mAvatarFile.getName(), EncryptUtil.ALGO.MD5);
-            MultipartBody.Part avatarPart = MultipartBody.Part.createFormData("file", encryptedAvatarName, requestAvatar);
+            MultipartBody.Part avatarPart = MultipartBody.Part.createFormData("file", encryptedAvatarName + ".jpg", requestAvatar);
 
             Call<ResponseBody> call = uploadAvatarService.uploadAvatar(avatarPart, requestPhone);
             call.enqueue(new Callback<ResponseBody>() {
@@ -653,12 +719,6 @@ public class UserInfoActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-//        uploadAvatar();
     }
 
     @OnClick(R.id.tv_add_balance)
