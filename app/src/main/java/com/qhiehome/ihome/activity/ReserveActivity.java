@@ -8,10 +8,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.Image;
+import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,7 +18,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
-import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -30,6 +27,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -62,12 +60,10 @@ import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.NetworkUtils;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
-import com.qhiehome.ihome.util.TimeUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
-import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -91,6 +87,8 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
 
     MaterialDialog mProgressDialog;
     MaterialDialog mControlLockDialog;
+    @BindView(R.id.viewstub_reserve_list)
+    ViewStub mViewStub;
 
     private ConnectLockReceiver mReceiver;
 
@@ -104,7 +102,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
     private static final SimpleDateFormat END_TIME_FORMAT = new SimpleDateFormat("HH:mm", Locale.CHINA);
     private static final String DECIMAL_2 = "%.2f";
     private final long INTERVAL = 1000L;
-    private final long QUARTER = 1000*60*15L;
+    private final long QUARTER = 1000 * 60 * 15L;
 
     /********BaiduNavi********/
     private BNRoutePlanNode.CoordinateType mCoordinateType;
@@ -168,7 +166,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
     @Override
     public void onStartLoadingGroup(int groupOrdinal) {
         //只有第一项且第一项不是已取消、已支付订单时展开显示详细内容
-        if (groupOrdinal == 0 && mOrderBeanList.get(0).getState() != ORDER_STATE_CANCEL && mOrderBeanList.get(0).getState() != ORDER_STATE_PAID){
+        if (groupOrdinal == 0 && mOrderBeanList.get(0).getState() != ORDER_STATE_CANCEL && mOrderBeanList.get(0).getState() != ORDER_STATE_PAID) {
             new LoadDataTask(groupOrdinal, mLvReserve).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
     }
@@ -193,14 +191,14 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
     @Override
     public void bindCollectionHeaderView(Context context, AsyncHeaderViewHolder holder, int groupOrdinal, String headerItem) {
         MyHeaderViewHolder myHeaderViewHolder = (MyHeaderViewHolder) holder;
-        if (groupOrdinal != 0 || mOrderBeanList.get(0).getState() == ORDER_STATE_CANCEL || mOrderBeanList.get(0).getState() == ORDER_STATE_PAID){
+        if (groupOrdinal != 0 || mOrderBeanList.get(0).getState() == ORDER_STATE_CANCEL || mOrderBeanList.get(0).getState() == ORDER_STATE_PAID) {
             myHeaderViewHolder.getIvExpansionIndicator().setVisibility(View.INVISIBLE);
             myHeaderViewHolder.getmProgressBar().setVisibility(View.INVISIBLE);
             myHeaderViewHolder.setEnableClick(false);
-        }else {
+        } else {
             myHeaderViewHolder.setEnableClick(true);
         }
-        switch (mOrderBeanList.get(groupOrdinal).getState()){
+        switch (mOrderBeanList.get(groupOrdinal).getState()) {
             case ORDER_STATE_CANCEL:
                 myHeaderViewHolder.getIvState().setVisibility(View.VISIBLE);
                 myHeaderViewHolder.getIvState().setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_order_cancel));
@@ -216,7 +214,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
         myHeaderViewHolder.getTv_parking().setText(headerItem);
         myHeaderViewHolder.getTv_time().setText(START_TIME_FORMAT.format(mOrderBeanList.get(groupOrdinal).getStartTime()) + " - " + END_TIME_FORMAT.format(mOrderBeanList.get(groupOrdinal).getEndTime()));
         myHeaderViewHolder.getTv_orderId().setText("订单号：" + String.valueOf(mOrderBeanList.get(groupOrdinal).getId()));
-        if (groupOrdinal%2 == 0){
+        if (groupOrdinal % 2 == 0) {
             myHeaderViewHolder.getRelativeLayout().setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorPrimary));
         }
 
@@ -224,15 +222,15 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
 
     @Override
     public void bindCollectionItemView(Context context, RecyclerView.ViewHolder holder, final int groupOrdinal, Bitmap item) {
-        if (groupOrdinal == 0){
+        if (groupOrdinal == 0) {
             DetailItemHolder detailItemHolder = (DetailItemHolder) holder;
             String info;
             String info2;
-            switch (mOrderBeanList.get(0).getState()){
+            switch (mOrderBeanList.get(0).getState()) {
                 case ORDER_STATE_TEMP_RESERVED:
                     detailItemHolder.getVpReserve().setVisibility(View.GONE);
 
-                    info = "需支付担保费   " + String.format(Locale.CHINA, DECIMAL_2, (float)mOrderBeanList.get(0).getPayFee()) + "元";
+                    info = "需支付担保费   " + String.format(Locale.CHINA, DECIMAL_2, (float) mOrderBeanList.get(0).getPayFee()) + "元";
                     detailItemHolder.getTvDetailInfo().setText(info);
                     mTvCountDown = detailItemHolder.getTvDetailInfo2();
                     long timeRemaining = SharedPreferenceUtil.getLong(mContext, Constant.ORDER_CREATE_TIME, System.currentTimeMillis()) + QUARTER - System.currentTimeMillis();
@@ -266,17 +264,17 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                     detailItemHolder.getVpReserve().setVisibility(View.VISIBLE);
                     /*********临时数据**********/
                     List<View> viewList = new ArrayList<>();
-                    View view1 =  LayoutInflater.from(mContext).inflate(R.layout.item_reserve_viewpager, null);
+                    View view1 = LayoutInflater.from(mContext).inflate(R.layout.item_reserve_viewpager, null);
                     view1.findViewById(R.id.iv_estate_info).setBackground(ContextCompat.getDrawable(mContext, R.drawable.img_estate_map));
                     viewList.add(view1);
-                    View view2 =  LayoutInflater.from(mContext).inflate(R.layout.item_reserve_viewpager, null);
+                    View view2 = LayoutInflater.from(mContext).inflate(R.layout.item_reserve_viewpager, null);
                     view2.findViewById(R.id.iv_estate_info).setBackground(ContextCompat.getDrawable(mContext, R.drawable.img_identifier));
                     viewList.add(view2);
                     /*********临时数据**********/
                     ReserveViewPagerAdapter viewPagerAdapter = new ReserveViewPagerAdapter(viewList);
                     try {
                         detailItemHolder.getVpReserve().setAdapter(viewPagerAdapter);
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                         viewPagerAdapter.notifyDataSetChanged();
                     }
@@ -315,17 +313,17 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                     detailItemHolder.getVpReserve().setVisibility(View.VISIBLE);
                     /*********临时数据**********/
                     List<View> viewList2 = new ArrayList<>();
-                    View view12 =  LayoutInflater.from(mContext).inflate(R.layout.item_reserve_viewpager, null);
+                    View view12 = LayoutInflater.from(mContext).inflate(R.layout.item_reserve_viewpager, null);
                     view12.findViewById(R.id.iv_estate_info).setBackground(ContextCompat.getDrawable(mContext, R.drawable.img_estate_map));
                     viewList2.add(view12);
-                    View view22 =  LayoutInflater.from(mContext).inflate(R.layout.item_reserve_viewpager, null);
+                    View view22 = LayoutInflater.from(mContext).inflate(R.layout.item_reserve_viewpager, null);
                     view22.findViewById(R.id.iv_estate_info).setBackground(ContextCompat.getDrawable(mContext, R.drawable.img_identifier));
                     viewList2.add(view22);
                     /*********临时数据**********/
                     ReserveViewPagerAdapter viewPagerAdapter2 = new ReserveViewPagerAdapter(viewList2);
                     try {
                         detailItemHolder.getVpReserve().setAdapter(viewPagerAdapter2);
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                         viewPagerAdapter2.notifyDataSetChanged();
                     }
@@ -371,6 +369,12 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                     detailItemHolder.getBtnNavi().setVisibility(View.INVISIBLE);
 
                     detailItemHolder.getBtnFunction().setText("去支付");
+                    detailItemHolder.getBtnFunction().setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Pay(groupOrdinal, Constant.PAY_STATE_TOTAL);
+                        }
+                    });
                     break;
                 case ORDER_STATE_PAID:
                     break;
@@ -411,7 +415,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
         protected void onPostExecute(Void aVoid) {
             List<Bitmap> items = new ArrayList<>();
             items.add(null);
-            if (listviewRef.get() != null){
+            if (listviewRef.get() != null) {
                 listviewRef.get().onFinishLoadingGroup(mGroupOrdinal, items);
             }
         }
@@ -496,7 +500,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
             tv_orderId = (TextView) v.findViewById(R.id.tv_item_reserve_orderid);
             mProgressBar = (ProgressBar) v.findViewById(R.id.pb_item_reserve);
             mProgressBar.getIndeterminateDrawable().setColorFilter(0xFFFFFFFF,
-                    android.graphics.PorterDuff.Mode.MULTIPLY);
+                    PorterDuff.Mode.MULTIPLY);
             ivExpansionIndicator = (ImageView) v.findViewById(R.id.iv_item_reserve);
             relativeLayout = (RelativeLayout) v.findViewById(R.id.layout_item_reserve_header);
             ivState = (ImageView) v.findViewById(R.id.iv_item_reserve_cancel);
@@ -506,15 +510,15 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
             return tv_parking;
         }
 
-        public TextView getTv_time(){
+        public TextView getTv_time() {
             return tv_time;
         }
 
-        public TextView getTv_orderId(){
+        public TextView getTv_orderId() {
             return tv_orderId;
         }
 
-        public RelativeLayout getRelativeLayout(){
+        public RelativeLayout getRelativeLayout() {
             return relativeLayout;
         }
 
@@ -536,7 +540,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
 
         @Override
         public void onGroupStartExpending() {
-            if (enableClick){
+            if (enableClick) {
                 mProgressBar.setVisibility(View.VISIBLE);
                 ivExpansionIndicator.setVisibility(View.INVISIBLE);
             }
@@ -544,7 +548,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
 
         @Override
         public void onGroupExpanded() {
-            if (enableClick){
+            if (enableClick) {
                 mProgressBar.setVisibility(View.GONE);
                 ivExpansionIndicator.setVisibility(View.VISIBLE);
                 //ivExpansionIndicator.setImageResource(R.drawable.ic_arrow_up);
@@ -553,7 +557,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
 
         @Override
         public void onGroupCollapsed() {
-            if (enableClick){
+            if (enableClick) {
                 mProgressBar.setVisibility(View.GONE);
                 ivExpansionIndicator.setVisibility(View.VISIBLE);
                 //ivExpansionIndicator.setImageResource(R.drawable.ic_arrow_down);
@@ -636,7 +640,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
         });
     }
 
-    private void orderRequest(){
+    private void orderRequest() {
         OrderService orderService = ServiceGenerator.createService(OrderService.class);
         String phoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, Constant.TEST_PHONE_NUM);
         OrderRequest orderRequest = new OrderRequest(EncryptUtil.encrypt(phoneNum, EncryptUtil.ALGO.SHA_256));
@@ -644,7 +648,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
         call.enqueue(new Callback<OrderResponse>() {
             @Override
             public void onResponse(@NonNull Call<OrderResponse> call, @NonNull Response<OrderResponse> response) {
-                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     mOrderBeanList = response.body().getData().getOrder();
 //                    if (mReserveAdapter != null) {
 //                        mReserveAdapter.notifyDataSetChanged();
@@ -663,15 +667,47 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
             public void onFailure(Call<OrderResponse> call, Throwable t) {
                 ToastUtil.showToast(mContext, "网络连接异常");
                 mSrlReserve.setRefreshing(false);
+                mLvReserve.setVisibility(View.INVISIBLE);
+                try {
+                    View viewStubContent = mViewStub.inflate();     //inflate 方法只能被调用一次
+                    Button btnLockControl = (Button) viewStubContent.findViewById(R.id.btn_reserve_nonetwork);
+                    switch (SharedPreferenceUtil.getInt(mContext, Constant.ORDER_STATE, 0)){
+                        case ORDER_STATE_RESERVED:
+                            btnLockControl.setText("降车位锁");
+                            btnLockControl.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    LockControl(0, true);
+                                }
+                            });
+                            break;
+                        case ORDER_STATE_PARKED:
+                            btnLockControl.setText("升车位锁");
+                            btnLockControl.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    LockControl(0, false);
+                                }
+                            });
+                            break;
+                        default:
+                            btnLockControl.setVisibility(View.INVISIBLE);
+                            break;
+                    }
+
+                } catch (Exception e) {
+                    mViewStub.setVisibility(View.VISIBLE);
+                }
+
             }
         });
     }
 
 
-    private void updateData(){
+    private void updateData() {
         mInventory = new CollectionView.Inventory<>();
 
-        for (int i = 0; i<mOrderBeanList.size(); i++){
+        for (int i = 0; i < mOrderBeanList.size(); i++) {
             CollectionView.InventoryGroup<String, Bitmap> group = mInventory.newGroup(i);
             group.setHeaderItem(mOrderBeanList.get(i).getEstate().getName());
         }
@@ -680,14 +716,14 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
     }
 
     /***********按钮功能*************/
-    private void CancelReserve(final int index){        //取消预约
+    private void CancelReserve(final int index) {        //取消预约
         int orderId = mOrderBeanList.get(index).getId();
         ReserveCancelService reserveCancelService = ServiceGenerator.createService(ReserveCancelService.class);
         Call<ReserveCancelResponse> call = reserveCancelService.reserve(new ReserveCancelRequest(orderId));
         call.enqueue(new Callback<ReserveCancelResponse>() {
             @Override
             public void onResponse(Call<ReserveCancelResponse> call, Response<ReserveCancelResponse> response) {
-                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     mOrderBeanList.get(index).setState(ORDER_STATE_CANCEL);
                     updateData();
                 }
@@ -700,13 +736,13 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
         });
     }
 
-    public void Navigation(final int index){       //导航
+    public void Navigation(final int index) {       //导航
         if (BaiduNaviManager.isNaviInited()) {
             routeplanToNavi(BNRoutePlanNode.CoordinateType.BD09LL, index);
         }
     }
 
-    private void Pay(final int index, int state){              //支付
+    private void Pay(final int index, int state) {              //支付
         Intent intent = new Intent(ReserveActivity.this, PayActivity.class);
         intent.putExtra("fee", (float) mOrderBeanList.get(index).getPayFee());
         intent.putExtra("payState", state);
@@ -961,9 +997,9 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
 //            }
             case BD09LL: {
                 sNode = new BNRoutePlanNode((double) SharedPreferenceUtil.getFloat(mContext, Constant.CURRENT_LONGITUDE, 0), (double) SharedPreferenceUtil.getFloat(mContext, Constant.CURRENT_LATITUDE, 0), "我的位置", null, coType);
-                try{
+                try {
                     eNode = new BNRoutePlanNode(mOrderBeanList.get(position).getEstate().getX(), mOrderBeanList.get(position).getEstate().getY(), mOrderBeanList.get(position).getEstate().getName(), null, coType);
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                     ToastUtil.showToast(this, e.getMessage());
                 }

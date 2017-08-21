@@ -28,14 +28,34 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         >
-
-        <com.ericliu.asyncexpandablelist.async.AsyncExpandableListView
-            android:id="@+id/lv_reserve_list"
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-        </com.ericliu.asyncexpandablelist.async.AsyncExpandableListView>
+
+            <ViewStub
+                android:id="@+id/viewstub_reserve_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:inflatedId="@+id/iv_VsContent"
+                android:layout="@layout/layout_reserve_nonetwork">
+
+            </ViewStub>
+
+            <com.ericliu.asyncexpandablelist.async.AsyncExpandableListView
+                android:id="@+id/lv_reserve_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+            </com.ericliu.asyncexpandablelist.async.AsyncExpandableListView>
+
+        </RelativeLayout>
+
+
+
+
 
     </android.support.v4.widget.SwipeRefreshLayout>
+
+
 
 
 
