@@ -167,7 +167,7 @@ public class ParkFragment extends Fragment {
     private static final SimpleDateFormat END_DATE_FORMATE = new SimpleDateFormat("HH:mm");
 
     private List<ParkingEmptyResponse.DataBean.EstateBean> mEstateBeanList = new ArrayList<>();
-    private List<ParkingEmptyResponse.DataBean.EstateBean.ParkingBean> mParkingBeanList = new ArrayList<>();
+    private List<ParkingEmptyResponse.DataBean.EstateBean.ParkingListBean> mParkingBeanList = new ArrayList<>();
 
     //private ParkingSQLHelper mParkingSQLHelper;
     //private SQLiteDatabase mParkingReadDB;
@@ -465,8 +465,8 @@ public class ParkFragment extends Fragment {
         }
         for (int i = 0; i < mEstateBeanList.size(); i++) {
             boolean hasShare = false;
-            for (int j = 0; j < mEstateBeanList.get(i).getParking().size(); j++) {
-                if (mEstateBeanList.get(i).getParking().get(j).getShare().size() != 0) {
+            for (int j = 0; j < mEstateBeanList.get(i).getParkingList().size(); j++) {
+                if (mEstateBeanList.get(i).getParkingList().get(j).getShareList().size() != 0) {
                     hasShare = true;
                     break;
                 }
@@ -481,8 +481,8 @@ public class ParkFragment extends Fragment {
                 if (mMapStateParkingNum) {
                     iv_marker.setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_marker_numbers));
                     int shareNum = 0;
-                    for (int j = 0; j<mEstateBeanList.get(i).getParking().size(); j++){
-                        shareNum += mEstateBeanList.get(i).getParking().get(j).getShare().size();
+                    for (int j = 0; j<mEstateBeanList.get(i).getParkingList().size(); j++){
+                        shareNum += mEstateBeanList.get(i).getParkingList().get(j).getShareList().size();
                     }
                     tv_marker.setText(String.valueOf(shareNum));
                 } else {
@@ -650,8 +650,8 @@ public class ParkFragment extends Fragment {
     static class startTimeComparator implements Comparator {
         @Override
         public int compare(Object o, Object t1) {
-            ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean shareBean1 = (ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean) o;
-            ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean shareBean2 = (ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean) t1;
+            ParkingResponse.DataBean.EstateBean.ParkingListBean.ShareListBean shareBean1 = (ParkingResponse.DataBean.EstateBean.ParkingListBean.ShareListBean) o;
+            ParkingResponse.DataBean.EstateBean.ParkingListBean.ShareListBean shareBean2 = (ParkingResponse.DataBean.EstateBean.ParkingListBean.ShareListBean) t1;
             if (shareBean1.getStartTime() != shareBean2.getStartTime()) {
                 return Long.valueOf(shareBean1.getStartTime()).compareTo(shareBean2.getStartTime());
             } else {

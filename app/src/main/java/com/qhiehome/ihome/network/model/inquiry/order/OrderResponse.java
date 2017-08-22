@@ -11,7 +11,7 @@ import java.util.List;
 public class OrderResponse extends Response{
 
     /**
-     * data : {"order":[{"id":123456789,"parking":{"id":123456789,"name":"xxxxxx"},"estate":{"id":123456789,"name":"xxxxxx","x":12.345678,"y":87.654321},"startTime":1499826992574,"endTime":1499826992574,"cancelTime":1499826992574,"enterTime":1499826992574,"leaveTime":1499826992574,"paymentTime":1499826992574,"closeTime":1499826992574,"payFee":100,"ownerFee":80,"estateFee":10,"platformFee":10,"state":31}]}
+     * data : {"orderList":[{"id":123456789,"parking":{"id":123456789,"name":"xxxxxx"},"estate":{"id":123456789,"name":"xxxxxx","x":12.345678,"y":87.654321},"startTime":1499826992574,"endTime":1499826992574,"cancelTime":1499826992574,"createTime":1499826992574,"enterTime":1499826992574,"leaveTime":1499826992574,"paymentTime":1499826992574,"closeTime":1499826992574,"payFee":100,"ownerFee":80,"estateFee":10,"platformFee":10,"state":31}]}
      */
 
     private DataBean data;
@@ -25,17 +25,17 @@ public class OrderResponse extends Response{
     }
 
     public static class DataBean {
-        private List<OrderBean> order;
+        private List<OrderListBean> orderList;
 
-        public List<OrderBean> getOrder() {
-            return order;
+        public List<OrderListBean> getOrderList() {
+            return orderList;
         }
 
-        public void setOrder(List<OrderBean> order) {
-            this.order = order;
+        public void setOrderList(List<OrderListBean> orderList) {
+            this.orderList = orderList;
         }
 
-        public static class OrderBean {
+        public static class OrderListBean {
             /**
              * id : 123456789
              * parking : {"id":123456789,"name":"xxxxxx"}
@@ -43,6 +43,7 @@ public class OrderResponse extends Response{
              * startTime : 1499826992574
              * endTime : 1499826992574
              * cancelTime : 1499826992574
+             * createTime : 1499826992574
              * enterTime : 1499826992574
              * leaveTime : 1499826992574
              * paymentTime : 1499826992574
@@ -60,6 +61,7 @@ public class OrderResponse extends Response{
             private long startTime;
             private long endTime;
             private long cancelTime;
+            private long createTime;
             private long enterTime;
             private long leaveTime;
             private long paymentTime;
@@ -116,6 +118,14 @@ public class OrderResponse extends Response{
 
             public void setCancelTime(long cancelTime) {
                 this.cancelTime = cancelTime;
+            }
+
+            public long getCreateTime() {
+                return createTime;
+            }
+
+            public void setCreateTime(long createTime) {
+                this.createTime = createTime;
             }
 
             public long getEnterTime() {

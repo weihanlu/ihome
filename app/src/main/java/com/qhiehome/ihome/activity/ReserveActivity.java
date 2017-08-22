@@ -92,7 +92,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
     private ConnectLockReceiver mReceiver;
 
     private Context mContext;
-    private List<OrderResponse.DataBean.OrderBean> mOrderBeanList = new ArrayList<>();
+    private List<OrderResponse.DataBean.OrderListBean> mOrderBeanList = new ArrayList<>();
     private CollectionView.Inventory<String, Bitmap> mInventory;
     private TextView mTvCountDown;
     private MyCountDownTimer mCountDownTimer;
@@ -648,7 +648,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
             @Override
             public void onResponse(@NonNull Call<OrderResponse> call, @NonNull Response<OrderResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                    mOrderBeanList = response.body().getData().getOrder();
+                    mOrderBeanList = response.body().getData().getOrderList();
 //                    if (mReserveAdapter != null) {
 //                        mReserveAdapter.notifyDataSetChanged();
 //                    }
@@ -792,6 +792,15 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                     }).build();
         }
         mProgressDialog.show();
+
+        if (downLock && true){  //true->降车位锁消息发送成功
+            SharedPreferenceUtil.setLong(mContext, Constant.PARKING_START_TIME, System.currentTimeMillis());
+            SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, ORDER_STATE_PARKED);
+        }
+        if (!downLock && true){
+            SharedPreferenceUtil.setLong(mContext, Constant.PARKING_END_TIME, System.currentTimeMillis());
+            SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, ORDER_STATE_NOT_PAID);
+        }
     }
 
 

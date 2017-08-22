@@ -14,7 +14,7 @@ import java.util.List;
 public class ParkingEmptyResponse extends Response {
 
     /**
-     * data : {"estate":[{"id":123456789,"name":"xxxxxx","x":12.345678,"y":87.654321,"unitPrice":10,"guaranteeFee":10,"parking":[{"id":123456789,"name":"xxxxxx","share":[{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]}]}]}
+     * data : {"estate":[{"id":123456789,"name":"xxxxxx","x":12.345678,"y":87.654321,"unitPrice":10,"guaranteeFee":10,"parkingList":[{"id":123456789,"name":"xxxxxx","shareList":[{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]}]}]}
      */
 
     private DataBean data;
@@ -46,7 +46,7 @@ public class ParkingEmptyResponse extends Response {
              * y : 87.654321
              * unitPrice : 10
              * guaranteeFee : 10
-             * parking : [{"id":123456789,"name":"xxxxxx","share":[{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]}]
+             * parkingList : [{"id":123456789,"name":"xxxxxx","shareList":[{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]}]
              */
 
             private int id;
@@ -55,7 +55,7 @@ public class ParkingEmptyResponse extends Response {
             private double y;
             private int unitPrice;
             private int guaranteeFee;
-            private List<ParkingBean> parking;
+            private List<ParkingListBean> parkingList;
 
             public int getId() {
                 return id;
@@ -105,24 +105,24 @@ public class ParkingEmptyResponse extends Response {
                 this.guaranteeFee = guaranteeFee;
             }
 
-            public List<ParkingBean> getParking() {
-                return parking;
+            public List<ParkingListBean> getParkingList() {
+                return parkingList;
             }
 
-            public void setParking(List<ParkingBean> parking) {
-                this.parking = parking;
+            public void setParkingList(List<ParkingListBean> parkingList) {
+                this.parkingList = parkingList;
             }
 
-            public static class ParkingBean implements Serializable {
+            public static class ParkingListBean implements Serializable {
                 /**
                  * id : 123456789
                  * name : xxxxxx
-                 * share : [{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]
+                 * shareList : [{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]
                  */
 
                 private int id;
                 private String name;
-                private List<ShareBean> share;
+                private List<ShareListBean> shareList;
 
                 public int getId() {
                     return id;
@@ -140,15 +140,15 @@ public class ParkingEmptyResponse extends Response {
                     this.name = name;
                 }
 
-                public List<ShareBean> getShare() {
-                    return share;
+                public List<ShareListBean> getShareList() {
+                    return shareList;
                 }
 
-                public void setShare(List<ShareBean> share) {
-                    this.share = share;
+                public void setShareList(List<ShareListBean> shareList) {
+                    this.shareList = shareList;
                 }
 
-                public static class ShareBean implements Serializable, Comparable<ShareBean> {
+                public static class ShareListBean implements Serializable, Comparable<ShareListBean> {
                     /**
                      * id : 123456789
                      * startTime : 1499826000000
@@ -184,7 +184,7 @@ public class ParkingEmptyResponse extends Response {
                     }
 
                     @Override
-                    public int compareTo(@NonNull ShareBean o) {
+                    public int compareTo(@NonNull ShareListBean o) {
                         long thisStartTime = this.getStartTime();
                         long otherStartTime = o.getStartTime();
                         if (thisStartTime < otherStartTime) {

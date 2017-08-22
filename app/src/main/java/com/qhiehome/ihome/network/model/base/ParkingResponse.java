@@ -1,20 +1,16 @@
 package com.qhiehome.ihome.network.model.base;
 
-import android.support.annotation.NonNull;
-
 import java.io.Serializable;
-import java.util.Comparator;
 import java.util.List;
 
 /**
  * Created by YueMa on 2017/7/21.
  */
 
-public class ParkingResponse extends Response implements Serializable{
-
+public class ParkingResponse extends Response {
 
     /**
-     * data : {"estate":[{"id":123456789,"name":"xxxxxx","x":12.345678,"y":87.654321,"unitPrice":10,"guaranteeFee":10,"parking":[{"id":123456789,"name":"xxxxxx","gatewayId":"xxxxxx","lockMac":"xxxxxx","share":[{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]}]}]}
+     * data : {"estate":[{"id":123456789,"name":"xxxxxx","x":12.345678,"y":87.654321,"unitPrice":10,"guaranteeFee":10,"parkingList":[{"id":123456789,"name":"xxxxxx","gatewayId":"xxxxxx","lockMac":"xxxxxx","shareList":[{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]}]}]}
      */
 
     private DataBean data;
@@ -38,7 +34,7 @@ public class ParkingResponse extends Response implements Serializable{
             this.estate = estate;
         }
 
-        public static class EstateBean implements Serializable{
+        public static class EstateBean {
             /**
              * id : 123456789
              * name : xxxxxx
@@ -46,7 +42,7 @@ public class ParkingResponse extends Response implements Serializable{
              * y : 87.654321
              * unitPrice : 10
              * guaranteeFee : 10
-             * parking : [{"id":123456789,"name":"xxxxxx","gatewayId":"xxxxxx","lockMac":"xxxxxx","share":[{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]}]
+             * parkingList : [{"id":123456789,"name":"xxxxxx","gatewayId":"xxxxxx","lockMac":"xxxxxx","shareList":[{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]}]
              */
 
             private int id;
@@ -55,7 +51,7 @@ public class ParkingResponse extends Response implements Serializable{
             private double y;
             private int unitPrice;
             private int guaranteeFee;
-            private List<ParkingBean> parking;
+            private List<ParkingListBean> parkingList;
 
             public int getId() {
                 return id;
@@ -105,28 +101,28 @@ public class ParkingResponse extends Response implements Serializable{
                 this.guaranteeFee = guaranteeFee;
             }
 
-            public List<ParkingBean> getParking() {
-                return parking;
+            public List<ParkingListBean> getParkingList() {
+                return parkingList;
             }
 
-            public void setParking(List<ParkingBean> parking) {
-                this.parking = parking;
+            public void setParkingList(List<ParkingListBean> parkingList) {
+                this.parkingList = parkingList;
             }
 
-            public static class ParkingBean implements Serializable{
+            public static class ParkingListBean {
                 /**
                  * id : 123456789
                  * name : xxxxxx
                  * gatewayId : xxxxxx
                  * lockMac : xxxxxx
-                 * share : [{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]
+                 * shareList : [{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]
                  */
 
                 private int id;
                 private String name;
                 private String gatewayId;
                 private String lockMac;
-                private List<ShareBean> share;
+                private List<ShareListBean> shareList;
 
                 public int getId() {
                     return id;
@@ -160,15 +156,15 @@ public class ParkingResponse extends Response implements Serializable{
                     this.lockMac = lockMac;
                 }
 
-                public List<ShareBean> getShare() {
-                    return share;
+                public List<ShareListBean> getShareList() {
+                    return shareList;
                 }
 
-                public void setShare(List<ShareBean> share) {
-                    this.share = share;
+                public void setShareList(List<ShareListBean> shareList) {
+                    this.shareList = shareList;
                 }
 
-                public static class ShareBean implements Serializable, Comparable<ShareBean>{
+                public static class ShareListBean {
                     /**
                      * id : 123456789
                      * startTime : 1499826000000
@@ -201,19 +197,6 @@ public class ParkingResponse extends Response implements Serializable{
 
                     public void setEndTime(long endTime) {
                         this.endTime = endTime;
-                    }
-
-                    @Override
-                    public int compareTo(@NonNull ShareBean o) {
-                        long thisStartTime = this.getStartTime();
-                        long otherStartTime = o.getStartTime();
-                        if (thisStartTime < otherStartTime) {
-                            return -1;
-                        } else if (thisStartTime > otherStartTime) {
-                            return 1;
-                        } else {
-                            return 0;
-                        }
                     }
                 }
             }
