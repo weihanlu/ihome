@@ -89,7 +89,7 @@ public class ReserveListActivity extends BaseActivity {
     private Toolbar mTbReserve;
     private SwipeRefreshLayout mSrlReserve;
 
-    private List<OrderResponse.DataBean.OrderBean> mOrderBeanList = new ArrayList<>();
+    private List<OrderResponse.DataBean.OrderListBean> mOrderBeanList = new ArrayList<>();
     private static SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm", Locale.CHINA);
 
     private static final int ORDER_STATE_RESERVED = 31;   //（显示预计金额）取消预约+导航+小区地图+升降车位锁
@@ -328,7 +328,7 @@ public class ReserveListActivity extends BaseActivity {
             @Override
             public void onResponse(@NonNull Call<OrderResponse> call, @NonNull Response<OrderResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
-                    mOrderBeanList = response.body().getData().getOrder();
+                    mOrderBeanList = response.body().getData().getOrderList();
                     if (mReserveAdapter != null) {
                         mReserveAdapter.notifyDataSetChanged();
                     }

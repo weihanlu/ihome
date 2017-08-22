@@ -145,12 +145,12 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                     // first step get the parking ids, then get share info
                     List<ParkingResponse.DataBean.EstateBean> estateList = response.body().getData().getEstate();
                     for (ParkingResponse.DataBean.EstateBean estateBean: estateList) {
-                        List<ParkingResponse.DataBean.EstateBean.ParkingBean> parkingList = estateBean.getParking();
-                        for (ParkingResponse.DataBean.EstateBean.ParkingBean parkingBean: parkingList) {
+                        List<ParkingResponse.DataBean.EstateBean.ParkingListBean> parkingList = estateBean.getParkingList();
+                        for (ParkingResponse.DataBean.EstateBean.ParkingListBean parkingBean: parkingList) {
                             mParkingIdList.add(parkingBean.getId() + "");
                             mSelected.add(false);
-                            List<ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean> shareList = parkingBean.getShare();
-                            for (ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean shareBean: shareList) {
+                            List<ParkingResponse.DataBean.EstateBean.ParkingListBean.ShareListBean> shareList = parkingBean.getShareList();
+                            for (ParkingResponse.DataBean.EstateBean.ParkingListBean.ShareListBean shareBean: shareList) {
                                 SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.CHINA);
                                 PublishBean publishBean = new PublishBean(parkingBean.getId() + "",
                                         timeFormat.format(TimeUtil.getInstance().millis2Date(shareBean.getStartTime())),

@@ -385,10 +385,10 @@ public class UserInfoActivity extends BaseActivity {
         UserLockBean userLockBean;
         boolean isRented = false;
         for (ParkingResponse.DataBean.EstateBean estate : estateList) {
-            for (ParkingResponse.DataBean.EstateBean.ParkingBean parkingBean : estate.getParking()) {
-                List<ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean> share = parkingBean.getShare();
+            for (ParkingResponse.DataBean.EstateBean.ParkingListBean parkingBean : estate.getParkingList()) {
+                List<ParkingResponse.DataBean.EstateBean.ParkingListBean.ShareListBean> share = parkingBean.getShareList();
                 for (int i = 0; i < share.size(); i++) {
-                    ParkingResponse.DataBean.EstateBean.ParkingBean.ShareBean shareBean = share.get(i);
+                    ParkingResponse.DataBean.EstateBean.ParkingListBean.ShareListBean shareBean = share.get(i);
                     long startTime = shareBean.getStartTime();
                     long endTime = shareBean.getEndTime();
                     if (mCurrentTime >= startTime && mCurrentTime <= endTime) {

@@ -51,7 +51,7 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
 
     private OrderAdapter mAdapter;
     private Handler mHandler;
-    private List<OrderResponse.DataBean.OrderBean> mData = new ArrayList<>();
+    private List<OrderResponse.DataBean.OrderListBean> mData = new ArrayList<>();
     //private List<Map<String, Objects>> mData = new ArrayList<>();
     private static final int REFRESH_COMPLETE = 1;
     private boolean mFirstInquiry = true;
@@ -109,7 +109,7 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
             @Override
             public void onResponse(Call<OrderResponse> call, Response<OrderResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                    mData = response.body().getData().getOrder();
+                    mData = response.body().getData().getOrderList();
                     if (mFirstInquiry){
                         mAdapter.notifyDataSetChanged();
                         mSrlOrderList.setRefreshing(false);
@@ -177,7 +177,7 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
 //            }
 //            fee += mData.get(position).get("fee");
 //            holder.tv_fee.setText(fee);
-            OrderResponse.DataBean.OrderBean order = mData.get(position);
+            OrderResponse.DataBean.OrderListBean order = mData.get(position);
             holder.tv_estate.setText(String.valueOf(order.getId()));//订单号
             Date start = TimeUtil.getInstance().millis2Date(order.getEnterTime());
             Date end = TimeUtil.getInstance().millis2Date(order.getLeaveTime());

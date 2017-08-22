@@ -73,7 +73,7 @@ public class ParkingTimelineActivity extends AppCompatActivity {
     private ArrayList<Integer> mSectionPositions;
     private List<AlphabetItem> mAlphabetItems;
     private ParkingEmptyResponse.DataBean.EstateBean mEstateBean;
-    private List<ParkingEmptyResponse.DataBean.EstateBean.ParkingBean.ShareBean> mShareBeanList = new ArrayList<>();
+    private List<ParkingEmptyResponse.DataBean.EstateBean.ParkingListBean.ShareListBean> mShareBeanList = new ArrayList<>();
     private List<Boolean> mSelectedList = new ArrayList<>();
     private int mSelectedNum = 0;
     private float mGruaranteeFee = 0;
@@ -204,10 +204,10 @@ public class ParkingTimelineActivity extends AppCompatActivity {
     }
 
     private void initData() {
-        for (int i = 0; i < mEstateBean.getParking().size(); i++) {
-            if (mEstateBean.getParking().get(i).getShare().size() != 0) {
-                for (int j = 0; j < mEstateBean.getParking().get(i).getShare().size(); j++) {
-                    mShareBeanList.add(mEstateBean.getParking().get(i).getShare().get(j));
+        for (int i = 0; i < mEstateBean.getParkingList().size(); i++) {
+            if (mEstateBean.getParkingList().get(i).getShareList().size() != 0) {
+                for (int j = 0; j < mEstateBean.getParkingList().get(i).getShareList().size(); j++) {
+                    mShareBeanList.add(mEstateBean.getParkingList().get(i).getShareList().get(j));
                     mSelectedList.add(false);
                 }
             }
