@@ -796,10 +796,12 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
         if (downLock && true){  //true->降车位锁消息发送成功
             SharedPreferenceUtil.setLong(mContext, Constant.PARKING_START_TIME, System.currentTimeMillis());
             SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, ORDER_STATE_PARKED);
+            updateData();
         }
         if (!downLock && true){
             SharedPreferenceUtil.setLong(mContext, Constant.PARKING_END_TIME, System.currentTimeMillis());
             SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, ORDER_STATE_NOT_PAID);
+            updateData();
         }
     }
 
