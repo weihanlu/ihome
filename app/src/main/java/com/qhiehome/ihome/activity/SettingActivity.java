@@ -123,9 +123,18 @@ public class SettingActivity extends BaseActivity {
                                 .show();
                         break;
                     case 4:
-                        ActivityManager.finishAll();
-                        SharedPreferenceUtil.setString(mContext, Constant.PHONE_KEY, "");
-                        LoginActivity.start(mContext);
+                        new MaterialDialog.Builder(mContext)
+                                .content("确定退出当前账号吗？")
+                                .positiveText("退出")
+                                .negativeText("取消")
+                                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                    @Override
+                                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                        ActivityManager.finishAll();
+                                        SharedPreferenceUtil.setString(mContext, Constant.PHONE_KEY, "");
+                                        LoginActivity.start(mContext);
+                                    }
+                                }).show();
                         break;
                     default:
                         break;

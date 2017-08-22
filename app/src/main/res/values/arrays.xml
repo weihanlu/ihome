@@ -13,7 +13,7 @@
         <item>Advice</item>
         <item>Service Contract</item>
         <item>About</item>
-        <item>Quit</item>
+        <item>Switch Account</item>
     </string-array>
 
     <string-array name="cities">
