@@ -9,7 +9,7 @@ import com.qhiehome.ihome.network.model.base.Response;
 public class PayGuaranteeResponse extends Response {
 
     /**
-     * data : {"estate":{"id":1,"name":"北京邮电大学科研楼停车场","x":116.364695,"y":39.967366,"unitPrice":10,"guaranteeFee":10,"singleParking":{"id":1,"name":"CrAM_095D28","gatewayId":"c8dbf72c4e241fb0","lockMac":"00158D0001095D28","password":"123456","singleShare":{"id":271,"startTime":1503300600000,"endTime":1503302400000}}}}
+     * data : {"estate":{"id":123456789,"name":"xxxxxx","x":12.345678,"y":87.654321,"unitPrice":10,"guaranteeFee":10,"parking":{"id":123456789,"name":"xxxxxx","gatewayId":"xxxxxx","lockMac":"xxxxxx","password":"xxxxxx","share":{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}}}}
      */
 
     private DataBean data;
@@ -24,7 +24,7 @@ public class PayGuaranteeResponse extends Response {
 
     public static class DataBean {
         /**
-         * estate : {"id":1,"name":"北京邮电大学科研楼停车场","x":116.364695,"y":39.967366,"unitPrice":10,"guaranteeFee":10,"singleParking":{"id":1,"name":"CrAM_095D28","gatewayId":"c8dbf72c4e241fb0","lockMac":"00158D0001095D28","password":"123456","singleShare":{"id":271,"startTime":1503300600000,"endTime":1503302400000}}}
+         * estate : {"id":123456789,"name":"xxxxxx","x":12.345678,"y":87.654321,"unitPrice":10,"guaranteeFee":10,"parking":{"id":123456789,"name":"xxxxxx","gatewayId":"xxxxxx","lockMac":"xxxxxx","password":"xxxxxx","share":{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}}}
          */
 
         private EstateBean estate;
@@ -39,22 +39,22 @@ public class PayGuaranteeResponse extends Response {
 
         public static class EstateBean {
             /**
-             * id : 1
-             * name : 北京邮电大学科研楼停车场
-             * x : 116.364695
-             * y : 39.967366
-             * unitPrice : 10.0
-             * guaranteeFee : 10.0
-             * singleParking : {"id":1,"name":"CrAM_095D28","gatewayId":"c8dbf72c4e241fb0","lockMac":"00158D0001095D28","password":"123456","singleShare":{"id":271,"startTime":1503300600000,"endTime":1503302400000}}
+             * id : 123456789
+             * name : xxxxxx
+             * x : 12.345678
+             * y : 87.654321
+             * unitPrice : 10
+             * guaranteeFee : 10
+             * parking : {"id":123456789,"name":"xxxxxx","gatewayId":"xxxxxx","lockMac":"xxxxxx","password":"xxxxxx","share":{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}}
              */
 
             private int id;
             private String name;
             private double x;
             private double y;
-            private double unitPrice;
-            private double guaranteeFee;
-            private SingleParkingBean singleParking;
+            private int unitPrice;
+            private int guaranteeFee;
+            private ParkingBean parking;
 
             public int getId() {
                 return id;
@@ -88,38 +88,38 @@ public class PayGuaranteeResponse extends Response {
                 this.y = y;
             }
 
-            public double getUnitPrice() {
+            public int getUnitPrice() {
                 return unitPrice;
             }
 
-            public void setUnitPrice(double unitPrice) {
+            public void setUnitPrice(int unitPrice) {
                 this.unitPrice = unitPrice;
             }
 
-            public double getGuaranteeFee() {
+            public int getGuaranteeFee() {
                 return guaranteeFee;
             }
 
-            public void setGuaranteeFee(double guaranteeFee) {
+            public void setGuaranteeFee(int guaranteeFee) {
                 this.guaranteeFee = guaranteeFee;
             }
 
-            public SingleParkingBean getSingleParking() {
-                return singleParking;
+            public ParkingBean getParking() {
+                return parking;
             }
 
-            public void setSingleParking(SingleParkingBean singleParking) {
-                this.singleParking = singleParking;
+            public void setParking(ParkingBean parking) {
+                this.parking = parking;
             }
 
-            public static class SingleParkingBean {
+            public static class ParkingBean {
                 /**
-                 * id : 1
-                 * name : CrAM_095D28
-                 * gatewayId : c8dbf72c4e241fb0
-                 * lockMac : 00158D0001095D28
-                 * password : 123456
-                 * singleShare : {"id":271,"startTime":1503300600000,"endTime":1503302400000}
+                 * id : 123456789
+                 * name : xxxxxx
+                 * gatewayId : xxxxxx
+                 * lockMac : xxxxxx
+                 * password : xxxxxx
+                 * share : {"id":123456789,"startTime":1499826000000,"endTime":1499828000000}
                  */
 
                 private int id;
@@ -127,7 +127,7 @@ public class PayGuaranteeResponse extends Response {
                 private String gatewayId;
                 private String lockMac;
                 private String password;
-                private SingleShareBean singleShare;
+                private ShareBean share;
 
                 public int getId() {
                     return id;
@@ -169,19 +169,19 @@ public class PayGuaranteeResponse extends Response {
                     this.password = password;
                 }
 
-                public SingleShareBean getSingleShare() {
-                    return singleShare;
+                public ShareBean getShare() {
+                    return share;
                 }
 
-                public void setSingleShare(SingleShareBean singleShare) {
-                    this.singleShare = singleShare;
+                public void setShare(ShareBean share) {
+                    this.share = share;
                 }
 
-                public static class SingleShareBean {
+                public static class ShareBean {
                     /**
-                     * id : 271
-                     * startTime : 1503300600000
-                     * endTime : 1503302400000
+                     * id : 123456789
+                     * startTime : 1499826000000
+                     * endTime : 1499828000000
                      */
 
                     private int id;
