@@ -71,4 +71,5 @@ public class Constant {
 
     public static final String APK_UPDATE_URL_PATTERN = "http://www.pgyer.com/apiv1/app/install?aKey=%s&_api_key=61bb58e6d87d6d2d6b84c7a44c237a7e&password=ihome";
 
+
 }

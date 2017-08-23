@@ -28,6 +28,7 @@ import com.bigkoo.pickerview.OptionsPickerView;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.base.ParkingResponse;
+import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyResponse;
 import com.qhiehome.ihome.network.model.park.reserve.ReserveRequest;
 import com.qhiehome.ihome.network.model.park.reserve.ReserveResponse;
 import com.qhiehome.ihome.network.service.park.ReserveService;
@@ -41,6 +42,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import butterknife.BindView;
@@ -52,7 +54,7 @@ import retrofit2.Response;
 
 public class ParkingListActivity extends BaseActivity {
 
-    @BindView(R.id.tv_parking_guarfee)
+    @BindView(R.id.tv_parking_guaranteeFee_num)
     TextView mTvParkingGuarfee;
     @BindView(R.id.btn_parking_reserve)
     Button mBtnParkingReserve;
@@ -68,10 +70,10 @@ public class ParkingListActivity extends BaseActivity {
     RecyclerView mRvParking;
     private ParkingListAdapter mAdapter;
     private List<Map<String, String>> parking_data = new ArrayList<>();
-    private ParkingResponse.DataBean.EstateBean mEstateBean;
+    private ParkingEmptyResponse.DataBean.EstateBean mEstateBean;
     private Context mContext;
 
-    private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm");
+    private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm", Locale.CHINA);
     private static final String INTEGER_2 = "%02d";
     private static final String DECIMAL_2 = "%.2f";
     private static final long QUARTER_TIME = 15 * 60 * 1000;
@@ -82,6 +84,7 @@ public class ParkingListActivity extends BaseActivity {
     private static final int LIST_ITEM_COUNT = 4;
     private float mPrice = 0;
     private float mUnitPrice = 0;
+    private float mGuaranteeFee = 0;
     private String mStartTime;
     private String mEndTime;
     private int mStartHourSelection = 0;
@@ -97,6 +100,16 @@ public class ParkingListActivity extends BaseActivity {
     private ArrayList<ArrayList<String>> mEndMinites = new ArrayList<>();
     private ArrayList<String> mEndHours = new ArrayList<>();
 
+    private ArrayList<String> mStartTimes = new ArrayList<>();
+    private ArrayList<ArrayList<String>> mEndTimes = new ArrayList<>();
+    private ArrayList<Long> mStartTimeMillisList = new ArrayList<>();
+    private ArrayList<ArrayList<Long>> mEndTimeMillisList = new ArrayList<>();
+
+
+    //configuration parameter
+    public int MIN_SHARING_PERIOD = 30;
+    public int MIN_CHARGING_PERIOD = 15;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,13 +119,15 @@ public class ParkingListActivity extends BaseActivity {
         mContext = this;
         Intent intent = this.getIntent();
         Bundle bundle = intent.getExtras();
-        mEstateBean = (ParkingResponse.DataBean.EstateBean) bundle.getSerializable("estate");
+        mEstateBean = (ParkingEmptyResponse.DataBean.EstateBean) bundle.getSerializable("estate");
         initToolbar();
-        initData();
+//        initData();
+        initTimePickerData();
         initRecyclerView();
         mUnitPrice = (float) mEstateBean.getUnitPrice();
-        mTvParkingGuarfee.setText("担保费：￥" + String.format(DECIMAL_2, (float) mEstateBean.getGuaranteeFee()));
-        mPrice = mUnitPrice/4;
+        mGuaranteeFee = (float) mEstateBean.getGuaranteeFee();
+        mTvParkingGuarfee.setText(String.format(Locale.CHINA, DECIMAL_2, mGuaranteeFee));
+        mPrice = mUnitPrice / 60 * MIN_SHARING_PERIOD;
     }
 
     private void initToolbar() {
@@ -130,6 +145,48 @@ public class ParkingListActivity extends BaseActivity {
                 finish();
             }
         });
+    }
+
+    private void initTimePickerData(){
+        Calendar startCalendar = Calendar.getInstance();
+        int currentMin = startCalendar.get(Calendar.MINUTE);
+        int period = (int) Math.ceil(currentMin/MIN_CHARGING_PERIOD);
+        startCalendar.set(Calendar.MINUTE, period * MIN_CHARGING_PERIOD);
+        startCalendar.add(Calendar.MINUTE, MIN_CHARGING_PERIOD);
+        startCalendar.set(Calendar.SECOND, 0);
+        startCalendar.set(Calendar.MILLISECOND, 0);
+
+        Calendar finalStartCalendar = Calendar.getInstance();
+        finalStartCalendar.set(Calendar.HOUR_OF_DAY, 24);
+        finalStartCalendar.set(Calendar.MINUTE, 0);
+        finalStartCalendar.set(Calendar.SECOND, 0);
+        finalStartCalendar.set(Calendar.MILLISECOND, 0);
+        finalStartCalendar.add(Calendar.MINUTE, -MIN_SHARING_PERIOD);
+
+        long startTime = startCalendar.getTimeInMillis();
+        long startFinalTime = finalStartCalendar.getTimeInMillis();
+        long endTime = startTime + MIN_SHARING_PERIOD * 60 * 1000;
+        long endFinalTime = startFinalTime + MIN_SHARING_PERIOD * 60 * 1000;
+        mStartTime = TIME_FORMAT.format(startTime);
+        mEndTime = TIME_FORMAT.format(endTime);
+
+        while (startTime <= startFinalTime){
+            mStartTimes.add(TIME_FORMAT.format(startTime));
+            mStartTimeMillisList.add(startTime);
+            endTime = startTime + MIN_SHARING_PERIOD * 60 * 1000;
+            ArrayList<String> tmpList = new ArrayList<>();
+            ArrayList<Long> tmpMillisList = new ArrayList<>();
+            while (endTime <= endFinalTime){
+                tmpList.add(TIME_FORMAT.format(endTime));
+                tmpMillisList.add(endTime);
+                endTime += MIN_CHARGING_PERIOD * 60 * 1000;
+            }
+            mEndTimes.add(tmpList);
+            mEndTimeMillisList.add(tmpMillisList);
+            startTime += MIN_CHARGING_PERIOD * 60 * 1000;
+        }
+
+
     }
 
 
@@ -228,23 +285,26 @@ public class ParkingListActivity extends BaseActivity {
                 @Override
                 public void onOptionsSelect(int options1, int options2, int options3, View v) {
                     //返回的分别是三个级别的选中位置
-                    mStartHourSelection = options1;
-                    mStartMinSelection = options2;
-                    mStartTime = mStartHours.get(options1) + ":" + mStartMinites.get(options1).get(options2);
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.set(Calendar.HOUR_OF_DAY, Integer.valueOf(mStartHours.get(options1)));
-                    calendar.set(Calendar.MINUTE, Integer.valueOf(mStartMinites.get(options1).get(options2)));
-                    calendar.set(Calendar.SECOND, 0);
-                    calendar.set(Calendar.MILLISECOND, 0);
-                    mStartTimeMillis = calendar.getTimeInMillis();
-                    initEndTimeDataSourse(Integer.valueOf(mStartHours.get(options1)), Integer.valueOf(mStartMinites.get(options1).get(options2)), mEndTimeMillis <= mStartTimeMillis);
-                    float mills = mEndTimeMillis - mStartTimeMillis;
-                    float hours = mills/1000/3600;
+//                    mStartHourSelection = options1;
+//                    mStartMinSelection = options2;
+//                    mStartTime = mStartHours.get(options1) + ":" + mStartMinites.get(options1).get(options2);
+//                    Calendar calendar = Calendar.getInstance();
+//                    calendar.set(Calendar.HOUR_OF_DAY, Integer.valueOf(mStartHours.get(options1)));
+//                    calendar.set(Calendar.MINUTE, Integer.valueOf(mStartMinites.get(options1).get(options2)));
+//                    calendar.set(Calendar.SECOND, 0);
+//                    calendar.set(Calendar.MILLISECOND, 0);
+//                    mStartTimeMillis = calendar.getTimeInMillis();
+//                    initEndTimeDataSourse(Integer.valueOf(mStartHours.get(options1)), Integer.valueOf(mStartMinites.get(options1).get(options2)), mEndTimeMillis <= mStartTimeMillis);
+//                    float mills = mEndTimeMillis - mStartTimeMillis;
+//                    float hours = mills/1000/3600;
+                    mStartTime = TIME_FORMAT.format(mStartTimeMillisList.get(options1));
+                    mEndTime = TIME_FORMAT.format(mEndTimeMillisList.get(options1).get(options2));
+                    float hours = (float)(mEndTimeMillisList.get(options1).get(options2) - mStartTimeMillisList.get(options1))/60/60/1000;
                     mPrice = hours * mUnitPrice;
                     mAdapter.notifyDataSetChanged();
                 }
             })
-                    .setTitleText("开始时间")
+                    .setTitleText("选择时间")
                     .setContentTextSize(20)//设置滚轮文字大小
                     .setDividerColor(Color.GREEN)//设置分割线的颜色
                     .setSelectOptions(mStartHourSelection, mStartMinSelection)//默认选中项
@@ -259,7 +319,7 @@ public class ParkingListActivity extends BaseActivity {
                     .setBackgroundId(0x66000000) //设置外部遮罩颜色
                     .build();
             //pvOptions.setSelectOptions(1,1);
-            pvOptions.setPicker(mStartHours, mStartMinites);//二级选择器
+            pvOptions.setPicker(mStartTimes, mEndTimes);//二级选择器
             pvOptions.show();
         }
         if (position == 2) {
@@ -267,22 +327,25 @@ public class ParkingListActivity extends BaseActivity {
                 @Override
                 public void onOptionsSelect(int options1, int options2, int options3, View v) {
                     //返回的分别是三个级别的选中位置
-                    mEndHourSelection = options1;
-                    mEndMinSelection = options2;
-                    mEndTime = mEndHours.get(options1) + ":" + mEndMinites.get(options1).get(options2);
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.set(Calendar.HOUR_OF_DAY, Integer.valueOf(mEndHours.get(options1)));
-                    calendar.set(Calendar.MINUTE, Integer.valueOf(mEndMinites.get(options1).get(options2)));
-                    calendar.set(Calendar.SECOND, 0);
-                    calendar.set(Calendar.MILLISECOND, 0);
-                    mEndTimeMillis = calendar.getTimeInMillis();
-                    float mills = mEndTimeMillis - mStartTimeMillis;
-                    float hours = mills/1000/3600;
+//                    mEndHourSelection = options1;
+//                    mEndMinSelection = options2;
+//                    mEndTime = mEndHours.get(options1) + ":" + mEndMinites.get(options1).get(options2);
+//                    Calendar calendar = Calendar.getInstance();
+//                    calendar.set(Calendar.HOUR_OF_DAY, Integer.valueOf(mEndHours.get(options1)));
+//                    calendar.set(Calendar.MINUTE, Integer.valueOf(mEndMinites.get(options1).get(options2)));
+//                    calendar.set(Calendar.SECOND, 0);
+//                    calendar.set(Calendar.MILLISECOND, 0);
+//                    mEndTimeMillis = calendar.getTimeInMillis();
+//                    float mills = mEndTimeMillis - mStartTimeMillis;
+//                    float hours = mills/1000/3600;
+                    mStartTime = TIME_FORMAT.format(mStartTimeMillisList.get(options1));
+                    mEndTime = TIME_FORMAT.format(mEndTimeMillisList.get(options1).get(options2));
+                    float hours = (float) (mEndTimeMillisList.get(options1).get(options2) - mStartTimeMillisList.get(options1))/60/60/1000;
                     mPrice = hours * mUnitPrice;
                     mAdapter.notifyDataSetChanged();
                 }
             })
-                    .setTitleText("结束时间")
+                    .setTitleText("选择时间")
                     .setContentTextSize(20)//设置滚轮文字大小
                     .setDividerColor(Color.GREEN)//设置分割线的颜色
                     .setSelectOptions(mEndHourSelection, mEndMinSelection)//默认选中项
@@ -297,7 +360,7 @@ public class ParkingListActivity extends BaseActivity {
                     .setBackgroundId(0x66000000) //设置外部遮罩颜色
                     .build();
             //pvOptions.setSelectOptions(1,1);
-            pvOptions.setPicker(mEndHours, mEndMinites);//二级选择器
+            pvOptions.setPicker(mStartTimes, mEndTimes);//二级选择器
             pvOptions.show();
         }
     }
@@ -346,7 +409,7 @@ public class ParkingListActivity extends BaseActivity {
                     ((ParkingHolderNoBtn) holder).tv_content.setText("￥"+ String.format(DECIMAL_2, (float) mEstateBean.getUnitPrice()) +"/小时");
                 }
                 if (position == LIST_TOTAL_FEE) {
-                    ((ParkingHolderNoBtn) holder).tv_title.setText("停车费");
+                    ((ParkingHolderNoBtn) holder).tv_title.setText("预计停车费");
                     ((ParkingHolderNoBtn) holder).tv_content.setText("￥" + String.format(DECIMAL_2, mPrice));
                 }
             } else if (holder instanceof ParkingHolder) {
@@ -416,7 +479,7 @@ public class ParkingListActivity extends BaseActivity {
                 @Override
                 public void onResponse(Call<ReserveResponse> call, Response<ReserveResponse> response) {
                     if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
-                        // TODO: 2017/8/3 预约成功，跳转支付界面
+                        // TODO: 2017/8/23 修改预约接口，增加错误选项，正确跳转支付担保费
                         Intent intent = new Intent(ParkingListActivity.this, PayActivity.class);
                         intent.putExtra("grauFee", mUnitPrice);
                         startActivity(intent);

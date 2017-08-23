@@ -63,7 +63,7 @@ dependencies {
     compile 'com.squareup.okhttp3:logging-interceptor:3.4.1'
     compile 'com.afollestad.material-dialogs:core:0.9.4.5'
     compile 'com.android.support:cardview-v7:25.3.1'
-    compile 'com.contrarywind:Android-PickerView:3.2.5'
+    compile 'com.contrarywind:Android-PickerView:3.2.6'
     compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2'
     compile 'com.github.arimorty:floatingsearchview:2.1.1'
     compile 'com.github.fodroid:XStatusBarHelper:v1.1'
