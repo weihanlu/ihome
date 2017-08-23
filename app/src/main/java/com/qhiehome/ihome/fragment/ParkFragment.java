@@ -54,6 +54,7 @@ import com.qhiehome.ihome.activity.CityActivity;
 import com.qhiehome.ihome.activity.MainActivity;
 import com.qhiehome.ihome.activity.MapSearchActivity;
 import com.qhiehome.ihome.activity.NaviGuideActivity;
+import com.qhiehome.ihome.activity.ParkingListActivity;
 import com.qhiehome.ihome.activity.ParkingTimelineActivity;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.baiduMap.BaiduMapResponse;
@@ -418,8 +419,8 @@ public class ParkFragment extends Fragment {
             @Override
             public boolean onMarkerClick(Marker marker1) {
                 mClickedMarker = marker1;
-                //Intent intent = new Intent(getActivity(), ParkingListActivity.class);
-                Intent intent = new Intent(getActivity(), ParkingTimelineActivity.class);
+                Intent intent = new Intent(getActivity(), ParkingListActivity.class);
+//                Intent intent = new Intent(getActivity(), ParkingTimelineActivity.class);
                 Bundle bundle = marker1.getExtraInfo();
                 intent.putExtras(bundle);
                 startActivity(intent);
