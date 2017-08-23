@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -52,9 +51,9 @@ import com.baidu.navisdk.adapter.BNaviSettingManager;
 import com.baidu.navisdk.adapter.BaiduNaviManager;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.activity.CityActivity;
+import com.qhiehome.ihome.activity.MainActivity;
 import com.qhiehome.ihome.activity.MapSearchActivity;
 import com.qhiehome.ihome.activity.NaviGuideActivity;
-import com.qhiehome.ihome.activity.ParkingListActivity;
 import com.qhiehome.ihome.activity.ParkingTimelineActivity;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.baiduMap.BaiduMapResponse;
@@ -69,15 +68,7 @@ import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -90,7 +81,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
-import okio.Utf8;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -219,7 +209,7 @@ public class ParkFragment extends Fragment {
     public void onResume() {
         mMapView.onResume();
         super.onResume();
-        if (mHasInit){
+        if (mHasInit) {
             mBtnMapRefresh.performClick();
         }
 
@@ -310,7 +300,7 @@ public class ParkFragment extends Fragment {
                     public void run() {
                         if (!isGetCurrentCity) {
                             mCity = bdLocation.getCity();
-                            mTvCurrentCity.setText("当前城市：" + mCity);
+                            mTvCurrentCity.setText(mCity);
                             isGetCurrentCity = true;
                         }
                     }
@@ -481,7 +471,7 @@ public class ParkFragment extends Fragment {
                 if (mMapStateParkingNum) {
                     iv_marker.setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_marker_numbers));
                     int shareNum = 0;
-                    for (int j = 0; j<mEstateBeanList.get(i).getParkingList().size(); j++){
+                    for (int j = 0; j < mEstateBeanList.get(i).getParkingList().size(); j++) {
                         shareNum += mEstateBeanList.get(i).getParkingList().get(j).getShareList().size();
                     }
                     tv_marker.setText(String.valueOf(shareNum));
@@ -598,9 +588,9 @@ public class ParkFragment extends Fragment {
                 mIsSearch = true;
                 updateMapState(searchPt);
             }
-            if (requestCode == REQUEST_CODE_CITY){
+            if (requestCode == REQUEST_CODE_CITY) {
                 mCity = data.getExtras().getString("city");
-                mTvCurrentCity.setText("当前城市：" + mCity);
+                mTvCurrentCity.setText(mCity);
                 String URLString;
                 String output = "json";
                 String key = "R6nE16pZMKymjr58SMBAPsU3wC8BD9RY";
@@ -609,7 +599,7 @@ public class ParkFragment extends Fragment {
 //                }catch (Exception e){
 //                    e.printStackTrace();
 //                }
-                if (!TextUtils.isEmpty(mCity)){
+                if (!TextUtils.isEmpty(mCity)) {
                     BaiduMapService baiduMapService = BaiduMapServiceGenerator.createService(BaiduMapService.class);
                     Map<String, String> option = new HashMap<String, String>();
                     option.put("address", mCity);
@@ -619,7 +609,7 @@ public class ParkFragment extends Fragment {
                     call.enqueue(new Callback<BaiduMapResponse>() {
                         @Override
                         public void onResponse(Call<BaiduMapResponse> call, Response<BaiduMapResponse> response) {
-                            if (response.body().getStatus().equals("OK")){
+                            if (response.body().getStatus().equals("OK")) {
                                 mMyPt = new LatLng(response.body().getResult().getLocation().getLat(), response.body().getResult().getLocation().getLng());
                                 MapStatus mMapStatus = new MapStatus.Builder()
                                         .target(mMyPt)
@@ -644,7 +634,10 @@ public class ParkFragment extends Fragment {
         }
     }
 
-
+    @OnClick(R.id.iv_open_drawer)
+    public void onOpenDrawer() {
+        ((MainActivity)getActivity()).openDrawer();
+    }
 
 
     static class startTimeComparator implements Comparator {

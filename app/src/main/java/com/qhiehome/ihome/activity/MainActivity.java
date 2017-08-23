@@ -8,28 +8,28 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Process;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
+import android.support.v4.widget.DrawerLayout;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.View;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
+import android.widget.Button;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.baidu.mapapi.SDKInitializer;
 import com.qhiehome.ihome.R;
-import com.qhiehome.ihome.fragment.MeFragment;
 import com.qhiehome.ihome.fragment.ParkFragment;
+import com.qhiehome.ihome.manager.ActivityManager;
 import com.qhiehome.ihome.network.model.update.CheckUpdateResponse;
 import com.qhiehome.ihome.network.service.update.PgyService;
 import com.qhiehome.ihome.network.service.update.PgyServiceGenerator;
 import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
-import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 
 import java.io.File;
@@ -39,26 +39,29 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+import de.hdodenhof.circleimageview.CircleImageView;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MainActivity extends BaseActivity implements View.OnClickListener{
+public class MainActivity extends BaseActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-
-    TextView mTvPark;
-    TextView mTvMe;
-
-    private List<TextView> mTabTextIndicators = new ArrayList<>();
+    @BindView(R.id.iv_avatar)
+    CircleImageView ivAvatar;
+    @BindView(R.id.bt_login)
+    Button btLogin;
+    @BindView(R.id.drawer)
+    DrawerLayout drawer;
 
     private Context mContext;
 
     Fragment mParkFragment;
-    Fragment mMeFragment;
     Fragment mThisFragment;
     FragmentManager mFragmentManager;
 
@@ -70,19 +73,34 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
 
     private String mSavedPath;
 
+    private boolean isLogin;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         SDKInitializer.initialize(getApplicationContext());
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
         mContext = this;
-        initData();
-        initView();
         initFragments(savedInstanceState);
         checkUpdate();
     }
 
-    private void initData() {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        checkLogin();
+    }
+
+    private void checkLogin() {
+        String phoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, "");
+        if (!TextUtils.isEmpty(phoneNum)) {
+            isLogin = true;
+        }
+        if (isLogin) {
+            ivAvatar.setVisibility(View.VISIBLE);
+            btLogin.setVisibility(View.INVISIBLE);
+        }
     }
 
     private void checkUpdate() {
@@ -103,7 +121,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                if (mUpdateInfoDialog == null) buildUpdateInfoDialog(appUpdateDescription, appKey);
+                                if (mUpdateInfoDialog == null)
+                                    buildUpdateInfoDialog(appUpdateDescription, appKey);
                                 mUpdateInfoDialog.show();
                             }
                         });
@@ -160,90 +179,33 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
         new DownloadAsyncTask().execute(downloadUrl);
     }
 
-    private void initView() {
-//        initToolbar();
-        mTvPark = (TextView) findViewById(R.id.tv_park);
-        mTvMe = (TextView) findViewById(R.id.tv_me);
-        mTabTextIndicators.add(mTvPark);
-        mTabTextIndicators.add(mTvMe);
-
-        RelativeLayout mRlPark = (RelativeLayout) findViewById(R.id.rl_park);
-        RelativeLayout mRlMe = (RelativeLayout) findViewById(R.id.rl_me);
-
-        mRlPark.setOnClickListener(this);
-        mRlMe.setOnClickListener(this);
-    }
-
     private void initFragments(Bundle savedInstanceState) {
         mFragmentManager = getSupportFragmentManager();
         // First init load ParkFragment
         if (savedInstanceState == null) {
             mParkFragment = ParkFragment.newInstance();
-            mMeFragment = MeFragment.newInstance();
             mFragmentManager.beginTransaction()
                     .add(R.id.fragment_container, mParkFragment, ParkFragment.TAG).commit();
         } else {
             mParkFragment = mFragmentManager.findFragmentByTag(ParkFragment.TAG);
-            mMeFragment = mFragmentManager.findFragmentByTag(MeFragment.TAG);
             mFragmentManager.beginTransaction()
                     .show(mParkFragment)
-                    .hide(mMeFragment)
                     .commit();
         }
         mThisFragment = mParkFragment;
     }
 
-    @Override
-    public void onClick(View v) {
-        resetOtherTabText();
-        switch (v.getId()) {
-            case R.id.rl_park:
-                mTvPark.setTextColor(ContextCompat.getColor(this, R.color.white));
-                switchContent(mMeFragment, mParkFragment);
-                break;
-            case R.id.rl_me:
-                String phoneNum = SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, "");
-                if (TextUtils.isEmpty(phoneNum)) {
-                    mTvPark.setTextColor(ContextCompat.getColor(this, R.color.white));
-                    new MaterialDialog.Builder(mContext)
-                            .title("去登录")
-                            .content("确定登录吗？")
-                            .positiveText("登录")
-                            .negativeText("取消")
-                            .onPositive(new MaterialDialog.SingleButtonCallback() {
-                                @Override
-                                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                    LoginActivity.start(mContext);
-                                }
-                            })
-                            .show();
-                } else {
-                    mTvMe.setTextColor(ContextCompat.getColor(this, R.color.white));
-                    switchContent(mParkFragment, mMeFragment);
-                }
-                break;
-            default:
-                break;
-        }
-    }
-
-    private void resetOtherTabText() {
-        for (TextView textView: mTabTextIndicators) {
-            textView.setTextColor(ContextCompat.getColor(this, R.color.gray));
-        }
-    }
-
-    private void switchContent(Fragment from, Fragment to) {
-        if (mThisFragment != to) {
-            mThisFragment = to;
-            if (!to.isAdded()) {
-                String tag = (to instanceof MeFragment) ? MeFragment.TAG: ParkFragment.TAG;
-                mFragmentManager.beginTransaction().hide(from).add(R.id.fragment_container, to, tag).commit();
-            } else {
-                mFragmentManager.beginTransaction().hide(from).show(to).commit();
-            }
-        }
-    }
+//    private void switchContent(Fragment from, Fragment to) {
+//        if (mThisFragment != to) {
+//            mThisFragment = to;
+//            if (!to.isAdded()) {
+//                String tag = (to instanceof MeFragment) ? MeFragment.TAG: ParkFragment.TAG;
+//                mFragmentManager.beginTransaction().hide(from).add(R.id.fragment_container, to, tag).commit();
+//            } else {
+//                mFragmentManager.beginTransaction().hide(from).show(to).commit();
+//            }
+//        }
+//    }
 
     @Override
     public void onBackPressed() {
@@ -267,6 +229,56 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         mParkFragment.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @OnClick({R.id.ll_my_lock, R.id.ll_my_reserve, R.id.ll_my_publish, R.id.ll_setting, R.id.ll_quit,
+            R.id.iv_avatar, R.id.bt_login})
+    public void onViewClicked(View view) {
+        switch (view.getId()) {
+            case R.id.ll_my_lock:
+                if (isLogin) {
+                    UserInfoActivity.start(mContext);
+                } else {
+                    LoginActivity.start(mContext);
+                }
+                break;
+            case R.id.ll_my_reserve:
+                if (isLogin) {
+                    ReserveActivity.start(mContext);
+                } else {
+                    LoginActivity.start(mContext);
+                }
+                break;
+            case R.id.ll_my_publish:
+                if (isLogin) {
+                    PublishParkingActivity.start(mContext);
+                } else {
+                    LoginActivity.start(mContext);
+                }
+
+                break;
+            case R.id.ll_setting:
+                if (isLogin) {
+                    SettingActivity.start(mContext);
+                } else {
+                    LoginActivity.start(mContext);
+                }
+                break;
+            case R.id.ll_quit:
+                ActivityManager.finishAll();
+                break;
+            case R.id.iv_avatar:
+                break;
+            case R.id.bt_login:
+                LoginActivity.start(mContext);
+                break;
+        }
+    }
+
+    public void openDrawer() {
+        if (drawer != null && !drawer.isDrawerOpen(Gravity.START)) {
+            drawer.openDrawer(Gravity.START);
+        }
     }
 
     private class DownloadAsyncTask extends AsyncTask<String, Void, Void> {
@@ -296,7 +308,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
                     do {
                         int numRead = is.read(buf);
                         count += numRead;
-                        final int progress = (int)(((float)count / length) * 100);
+                        final int progress = (int) (((float) count / length) * 100);
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -343,6 +355,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
             intent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive");
         }
         startActivity(intent);
-        android.os.Process.killProcess(android.os.Process.myPid());
+        Process.killProcess(Process.myPid());
     }
 }
