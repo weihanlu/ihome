@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.bigkoo.pickerview.OptionsPickerView;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.indexable_recyclerview.AlphabetItem;
 import com.qhiehome.ihome.network.ServiceGenerator;
@@ -40,6 +41,7 @@ import org.w3c.dom.Text;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -81,10 +83,20 @@ public class ParkingTimelineActivity extends AppCompatActivity {
     private int mReserveFailedNum = 0;
     private int mSelectedIndex = -1;
 
+    /********TimePicker*******/
+    private ArrayList<ArrayList<String>> mStartMinites = new ArrayList<>();
+    private ArrayList<String> mStartHours = new ArrayList<>();
+    private ArrayList<ArrayList<String>> mEndMinites = new ArrayList<>();
+    private ArrayList<String> mEndHours = new ArrayList<>();
+    private ArrayList<String> mStartTimes = new ArrayList<>();
+    private ArrayList<ArrayList<String>> mEndTimes = new ArrayList<>();
+
+
     private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm");
     private static final SimpleDateFormat HOUR_FORMAT = new SimpleDateFormat("HH");
     private static final int[] COLORS = {0xffFFAD6C, 0xff62f434, 0xffdeda78, 0xff7EDCFF, 0xff58fdea, 0xfffdc75f};//颜色组
     private static final String DECIMAL_2 = "%.2f";
+    private static final long SELECT_MIN_INTERVAL = 15*60*1000; //用户可选时间最短间隔，服务端可配置
 
     private static final int ERROR_CODE_UNPAY = 300;
     private static final int ERROR_CODE_RESERVED = 301;
@@ -104,6 +116,20 @@ public class ParkingTimelineActivity extends AppCompatActivity {
         initRecyclerView();
         mTvGuaranteeFee.setText("0.00");
 
+    }
+
+    private void initTimePickerData(long startTime, long endTime){
+        long tmpStartTime = startTime;
+        while (tmpStartTime + SELECT_MIN_INTERVAL <= endTime){
+            mStartTimes.add(TIME_FORMAT.format(tmpStartTime));
+            long tmpEndTime = tmpStartTime + SELECT_MIN_INTERVAL;
+            ArrayList<String> tmpList = new ArrayList<>();
+            while (tmpEndTime <= endTime){
+                tmpList.add(TIME_FORMAT.format(tmpEndTime));
+            }
+            mEndTimes.add(tmpList);
+            tmpStartTime += SELECT_MIN_INTERVAL;
+        }
     }
 
 
@@ -160,6 +186,44 @@ public class ParkingTimelineActivity extends AppCompatActivity {
                 mSelectedIndex = i;
                 mAdapter.notifyDataSetChanged();
                 mTvGuaranteeFee.setText(String.format(DECIMAL_2, mGruaranteeFee));
+
+                //显示时间选择界面
+//                initTimePickerData(mShareBeanList.get(i).getStartTime(), mShareBeanList.get(i).getEndTime());
+//                OptionsPickerView pvOptions = new OptionsPickerView.Builder(this, new OptionsPickerView.OnOptionsSelectListener() {
+//                    @Override
+//                    public void onOptionsSelect(int options1, int options2, int options3, View v) {
+//                        //返回的分别是三个级别的选中位置
+//                        mStartTime = mStartHours.get(options1) + ":" + mStartMinites.get(options1).get(options2);
+//                        Calendar calendar = Calendar.getInstance();
+//                        calendar.set(Calendar.HOUR_OF_DAY, Integer.valueOf(mStartHours.get(options1)));
+//                        calendar.set(Calendar.MINUTE, Integer.valueOf(mStartMinites.get(options1).get(options2)));
+//                        calendar.set(Calendar.SECOND, 0);
+//                        calendar.set(Calendar.MILLISECOND, 0);
+//                        mStartTimeMillis = calendar.getTimeInMillis();
+//                        initEndTimeDataSourse(Integer.valueOf(mStartHours.get(options1)), Integer.valueOf(mStartMinites.get(options1).get(options2)), mEndTimeMillis <= mStartTimeMillis);
+//                        float mills = mEndTimeMillis - mStartTimeMillis;
+//                        float hours = mills/1000/3600;
+//                        mPrice = hours * mUnitPrice;
+//                        mAdapter.notifyDataSetChanged();
+//                    }
+//                })
+//                        .setTitleText("开始时间")
+//                        .setContentTextSize(20)//设置滚轮文字大小
+//                        .setDividerColor(Color.GREEN)//设置分割线的颜色
+//                        .setSelectOptions(mStartHourSelection, mStartMinSelection)//默认选中项
+//                        .setBgColor(Color.BLACK)
+//                        .setTitleBgColor(Color.DKGRAY)
+//                        .setTitleColor(Color.LTGRAY)
+//                        .setCancelColor(Color.YELLOW)
+//                        .setSubmitColor(Color.YELLOW)
+//                        .setTextColorCenter(Color.LTGRAY)
+//                        .isCenterLabel(false) //是否只显示中间选中项的label文字，false则每项item全部都带有label。
+//                        //.setLabels("省", "市", "区")
+//                        .setBackgroundId(0x66000000) //设置外部遮罩颜色
+//                        .build();
+//                pvOptions.setPicker(mStartHours, mStartMinites);//二级选择器
+//                pvOptions.show();
+
                 /*********预约多个车位***********/
 //                TextView tv_time = (TextView) view.findViewById(R.id.tv_parking_timeline_time);
 //                TextView tv_info = (TextView) view.findViewById(R.id.tv_parking_timeline_info);

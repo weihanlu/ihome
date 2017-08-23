@@ -24,6 +24,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -360,7 +361,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                     info += "\n";
                     info += "离开时间   " + START_TIME_FORMAT.format(SharedPreferenceUtil.getLong(mContext, Constant.PARKING_END_TIME, 0));
                     info += "\n";
-                    info += "总金额   " + String.format(Locale.CHINA, DECIMAL_2, mOrderBeanList.get(0).getPayFee()) + "元";
+                    info += "总金额   " + String.format(Locale.CHINA, DECIMAL_2, (float)mOrderBeanList.get(0).getPayFee()) + "元";
                     detailItemHolder.getTvDetailInfo().setText(info);
 
                     detailItemHolder.getBtnCancel().setVisibility(View.INVISIBLE);
@@ -704,6 +705,11 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
 
 
     private void updateData() {
+
+        if (mOrderBeanList.size() > 0 && mOrderBeanList.get(0).getState()<SharedPreferenceUtil.getInt(mContext, Constant.ORDER_STATE, mOrderBeanList.get(0).getState())){
+            mOrderBeanList.get(0).setState(SharedPreferenceUtil.getInt(mContext, Constant.ORDER_STATE, mOrderBeanList.get(0).getState()));
+        }
+
         mInventory = new CollectionView.Inventory<>();
 
         for (int i = 0; i < mOrderBeanList.size(); i++) {
@@ -749,6 +755,9 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
     }
 
     private void LockControl(int index, final boolean downLock){      //控制车位锁
+        if (!downLock){
+            Log.e("downLock", "升车位锁");
+        }
         final String gateWayId = SharedPreferenceUtil.getString(this, Constant.RESERVE_GATEWAY_ID, "");
         final String lockMac = SharedPreferenceUtil.getString(this, Constant.RESERVE_LOCK_MAC, "");
         final String lockPwd = SharedPreferenceUtil.getString(this, Constant.RESERVE_LOCK_PWD, "");
