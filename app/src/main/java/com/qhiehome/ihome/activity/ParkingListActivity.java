@@ -186,6 +186,9 @@ public class ParkingListActivity extends BaseActivity {
             startTime += MIN_CHARGING_PERIOD * 60 * 1000;
         }
 
+        mStartTimeMillis = mStartTimeMillisList.get(0);
+        mEndTimeMillis = mEndTimeMillisList.get(0).get(0);
+
 
     }
 
@@ -299,6 +302,8 @@ public class ParkingListActivity extends BaseActivity {
 //                    float hours = mills/1000/3600;
                     mStartTime = TIME_FORMAT.format(mStartTimeMillisList.get(options1));
                     mEndTime = TIME_FORMAT.format(mEndTimeMillisList.get(options1).get(options2));
+                    mStartTimeMillis = mStartTimeMillisList.get(options1);
+                    mEndTimeMillis = mEndTimeMillisList.get(options1).get(options2);
                     float hours = (float)(mEndTimeMillisList.get(options1).get(options2) - mStartTimeMillisList.get(options1))/60/60/1000;
                     mPrice = hours * mUnitPrice;
                     mAdapter.notifyDataSetChanged();
@@ -340,6 +345,8 @@ public class ParkingListActivity extends BaseActivity {
 //                    float hours = mills/1000/3600;
                     mStartTime = TIME_FORMAT.format(mStartTimeMillisList.get(options1));
                     mEndTime = TIME_FORMAT.format(mEndTimeMillisList.get(options1).get(options2));
+                    mStartTimeMillis = mStartTimeMillisList.get(options1);
+                    mEndTimeMillis = mEndTimeMillisList.get(options1).get(options2);
                     float hours = (float) (mEndTimeMillisList.get(options1).get(options2) - mStartTimeMillisList.get(options1))/60/60/1000;
                     mPrice = hours * mUnitPrice;
                     mAdapter.notifyDataSetChanged();
@@ -481,9 +488,11 @@ public class ParkingListActivity extends BaseActivity {
                     if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
                         // TODO: 2017/8/23 修改预约接口，增加错误选项，正确跳转支付担保费
                         Intent intent = new Intent(ParkingListActivity.this, PayActivity.class);
-                        intent.putExtra("grauFee", mUnitPrice);
+                        intent.putExtra("fee", mGuaranteeFee);
+                        intent.putExtra("payState", Constant.PAY_STATE_GUARANTEE);
+                        intent.putExtra("orderId", response.body().getData().getOrder().getId());
+                        SharedPreferenceUtil.setLong(mContext, Constant.ORDER_CREATE_TIME, System.currentTimeMillis());
                         startActivity(intent);
-                        //可停至XX：XX
                         ToastUtil.showToast(mContext, "预约成功");
                     }else {
                         final AlertDialog.Builder reserveFailedDialog = new AlertDialog.Builder(ParkingListActivity.this);

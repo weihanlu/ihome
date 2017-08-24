@@ -23,8 +23,11 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.network.ServiceGenerator;
+import com.qhiehome.ihome.network.model.pay.accountbalance.AccountBalanceRequest;
+import com.qhiehome.ihome.network.model.pay.accountbalance.AccountBalanceResponse;
 import com.qhiehome.ihome.network.model.pay.guarantee.PayGuaranteeRequest;
 import com.qhiehome.ihome.network.model.pay.guarantee.PayGuaranteeResponse;
+import com.qhiehome.ihome.network.service.pay.AccountBalanceService;
 import com.qhiehome.ihome.network.service.pay.PayGuaranteeService;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
@@ -70,6 +73,7 @@ public class PayActivity extends AppCompatActivity {
     private float mFee;
     private int mPayState;
     private int mButtonClicked = 1;
+    private int mOrderId = 0;
     private List<Button> mBtnList = new ArrayList<>();
 
     private static final int ALI_PAY = 0;
@@ -84,6 +88,7 @@ public class PayActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         Intent intent = this.getIntent();
         mPayState = intent.getIntExtra("payState", 0);
+        mOrderId = intent.getIntExtra("orderId", 0);
         mContext = this;
         mSelectedNum = ALI_PAY;
         initToolbar();
@@ -154,47 +159,86 @@ public class PayActivity extends AppCompatActivity {
     @OnClick(R.id.btn_pay)
     public void onViewClicked() {
 
-        // TODO: 2017/8/14 根据选择方式调用支付接口
-        int red = ContextCompat.getColor(mContext, android.R.color.holo_red_light);
-        new MaterialDialog.Builder(mContext)
-                .title("确认支付？")
-                .titleColor(red)
-                .content("接口还没好，假装支付一波ㄟ( ▔, ▔ )ㄏ")
-                .contentColor(red)
-                .positiveText("假装支付好了")
-                .positiveColor(red)
-                .negativeText("取消")
-                .canceledOnTouchOutside(false)
-                .onPositive(new MaterialDialog.SingleButtonCallback() {
-                    @Override
-                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                        PayGuaranteeService payGuaranteeService = ServiceGenerator.createService(PayGuaranteeService.class);
-                        PayGuaranteeRequest payGuaranteeRequest = new PayGuaranteeRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256), SharedPreferenceUtil.getInt(mContext, Constant.ORDER_ID, 0), SharedPreferenceUtil.getInt(mContext, Constant.SHARE_ID, 0));
-                        Call<PayGuaranteeResponse> call = payGuaranteeService.payGuarantee(payGuaranteeRequest);
-                        call.enqueue(new Callback<PayGuaranteeResponse>() {
-                            @Override
-                            public void onResponse(Call<PayGuaranteeResponse> call, Response<PayGuaranteeResponse> response) {
-                                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                                    SharedPreferenceUtil.setString(mContext, Constant.RESERVE_LOCK_MAC, response.body().getData().getEstate().getParking().getLockMac());
-                                    SharedPreferenceUtil.setString(mContext, Constant.RESERVE_LOCK_PWD, response.body().getData().getEstate().getParking().getPassword());
-                                    SharedPreferenceUtil.setString(mContext, Constant.RESERVE_GATEWAY_ID, response.body().getData().getEstate().getParking().getGatewayId());
-                                    SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, 31);
-                                    Intent intent = new Intent(PayActivity.this, ReserveActivity.class);
-                                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                    startActivity(intent);
-                                    PayActivity.this.finish();
+        if (mPayState == Constant.PAY_STATE_ADD_ACCOUNT){
+            int red = ContextCompat.getColor(mContext, android.R.color.holo_red_light);
+            new MaterialDialog.Builder(mContext)
+                    .title("确认支付？")
+                    .titleColor(red)
+                    .content("接口还没好，假装支付一波ㄟ( ▔, ▔ )ㄏ")
+                    .contentColor(red)
+                    .positiveText("假装支付好了")
+                    .positiveColor(red)
+                    .negativeText("取消")
+                    .canceledOnTouchOutside(false)
+                    .onPositive(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            AccountBalanceService accountBalanceService = ServiceGenerator.createService(AccountBalanceService.class);
+                            AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256), Double.valueOf(mPriceList[mButtonClicked-1]));
+                            Call<AccountBalanceResponse> call = accountBalanceService.account(accountBalanceRequest);
+                            call.enqueue(new Callback<AccountBalanceResponse>() {
+                                @Override
+                                public void onResponse(Call<AccountBalanceResponse> call, Response<AccountBalanceResponse> response) {
+                                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                                        ToastUtil.showToast(mContext, "充值成功");
+                                        PayActivity.this.finish();
+                                    }
                                 }
-                            }
 
-                            @Override
-                            public void onFailure(Call<PayGuaranteeResponse> call, Throwable t) {
-                                ToastUtil.showToast(mContext, "网络连接异常");
-                            }
-                        });
+                                @Override
+                                public void onFailure(Call<AccountBalanceResponse> call, Throwable t) {
+                                    ToastUtil.showToast(mContext, "网络连接异常");
+                                }
+                            });
+                        }
+                    })
+                    .show();
+        }
 
-                    }
-                })
-                .show();
+        // TODO: 2017/8/14 根据选择方式调用支付接口
+        if (mPayState == Constant.PAY_STATE_GUARANTEE){
+            int red = ContextCompat.getColor(mContext, android.R.color.holo_red_light);
+            new MaterialDialog.Builder(mContext)
+                    .title("确认支付？")
+                    .titleColor(red)
+                    .content("接口还没好，假装支付一波ㄟ( ▔, ▔ )ㄏ")
+                    .contentColor(red)
+                    .positiveText("假装支付好了")
+                    .positiveColor(red)
+                    .negativeText("取消")
+                    .canceledOnTouchOutside(false)
+                    .onPositive(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            PayGuaranteeService payGuaranteeService = ServiceGenerator.createService(PayGuaranteeService.class);
+                            PayGuaranteeRequest payGuaranteeRequest = new PayGuaranteeRequest(mOrderId);
+                            Call<PayGuaranteeResponse> call = payGuaranteeService.payGuarantee(payGuaranteeRequest);
+                            call.enqueue(new Callback<PayGuaranteeResponse>() {
+                                @Override
+                                public void onResponse(Call<PayGuaranteeResponse> call, Response<PayGuaranteeResponse> response) {
+                                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                                        SharedPreferenceUtil.setString(mContext, Constant.RESERVE_LOCK_MAC, response.body().getData().getEstate().getParking().getLockMac());
+                                        SharedPreferenceUtil.setString(mContext, Constant.RESERVE_LOCK_PWD, response.body().getData().getEstate().getParking().getPassword());
+                                        SharedPreferenceUtil.setString(mContext, Constant.RESERVE_GATEWAY_ID, response.body().getData().getEstate().getParking().getGatewayId());
+                                        SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, 31);
+                                        Intent intent = new Intent(PayActivity.this, ReserveActivity.class);
+                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                        startActivity(intent);
+                                        PayActivity.this.finish();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<PayGuaranteeResponse> call, Throwable t) {
+                                    ToastUtil.showToast(mContext, "网络连接异常");
+                                }
+                            });
+
+                        }
+                    })
+                    .show();
+        }
+
 
     }
 
@@ -278,7 +322,8 @@ public class PayActivity extends AppCompatActivity {
                     holder.iv_pay.setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_pay_account));
                     holder.tv_pay.setText("账户余额");
                     // TODO: 2017/8/14 网络请求获得账户余额
-                    holder.tv_pay_info.setText("账户余额：0元");
+                    holder.tv_pay_info.setText("正在获取账户余额");
+                    getAccountBalance(holder);
                     if (mSelectedNum == ACCOUNT_BALANCE) {
                         holder.iv_pay_select.setVisibility(View.VISIBLE);
                     } else {
@@ -319,5 +364,26 @@ public class PayActivity extends AppCompatActivity {
 
     public interface OnClickListener {
         void onClick(View view, int i);
+    }
+
+    private void getAccountBalance(final PayListAdapter.PayListHolder holder){
+        AccountBalanceService accountBalanceService = ServiceGenerator.createService(AccountBalanceService.class);
+        AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256), 0.0);
+        Call<AccountBalanceResponse> call = accountBalanceService.account(accountBalanceRequest);
+        call.enqueue(new Callback<AccountBalanceResponse>() {
+            @Override
+            public void onResponse(Call<AccountBalanceResponse> call, Response<AccountBalanceResponse> response) {
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                    String pay_info = "账户余额：";
+                    pay_info += String.format(Locale.CHINA, DECIMAL_2, response.body().getData().getAccount());
+                    pay_info += "元";
+                    holder.tv_pay_info.setText(pay_info);
+                }
+            }
+            @Override
+            public void onFailure(Call<AccountBalanceResponse> call, Throwable t) {
+                ToastUtil.showToast(mContext, "网络连接异常");
+            }
+        });
     }
 }

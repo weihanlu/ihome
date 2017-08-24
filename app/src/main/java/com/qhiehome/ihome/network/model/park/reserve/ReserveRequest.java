@@ -14,13 +14,13 @@ public class ReserveRequest {
      */
 
     private String phone;
-    private int shareId;
+    private int estateId;
     private long startTime;
     private long endTime;
 
-    public ReserveRequest(String phone, int shareId, long startTime, long endTime) {
+    public ReserveRequest(String phone, int estateId, long startTime, long endTime) {
         this.phone = phone;
-        this.shareId = shareId;
+        this.estateId = estateId;
         this.startTime = startTime;
         this.endTime = endTime;
     }
@@ -33,12 +33,12 @@ public class ReserveRequest {
         this.phone = phone;
     }
 
-    public int getShareId() {
-        return shareId;
+    public int getEstateId() {
+        return estateId;
     }
 
-    public void setShareId(int shareId) {
-        this.shareId = shareId;
+    public void setEstateId(int estateId) {
+        this.estateId = estateId;
     }
 
     public long getStartTime() {

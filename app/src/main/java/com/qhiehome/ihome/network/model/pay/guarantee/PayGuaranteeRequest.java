@@ -7,27 +7,13 @@ package com.qhiehome.ihome.network.model.pay.guarantee;
 public class PayGuaranteeRequest {
 
     /**
-     * phone : xxxx...xxxx
      * orderId : 123456789
-     * shareId : 123456789
      */
 
-    private String phone;
     private int orderId;
-    private int shareId;
 
-    public PayGuaranteeRequest(String phone, int orderId, int shareId) {
-        this.phone = phone;
+    public PayGuaranteeRequest(int orderId) {
         this.orderId = orderId;
-        this.shareId = shareId;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
     }
 
     public int getOrderId() {
@@ -38,11 +24,5 @@ public class PayGuaranteeRequest {
         this.orderId = orderId;
     }
 
-    public int getShareId() {
-        return shareId;
-    }
 
-    public void setShareId(int shareId) {
-        this.shareId = shareId;
-    }
 }
