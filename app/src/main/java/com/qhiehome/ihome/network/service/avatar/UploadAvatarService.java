@@ -1,5 +1,8 @@
 package com.qhiehome.ihome.network.service.avatar;
 
+import com.qhiehome.ihome.network.model.avatar.UploadAvatarResponse;
+import com.qhiehome.ihome.network.model.base.Response;
+
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
@@ -11,5 +14,5 @@ import retrofit2.http.Part;
 public interface UploadAvatarService {
     @Multipart
     @POST("pic/upload")
-    Call<ResponseBody> uploadAvatar(@Part MultipartBody.Part image, @Part("phone") RequestBody phoneNum);
+    Call<UploadAvatarResponse> uploadAvatar(@Part MultipartBody.Part image, @Part("phone") RequestBody phoneNum);
 }

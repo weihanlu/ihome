@@ -8,104 +8,19 @@
     tools:context="com.qhiehome.ihome.activity.UserInfoActivity">
 
     <android.support.design.widget.AppBarLayout
-        android:id="@+id/app_bar"
         android:layout_width="match_parent"
-        android:layout_height="240dp"
+        android:layout_height="wrap_content"
         android:theme="@style/toolbar_theme">
 
-        <android.support.design.widget.CollapsingToolbarLayout
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/tb_userinfo"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:contentScrim="?attr/colorPrimary"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed"
-            >
-
-            <android.support.v7.widget.Toolbar
-                android:id="@+id/tb_userinfo"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                app:layout_collapseMode="pin"
-                app:navigationIcon="?attr/homeAsUpIndicator"
-                app:popupTheme="@style/AppTheme.PopupOverlay">
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="?attr/actionBarSize">
-
-                    <TextView
-                        android:id="@+id/tv_toolbar_title"
-                        style="@style/TextAppearance.Widget.AppCompat.Toolbar.Title"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentStart="true"
-                        android:layout_centerVertical="true"
-                        android:text="个人信息"
-                        android:textColor="@color/white"
-                        />
-
-                </RelativeLayout>
-
-            </android.support.v7.widget.Toolbar>
-
-        </android.support.design.widget.CollapsingToolbarLayout>
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            android:minHeight="?attr/actionBarSize"
+            android:theme="?attr/actionBarTheme"/>
 
     </android.support.design.widget.AppBarLayout>
-
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/iv_avatar"
-        android:layout_width="96dp"
-        android:layout_height="96dp"
-        android:src="@drawable/ic_avatar_default"
-        app:civ_border_width="2dp"
-        app:civ_border_color="@color/white"
-        app:layout_behavior="com.qhiehome.ihome.behavior.UserInfoBehavior"
-        />
-
-    <TextView
-        android:id="@+id/tv_phoneNum"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:maxLines="1"
-        android:paddingTop="36dp"
-        android:text="19283747383"
-        android:textColor="@color/white"
-        android:textSize="16sp"
-        app:layout_anchor="@id/iv_avatar"
-        app:layout_anchorGravity="bottom|center_horizontal"
-        />
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingTop="36dp"
-        app:layout_anchor="@id/tv_phoneNum"
-        app:layout_anchorGravity="bottom|center_horizontal">
-
-        <TextView
-            android:id="@+id/tv_balance"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:maxLines="1"
-            android:text="余额：0.00元"
-            android:textColor="@color/white"
-            android:textSize="16sp"
-            />
-
-        <TextView
-            android:id="@+id/tv_add_balance"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="充值"
-            android:textStyle="bold"
-            android:textColor="@android:color/holo_red_light"
-            android:textSize="14sp"
-            android:paddingStart="16dp"
-            />
-
-    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"

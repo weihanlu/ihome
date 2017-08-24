@@ -21,6 +21,7 @@ import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.ActionBar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -42,6 +43,7 @@ import com.qhiehome.ihome.bean.UserLockBean;
 import com.qhiehome.ihome.bean.UserLockBeanDao;
 import com.qhiehome.ihome.lock.ConnectLockService;
 import com.qhiehome.ihome.network.ServiceGenerator;
+import com.qhiehome.ihome.network.model.avatar.UploadAvatarResponse;
 import com.qhiehome.ihome.network.model.base.ParkingResponse;
 import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedRequest;
 import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedResponse;
@@ -88,31 +90,8 @@ public class UserInfoActivity extends BaseActivity {
 
     private static final String TAG = UserInfoActivity.class.getSimpleName();
 
-    private static final int CODE_CAMERA_REQUEST_SRC = 1;
-    private static final int REQUEST_FOR_OPEN_CAMERA_AND_WRITE_EXTERNAL = 2;
-    private static final int CODE_PICTURES_REQUEST_SRC = 3;
-    private static final int REQUEST_FOR_COPY_LOCAL_FILE = 4;
-
     @BindView(R.id.tb_userinfo)
     Toolbar mTbUserInfo;
-
-    @BindView(R.id.app_bar)
-    AppBarLayout mAppBarLayout;
-
-    @BindView(R.id.tv_phoneNum)
-    TextView mTvPhoneNum;
-
-    @BindView(R.id.tv_balance)
-    TextView mTvBalance;
-
-    @BindView(R.id.tv_add_balance)
-    TextView mTvAddBalance;
-
-    @BindView(R.id.iv_avatar)
-    CircleImageView mIvAvatar;
-
-    @BindView(R.id.tv_toolbar_title)
-    TextView mTvToolbarTitle;
 
     @BindView(R.id.vs_user_locks)
     ViewStub mViewStub;
@@ -135,10 +114,6 @@ public class UserInfoActivity extends BaseActivity {
 
     MaterialDialog mControlLockDialog;
 
-    private String mAvatarPath;
-
-    private File mAvatarFile;
-
     private UserLockBeanDao mUserLockBeanDao;
 
     private Query<UserLockBean> mUserLockBeansQuery;
@@ -160,8 +135,6 @@ public class UserInfoActivity extends BaseActivity {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ConnectLockService.BROADCAST_CONNECT);
         registerReceiver(mReceiver, intentFilter);
-
-        initAvatar();
     }
 
     @Override
@@ -175,15 +148,10 @@ public class UserInfoActivity extends BaseActivity {
         mUserLockBeanDao = daoSession.getUserLockBeanDao();
         mUserLockBeansQuery = mUserLockBeanDao.queryBuilder().orderAsc(UserLockBeanDao.Properties.Id).build();
         String phoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, "");
-        String avatarName = "portrait_" + phoneNum;
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        mAvatarFile = new File(storageDir, avatarName + ".jpg");
-        mAvatarPath = mAvatarFile.getAbsolutePath();
 
         mUserLocks = new ArrayList<>();
         mParkingIds = new StringBuilder();
 
-        mTvPhoneNum.setText("账号：" + phoneNum);
         inquiryOwnedParkings(phoneNum);
     }
 
@@ -410,77 +378,17 @@ public class UserInfoActivity extends BaseActivity {
 
     private void initView() {
         initToolbar();
-        initAppBarLayout();
-    }
-
-    private void initAvatar() {
-        File avatarDir = mAvatarFile.getParentFile();
-        if (avatarDir.isDirectory() && avatarDir.listFiles().length != 0) {
-            Bitmap avatarBitmap = BitmapFactory.decodeFile(mAvatarPath);
-            mIvAvatar.setImageBitmap(avatarBitmap);
-        } else {
-            DownloadAvatarService downloadAvatarService = ServiceGenerator.createService(DownloadAvatarService.class);
-            String encryptedAvatarName = EncryptUtil.encrypt(mAvatarFile.getName(), EncryptUtil.ALGO.MD5);
-            Call<ResponseBody> call = downloadAvatarService.downloadAvatar(encryptedAvatarName + ".jpg");
-            call.enqueue(new Callback<ResponseBody>() {
-                @Override
-                public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
-                    if (response.isSuccessful()) {
-                        try {
-                            mAvatarFile.createNewFile();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        writtenToAvatarFile(response.body());
-                    }
-                }
-
-                @Override
-                public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
-
-                }
-            });
-        }
-    }
-
-    private void writtenToAvatarFile(ResponseBody body) {
-        InputStream is = null;
-        OutputStream os = null;
-        try {
-            byte[] fileReader = new byte[4096];
-
-            is = body.byteStream();
-            os = new FileOutputStream(mAvatarFile);
-            int read;
-            while ((read = is.read(fileReader)) != -1) {
-                os.write(fileReader, 0, read);
-            }
-            os.flush();
-
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Bitmap avatarBitmap = BitmapFactory.decodeFile(mAvatarPath);
-                    mIvAvatar.setImageBitmap(avatarBitmap);
-                }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (is != null) {
-                    is.close();
-                }
-                if (os != null) {
-                    os.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     private void initToolbar() {
+        setSupportActionBar(mTbUserInfo);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setDisplayShowTitleEnabled(false);
+        }
+        mTbUserInfo.setTitle("我的车锁");
+        mTbUserInfo.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
         mTbUserInfo.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -488,244 +396,6 @@ public class UserInfoActivity extends BaseActivity {
             }
         });
     }
-
-    private void initAppBarLayout() {
-        mAppBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
-            @Override
-            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
-                float total = appBarLayout.getTotalScrollRange() * 1.0f;
-                float p = Math.abs(verticalOffset) / total;
-                if (p > 0.5) {
-                    mTvToolbarTitle.setAlpha(1.0f / 0.5f * (p - 0.5f));
-                    mTvPhoneNum.setAlpha(0);
-                    mTvBalance.setAlpha(0);
-                    mTvAddBalance.setAlpha(0);
-                } else {
-                    mTvToolbarTitle.setAlpha(0);
-                    mTvPhoneNum.setAlpha(1.0f - p / 0.5f);
-                    mTvBalance.setAlpha(1.0f - p / 0.5f);
-                    mTvAddBalance.setAlpha(1.0f - p / 0.5f);
-                }
-                mIvAvatar.setVisibility(p == 1 ? View.INVISIBLE : View.VISIBLE);
-            }
-        });
-    }
-
-    @OnClick(R.id.iv_avatar)
-    public void onAvatarClick() {
-        new MaterialDialog.Builder(this)
-                .title("请选择")
-                .items(R.array.avatar_items)
-                .itemsCallback(new MaterialDialog.ListCallback() {
-                    @Override
-                    public void onSelection(MaterialDialog dialog, View itemView, int position, CharSequence text) {
-                        switch (position) {
-                            case 0:
-                                if (CommonUtil.checkCameraHardware(mContext)) {
-                                    openCamera();
-                                } else {
-                                    ToastUtil.showToast(mContext, "没有检测到相机");
-                                }
-                                break;
-                            case 1:
-                                openLocalFolder();
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                })
-                .show();
-    }
-
-    private void openCamera() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                == PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                == PackageManager.PERMISSION_GRANTED) {
-            getPhotoByCamera();
-        } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA,
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    REQUEST_FOR_OPEN_CAMERA_AND_WRITE_EXTERNAL);
-        }
-    }
-
-    private void getPhotoByCamera() {
-        Intent mStartCamera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        // Ensure that there's a camera activity to handle the intent
-        if (mStartCamera.resolveActivity(getPackageManager()) != null) {
-            // Create the File where the photo should go
-            File photoFile = null;
-            try {
-                photoFile = createImageFile();
-            } catch (IOException ex) {
-                // Error occurred while creating the file...
-            }
-            // Continue only if the file was successfully created
-            if (photoFile != null) {
-                Uri photoURI;
-                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-                    mStartCamera.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    photoURI = FileProvider.getUriForFile(this, "com.qhiehome.ihome.provider", photoFile);
-                } else {
-                    photoURI = Uri.fromFile(photoFile);
-                }
-                mStartCamera.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                startActivityForResult(mStartCamera, CODE_CAMERA_REQUEST_SRC);
-            }
-        }
-    }
-
-    private File createImageFile() throws IOException {
-        if (mAvatarFile.exists()) {
-            mAvatarFile.delete();
-        } else {
-            mAvatarFile.createNewFile();
-        }
-        // Save a file: path for use with ACTION_VIEW intents
-        return mAvatarFile;
-    }
-
-    private void openLocalFolder() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                == PackageManager.PERMISSION_GRANTED) {
-            getPhotoFromFolder();
-        } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    REQUEST_FOR_COPY_LOCAL_FILE);
-        }
-    }
-
-    private void getPhotoFromFolder() {
-        Intent getLocalPictures = new Intent();
-        getLocalPictures.setType("image/*");
-        getLocalPictures.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(getLocalPictures, CODE_PICTURES_REQUEST_SRC);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
-            if (requestCode == CODE_CAMERA_REQUEST_SRC) {
-                galleryAddPic();
-                showOriginalImage();
-            } else if (requestCode == CODE_PICTURES_REQUEST_SRC) {
-                showLocalImage(data);
-            }
-            uploadAvatar();
-        }
-    }
-
-    private void uploadAvatar() {
-        File avatarDir = mAvatarFile.getParentFile();
-        if (avatarDir.isDirectory() && avatarDir.listFiles().length != 0) {
-            UploadAvatarService uploadAvatarService = ServiceGenerator.createService(UploadAvatarService.class);
-            String phoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, "");
-            RequestBody requestPhone = RequestBody.create(MediaType.parse("multipart/form-data"), EncryptUtil.encrypt(phoneNum, EncryptUtil.ALGO.SHA_256));
-            final RequestBody requestAvatar = RequestBody.create(MediaType.parse("multipart/form-data"), mAvatarFile);
-            String encryptedAvatarName = EncryptUtil.encrypt(mAvatarFile.getName(), EncryptUtil.ALGO.MD5);
-            MultipartBody.Part avatarPart = MultipartBody.Part.createFormData("file", encryptedAvatarName + ".jpg", requestAvatar);
-
-            Call<ResponseBody> call = uploadAvatarService.uploadAvatar(avatarPart, requestPhone);
-            call.enqueue(new Callback<ResponseBody>() {
-                @Override
-                public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
-                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                ToastUtil.showToast(mContext, "头像上传成功");
-                            }
-                        });
-                    }
-                }
-
-                @Override
-                public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
-
-                }
-            });
-        }
-
-    }
-
-
-    private void showOriginalImage() {
-        final Bitmap portraitBitmap = getScaledImage(mAvatarPath, mIvAvatar);
-        mIvAvatar.setImageBitmap(portraitBitmap);
-
-    }
-
-    private Bitmap getScaledImage(String filePath, ImageView imageView) {
-        int targetW = imageView.getWidth();
-        int targetH = imageView.getHeight();
-        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-        bmOptions.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(filePath, bmOptions);
-        int photoW = bmOptions.outWidth;
-        int photoH = bmOptions.outHeight;
-        int scaleFactor = Math.min(photoW / targetW, photoH / targetH);
-        bmOptions.inJustDecodeBounds = false;
-        bmOptions.inSampleSize = scaleFactor;
-        return BitmapFactory.decodeFile(filePath, bmOptions);
-    }
-
-    // Add the portrait to the galley
-    private void galleryAddPic() {
-        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        File portraitPhoto = new File(mAvatarPath);
-        Uri portraitUri = Uri.fromFile(portraitPhoto);
-        mediaScanIntent.setData(portraitUri);
-        this.sendBroadcast(mediaScanIntent);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_FOR_OPEN_CAMERA_AND_WRITE_EXTERNAL) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                    && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                getPhotoByCamera();
-            } else {
-                ToastUtil.showToast(mContext, "没有相应的权限");
-            }
-        } else if (requestCode == REQUEST_FOR_COPY_LOCAL_FILE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getPhotoFromFolder();
-            }
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-
-    private void showLocalImage(Intent data) {
-        Uri uri = data.getData();
-        ContentResolver cr = this.getContentResolver();
-        Bitmap bitmap = null;
-        try {
-            bitmap = BitmapFactory.decodeStream(cr.openInputStream(uri));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        mIvAvatar.setImageBitmap(bitmap);
-        // 将bitmap写入文件中
-        BitmapToFileTask bitmapToFileTask = new BitmapToFileTask();
-        bitmapToFileTask.execute(bitmap);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
-    @OnClick(R.id.tv_add_balance)
-    public void onViewClicked() {
-        Intent intent = new Intent(this, PayActivity.class);
-        intent.putExtra("payState", Constant.PAY_STATE_ADD_ACCOUNT);
-        startActivity(intent);
-    }
-
     private class ConnectLockReceiver extends BroadcastReceiver {
 
         @Override
@@ -736,26 +406,6 @@ public class UserInfoActivity extends BaseActivity {
                     mControlLockDialog.show();
                 }
             }
-        }
-    }
-
-    private class BitmapToFileTask extends AsyncTask<Bitmap, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Bitmap... bitmap) {
-            try {
-                if (mAvatarFile.exists()) {
-                    mAvatarFile.delete();
-                } else {
-                    mAvatarFile.createNewFile();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            if (mAvatarFile != null) {
-                FileUtils.bitmapToJpeg(bitmap[0], mAvatarFile);
-            }
-            return null;
         }
     }
 

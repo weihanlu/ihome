@@ -96,9 +96,9 @@ public class ParkFragment extends Fragment {
 
     public static final String TAG = "ParkFragment";
 
-    public static final int REQUEST_CODE_SEARCH = 1;
+    public static final int REQUEST_CODE_SEARCH = 5;
 
-    public static final int REQUEST_CODE_CITY = 2;
+    public static final int REQUEST_CODE_CITY = 6;
 
     @BindView(R.id.btn_map_location)
     Button mBtnMapLocation;
