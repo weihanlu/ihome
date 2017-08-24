@@ -36,6 +36,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.GravityEnum;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.baidu.navisdk.adapter.BNCommonSettingParam;
@@ -53,9 +54,12 @@ import com.qhiehome.ihome.lock.ConnectLockService;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.inquiry.order.OrderRequest;
 import com.qhiehome.ihome.network.model.inquiry.order.OrderResponse;
+import com.qhiehome.ihome.network.model.inquiry.parkingusing.ParkingUsingRequest;
+import com.qhiehome.ihome.network.model.inquiry.parkingusing.ParkingUsingResponse;
 import com.qhiehome.ihome.network.model.park.reservecancel.ReserveCancelRequest;
 import com.qhiehome.ihome.network.model.park.reservecancel.ReserveCancelResponse;
 import com.qhiehome.ihome.network.service.inquiry.OrderService;
+import com.qhiehome.ihome.network.service.inquiry.ParkingUsingService;
 import com.qhiehome.ihome.network.service.park.ReserveCancelService;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
@@ -98,11 +102,12 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
     private TextView mTvCountDown;
     private MyCountDownTimer mCountDownTimer;
 
+
     private static final SimpleDateFormat START_TIME_FORMAT = new SimpleDateFormat("yyyy.MM.dd HH:mm", Locale.CHINA);
     private static final SimpleDateFormat END_TIME_FORMAT = new SimpleDateFormat("HH:mm", Locale.CHINA);
     private static final String DECIMAL_2 = "%.2f";
-    private final long INTERVAL = 1000L;
-    private final long QUARTER = 1000 * 60 * 15L;
+    private static final long INTERVAL = 1000L;
+    private static final long QUARTER = 1000 * 60 * 15L;
 
     /********BaiduNavi********/
     private BNRoutePlanNode.CoordinateType mCoordinateType;
@@ -128,6 +133,8 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
     private static final int ORDER_STATE_PAID = 34;//NA  info：支付金额
     private static final int ORDER_STATE_TIMEOUT = 38;//支付 info：支付金额
     private static final int ORDER_STATE_CANCEL = 39;//NA
+
+    private static final int PARKING_USING = 201;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -223,7 +230,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
     @Override
     public void bindCollectionItemView(Context context, RecyclerView.ViewHolder holder, final int groupOrdinal, Bitmap item) {
         if (groupOrdinal == 0) {
-            DetailItemHolder detailItemHolder = (DetailItemHolder) holder;
+            final DetailItemHolder detailItemHolder = (DetailItemHolder) holder;
             String info;
             String info2;
             switch (mOrderBeanList.get(0).getState()) {
@@ -283,14 +290,26 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                     info += END_TIME_FORMAT.format(mOrderBeanList.get(0).getStartTime() + QUARTER);
                     detailItemHolder.getTvDetailInfo().setText(info);
 
-                    detailItemHolder.getBtnFunction().setText("降车位锁");
-                    detailItemHolder.getBtnFunction().setVisibility(View.VISIBLE);
-                    detailItemHolder.getBtnFunction().setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            LockControl(groupOrdinal, true);
-                        }
-                    });
+                    if (mOrderBeanList.get(0).getStartTime() - System.currentTimeMillis() <= 30*60*1000 && mOrderBeanList.get(0).getStartTime() - System.currentTimeMillis() >= 0) {
+                        detailItemHolder.getBtnFunction().setText("查询可否提前使用");
+                        detailItemHolder.getBtnFunction().setVisibility(View.VISIBLE);
+                        detailItemHolder.getBtnFunction().setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                QueryParkingUsing(detailItemHolder.getBtnFunction());
+                            }
+                        });
+                    }else {
+                        detailItemHolder.getBtnFunction().setText("降车位锁");
+                        detailItemHolder.getBtnFunction().setVisibility(View.VISIBLE);
+                        detailItemHolder.getBtnFunction().setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                LockControl(groupOrdinal, true);
+                            }
+                        });
+                    }
+
 
                     detailItemHolder.getBtnNavi().setVisibility(View.VISIBLE);
                     detailItemHolder.getBtnNavi().setOnClickListener(new View.OnClickListener() {
@@ -343,7 +362,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                         }
                     });
 
-                    detailItemHolder.getBtnFunction().setText("升车位锁");
+                    detailItemHolder.getBtnFunction().setText("确认离开");
                     detailItemHolder.getBtnFunction().setVisibility(View.VISIBLE);
                     detailItemHolder.getBtnFunction().setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -352,7 +371,14 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                         }
                     });
 
-                    detailItemHolder.btnCancel.setVisibility(View.INVISIBLE);
+                    detailItemHolder.btnCancel.setVisibility(View.VISIBLE);
+                    detailItemHolder.btnCancel.setText("暂离");
+                    detailItemHolder.btnCancel.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            LockControlSelf();
+                        }
+                    });
                     break;
                 case ORDER_STATE_NOT_PAID:
                     detailItemHolder.getVpReserve().setVisibility(View.GONE);
@@ -751,6 +777,9 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
         Intent intent = new Intent(ReserveActivity.this, PayActivity.class);
         intent.putExtra("fee", (float) mOrderBeanList.get(index).getPayFee());
         intent.putExtra("payState", state);
+        if (state == Constant.PAY_STATE_GUARANTEE){
+            intent.putExtra("orderId", mOrderBeanList.get(index).getId());
+        }
         startActivity(intent);
     }
 
@@ -802,16 +831,52 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
         }
         mProgressDialog.show();
 
-        if (downLock && true){  //true->降车位锁消息发送成功
+        if (downLock){  //++降车位锁消息发送成功
             SharedPreferenceUtil.setLong(mContext, Constant.PARKING_START_TIME, System.currentTimeMillis());
             SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, ORDER_STATE_PARKED);
             updateData();
         }
-        if (!downLock && true){
+        if (!downLock){  //++升车位锁消息发送成功
             SharedPreferenceUtil.setLong(mContext, Constant.PARKING_END_TIME, System.currentTimeMillis());
             SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, ORDER_STATE_NOT_PAID);
             updateData();
         }
+    }
+
+
+    private void LockControlSelf(){
+        // TODO: 2017/8/24 增加用户自己控制车位锁界面
+    }
+
+    private void QueryParkingUsing(final Button btn){
+        ParkingUsingService parkingUsingService = ServiceGenerator.createService(ParkingUsingService.class);
+        ParkingUsingRequest parkingUsingRequest = new ParkingUsingRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256));
+        Call<ParkingUsingResponse> call = parkingUsingService.parkingUsingQuery(parkingUsingRequest);
+        call.enqueue(new Callback<ParkingUsingResponse>() {
+            @Override
+            public void onResponse(Call<ParkingUsingResponse> call, Response<ParkingUsingResponse> response) {
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                    btn.setText("降车位锁");
+                    btn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            LockControl(0, true);
+                        }
+                    });
+                }else if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == PARKING_USING){
+                    new MaterialDialog.Builder(mContext)
+                            .title("车位占用")
+                            .content("车位还不能提前使用")
+                            .negativeText("取消")
+                            .show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ParkingUsingResponse> call, Throwable t) {
+                ToastUtil.showToast(mContext, "网络连接异常");
+            }
+        });
     }
 
 
