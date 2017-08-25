@@ -49,10 +49,13 @@ public class Constant {
 
     public static final String ORDER_STATE = "ORDER_STATE";
 
-    public static final String PARKING_START_TIME = "startTime";
+    public static final String PARKING_ENTER_TIME = "enterTime";
 
-    public static final String PARKING_END_TIME = "endTime";
+    public static final String PARKING_LEAVE_TIME = "leaveTime";
 
+    public static final String NEED_POST_ENTER_TIME = "NEED_POST_ENTER_TIME";
+
+    public static final String NEED_POST_LEAVE_TIME = "NEED_POST_LEAVE_TIME";
 
     public static final int PAY_STATE_ADD_ACCOUNT = 0;
     public static final int PAY_STATE_GUARANTEE = 1;

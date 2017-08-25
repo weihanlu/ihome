@@ -56,10 +56,13 @@ import com.qhiehome.ihome.network.model.inquiry.order.OrderRequest;
 import com.qhiehome.ihome.network.model.inquiry.order.OrderResponse;
 import com.qhiehome.ihome.network.model.inquiry.parkingusing.ParkingUsingRequest;
 import com.qhiehome.ihome.network.model.inquiry.parkingusing.ParkingUsingResponse;
+import com.qhiehome.ihome.network.model.park.enter.EnterParkingRequest;
+import com.qhiehome.ihome.network.model.park.enter.EnterParkingResponse;
 import com.qhiehome.ihome.network.model.park.reservecancel.ReserveCancelRequest;
 import com.qhiehome.ihome.network.model.park.reservecancel.ReserveCancelResponse;
 import com.qhiehome.ihome.network.service.inquiry.OrderService;
 import com.qhiehome.ihome.network.service.inquiry.ParkingUsingService;
+import com.qhiehome.ihome.network.service.park.EnterParkingService;
 import com.qhiehome.ihome.network.service.park.ReserveCancelService;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
@@ -346,9 +349,9 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                         e.printStackTrace();
                         viewPagerAdapter2.notifyDataSetChanged();
                     }
-
+                    // TODO: 2017/8/25 停车时间改为从服务器获取
                     info = "停车时间   ";
-                    info += START_TIME_FORMAT.format(SharedPreferenceUtil.getLong(mContext, Constant.PARKING_START_TIME, 0));
+                    info += START_TIME_FORMAT.format(SharedPreferenceUtil.getLong(mContext, Constant.PARKING_ENTER_TIME, 0));
                     info += "\n";
                     info += "最晚可停至   ";
                     info += START_TIME_FORMAT.format(mOrderBeanList.get(0).getEndTime());
@@ -382,10 +385,10 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                     break;
                 case ORDER_STATE_NOT_PAID:
                     detailItemHolder.getVpReserve().setVisibility(View.GONE);
-
-                    info = "停车时间   " + START_TIME_FORMAT.format(SharedPreferenceUtil.getLong(mContext, Constant.PARKING_START_TIME, 0));
+                    // TODO: 2017/8/25 停车离开时间改为从服务器获取
+                    info = "停车时间   " + START_TIME_FORMAT.format(SharedPreferenceUtil.getLong(mContext, Constant.PARKING_ENTER_TIME, 0));
                     info += "\n";
-                    info += "离开时间   " + START_TIME_FORMAT.format(SharedPreferenceUtil.getLong(mContext, Constant.PARKING_END_TIME, 0));
+                    info += "离开时间   " + START_TIME_FORMAT.format(SharedPreferenceUtil.getLong(mContext, Constant.PARKING_LEAVE_TIME, 0));
                     info += "\n";
                     info += "总金额   " + String.format(Locale.CHINA, DECIMAL_2, (float)mOrderBeanList.get(0).getPayFee()) + "元";
                     detailItemHolder.getTvDetailInfo().setText(info);
@@ -832,12 +835,38 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
         mProgressDialog.show();
 
         if (downLock){  //++降车位锁消息发送成功
-            SharedPreferenceUtil.setLong(mContext, Constant.PARKING_START_TIME, System.currentTimeMillis());
+            Long currentTime = System.currentTimeMillis();
+            //如果有网络尽快发送停车信息，没有网络则暂存本地，有网络时尽快发送
+            SharedPreferenceUtil.setLong(mContext, Constant.PARKING_ENTER_TIME, currentTime);
             SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, ORDER_STATE_PARKED);
+            if (NetworkUtils.isConnected(mContext)){
+                EnterParkingService enterParkingService = ServiceGenerator.createService(EnterParkingService.class);
+                EnterParkingRequest enterParkingRequest = new EnterParkingRequest(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), currentTime);
+                Call<EnterParkingResponse> call = enterParkingService.enterParking(enterParkingRequest);
+                call.enqueue(new Callback<EnterParkingResponse>() {
+                    @Override
+                    public void onResponse(Call<EnterParkingResponse> call, Response<EnterParkingResponse> response) {
+                        if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                            SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_ENTER_TIME, false);
+                        } else {
+                            ToastUtil.showToast(mContext, "发送请求失败");
+                            SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_ENTER_TIME, true);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<EnterParkingResponse> call, Throwable t) {
+                        ToastUtil.showToast(mContext, "网络连接异常");
+                        SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_ENTER_TIME, true);
+                    }
+                });
+            }else {
+                SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_ENTER_TIME, true);
+            }
             updateData();
         }
         if (!downLock){  //++升车位锁消息发送成功
-            SharedPreferenceUtil.setLong(mContext, Constant.PARKING_END_TIME, System.currentTimeMillis());
+            SharedPreferenceUtil.setLong(mContext, Constant.PARKING_LEAVE_TIME, System.currentTimeMillis());
             SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, ORDER_STATE_NOT_PAID);
             updateData();
         }

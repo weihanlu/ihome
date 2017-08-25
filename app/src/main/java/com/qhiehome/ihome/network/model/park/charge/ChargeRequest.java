@@ -8,11 +8,16 @@ public class ChargeRequest {
 
     /**
      * phone : xxxx...xxxx
-     * gateway_id : xxxxxx
+     * leaveTime : 1499826000000
      */
 
     private String phone;
-    private String gateway_id;
+    private long leaveTime;
+
+    public ChargeRequest(String phone, long leaveTime) {
+        this.phone = phone;
+        this.leaveTime = leaveTime;
+    }
 
     public String getPhone() {
         return phone;
@@ -22,11 +27,11 @@ public class ChargeRequest {
         this.phone = phone;
     }
 
-    public String getGateway_id() {
-        return gateway_id;
+    public long getLeaveTime() {
+        return leaveTime;
     }
 
-    public void setGateway_id(String gateway_id) {
-        this.gateway_id = gateway_id;
+    public void setLeaveTime(long leaveTime) {
+        this.leaveTime = leaveTime;
     }
 }
