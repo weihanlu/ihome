@@ -351,7 +351,7 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    @OnClick({R.id.ll_my_lock, R.id.ll_my_reserve, R.id.ll_my_publish, R.id.ll_my_wallet, R.id.ll_setting, R.id.ll_quit,
+    @OnClick({R.id.ll_my_lock, R.id.ll_my_reserve, R.id.ll_my_publish, R.id.ll_my_order, R.id.ll_my_wallet, R.id.ll_setting, R.id.ll_quit,
             R.id.iv_avatar, R.id.bt_login})
     public void onViewClicked(View view) {
         switch (view.getId()) {
@@ -372,6 +372,13 @@ public class MainActivity extends BaseActivity {
             case R.id.ll_my_publish:
                 if (isLogin) {
                     PublishParkingActivity.start(mContext);
+                } else {
+                    LoginActivity.start(mContext);
+                }
+                break;
+            case R.id.ll_my_order:
+                if (isLogin) {
+                    OrderListActivity.start(mContext);
                 } else {
                     LoginActivity.start(mContext);
                 }

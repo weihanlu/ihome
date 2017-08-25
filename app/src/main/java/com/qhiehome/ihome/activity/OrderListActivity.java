@@ -19,11 +19,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.adapter.OrderListAdapter;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.inquiry.order.OrderRequest;
 import com.qhiehome.ihome.network.model.inquiry.order.OrderResponse;
+import com.qhiehome.ihome.network.model.inquiry.orderowner.OrderOwnerRequest;
+import com.qhiehome.ihome.network.model.inquiry.orderowner.OrderOwnerResponse;
+import com.qhiehome.ihome.network.service.inquiry.OrderOwnerService;
 import com.qhiehome.ihome.network.service.inquiry.OrderService;
 import com.qhiehome.ihome.util.Constant;
+import com.qhiehome.ihome.util.EncryptUtil;
+import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.TimeUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
@@ -49,17 +55,15 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
     @BindView(R.id.tb_order)
     Toolbar mTbOrder;
 
-    private OrderAdapter mAdapter;
+    private OrderListAdapter mAdapter;
+    private Context mContext;
     private Handler mHandler;
-    private List<OrderResponse.DataBean.OrderListBean> mData = new ArrayList<>();
+    private List<OrderOwnerResponse.DataBean.OrderListBean> mData = new ArrayList<>();
     //private List<Map<String, Objects>> mData = new ArrayList<>();
     private static final int REFRESH_COMPLETE = 1;
     private boolean mFirstInquiry = true;
 
 
-    private static final SimpleDateFormat START_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-    private static final SimpleDateFormat END_TIME_FORMAT = new SimpleDateFormat("HH:mm");
-    private static final DecimalFormat FEE_FORMAT = new DecimalFormat("######0.00");
 
     private static class OrderListHandler extends Handler{
         private final WeakReference<OrderListActivity> mActivity;
@@ -85,6 +89,7 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order_list);
         ButterKnife.bind(this);
+        mContext = this;
         mHandler = new OrderListHandler(this);
         initToolbar();
         initRecyclerView();
@@ -101,13 +106,13 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
 
     private void initData() {
 
-        OrderService orderService = ServiceGenerator.createService(OrderService.class);
+        OrderOwnerService orderOwnerService = ServiceGenerator.createService(OrderOwnerService.class);
         //OrderRequest orderRequest = new OrderRequest(EncryptUtil.encrypt("8888", EncryptUtil.ALGO.SHA_256));
-        OrderRequest orderRequest = new OrderRequest("f8cfd23a25811570298c8773bdca4d4d538d0d7fe52f6e5b3aefd08b907c8df2");
-        Call<OrderResponse> call = orderService.order(orderRequest);
-        call.enqueue(new Callback<OrderResponse>() {
+        OrderOwnerRequest orderOwnerRequest = new OrderOwnerRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256));
+        Call<OrderOwnerResponse> call = orderOwnerService.orderOwner(orderOwnerRequest);
+        call.enqueue(new Callback<OrderOwnerResponse>() {
             @Override
-            public void onResponse(Call<OrderResponse> call, Response<OrderResponse> response) {
+            public void onResponse(Call<OrderOwnerResponse> call, Response<OrderOwnerResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     mData = response.body().getData().getOrderList();
                     if (mFirstInquiry){
@@ -118,7 +123,7 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
                 }
             }
             @Override
-            public void onFailure(Call<OrderResponse> call, Throwable t) {
+            public void onFailure(Call<OrderOwnerResponse> call, Throwable t) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -150,70 +155,13 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
 
     private void initRecyclerView() {
         mRvOrder.setLayoutManager(new LinearLayoutManager(this));
-        mAdapter = new OrderAdapter();
+        mAdapter = new OrderListAdapter(mContext, mData);
         mRvOrder.setAdapter(mAdapter);
         Context context = OrderListActivity.this;
         DividerItemDecoration did = new DividerItemDecoration(context, LinearLayoutManager.VERTICAL);
         mRvOrder.addItemDecoration(did);
     }
 
-    class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.MyViewHolder> {
-        @Override
-        public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            return new MyViewHolder(LayoutInflater.from(OrderListActivity.this).inflate(R.layout.item_order_list, parent, false));
-        }
-
-        @Override
-        public void onBindViewHolder(MyViewHolder holder, int position) {
-//            holder.tv_estate.setText((String)mData.get(position).get("estate"));
-//            holder.tv_time.setText(mData.get(position).get("time_start") + "~" + mData.get(position).get("time_end"));
-//            String fee = "";
-//            if (((Integer)mData.get(position).get("income_expense")) == 1) {
-//                fee += "+";
-//                holder.iv_income_expense.setColorFilter(Color.RED);
-//            } else {
-//                fee += "-";
-//                holder.iv_income_expense.setColorFilter(Color.GREEN);
-//            }
-//            fee += mData.get(position).get("fee");
-//            holder.tv_fee.setText(fee);
-            OrderResponse.DataBean.OrderListBean order = mData.get(position);
-            holder.tv_estate.setText(String.valueOf(order.getId()));//订单号
-            Date start = TimeUtil.getInstance().millis2Date(order.getEnterTime());
-            Date end = TimeUtil.getInstance().millis2Date(order.getLeaveTime());
-            holder.tv_time.setText(START_TIME_FORMAT.format(start) + "-" + END_TIME_FORMAT.format(end));
-            double pay_fee = order.getPayFee();
-            if (pay_fee == 0){
-                holder.iv_income_expense.setColorFilter(Color.GREEN);
-                holder.tv_fee.setText("");
-            }else {
-                holder.iv_income_expense.setColorFilter(Color.RED);
-                holder.tv_fee.setText(FEE_FORMAT.format(pay_fee));
-            }
-        }
-
-
-        @Override
-        public int getItemCount() {
-            return mData.size();
-        }
-
-        class MyViewHolder extends RecyclerView.ViewHolder {
-            TextView tv_estate;
-            TextView tv_time;
-            TextView tv_fee;
-            ImageView iv_income_expense;
-
-            private MyViewHolder(View view) {
-                super(view);
-                tv_estate = (TextView) view.findViewById(R.id.tv_order_estate);
-                tv_time = (TextView) view.findViewById(R.id.tv_order_time);
-                tv_fee = (TextView) view.findViewById(R.id.tv_order_fee);
-                iv_income_expense = (ImageView) view.findViewById(R.id.iv_order_income_expense);
-            }
-
-        }
-    }
 
     public void onRefresh()
     {
