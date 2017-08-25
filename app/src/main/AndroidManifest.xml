@@ -79,7 +79,7 @@
         <activity android:name=".activity.UserInfoActivity" />
         <activity android:name=".activity.ParkingListActivity" />
         <activity android:name=".activity.PublishParkingActivity" />
-        <!-- <activity android:name=".activity.OrderListActivity" /> -->
+        <activity android:name=".activity.OrderListActivity" />
         <activity android:name=".activity.NaviGuideActivity" />
         <activity android:name=".activity.BaseActivity" />
 
