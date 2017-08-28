@@ -1,21 +1,20 @@
 package com.qhiehome.ihome.activity;
 
-import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -27,7 +26,6 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.bigkoo.pickerview.OptionsPickerView;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.network.ServiceGenerator;
-import com.qhiehome.ihome.network.model.base.ParkingResponse;
 import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyResponse;
 import com.qhiehome.ihome.network.model.park.reserve.ReserveRequest;
 import com.qhiehome.ihome.network.model.park.reserve.ReserveResponse;
@@ -58,6 +56,8 @@ public class ParkingListActivity extends BaseActivity {
     TextView mTvParkingGuarfee;
     @BindView(R.id.btn_parking_reserve)
     Button mBtnParkingReserve;
+    @BindView(R.id.tv_parking_name_parkinglist)
+    TextView mTvParkingName;
 
     private static enum ITEM_TYPE {
         ITEM_TYPE_BTN,
@@ -105,6 +105,10 @@ public class ParkingListActivity extends BaseActivity {
     private ArrayList<Long> mStartTimeMillisList = new ArrayList<>();
     private ArrayList<ArrayList<Long>> mEndTimeMillisList = new ArrayList<>();
 
+    private final static int UNPAY_ORDER = 300;
+    private final static int RESERVED_ORDER = 301;
+    private final static int RESERVE_ERROR = 203;
+
 
     //configuration parameter
     public int MIN_SHARING_PERIOD = 30;
@@ -130,6 +134,28 @@ public class ParkingListActivity extends BaseActivity {
         mPrice = mUnitPrice / 60 * MIN_SHARING_PERIOD;
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_parking_list, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_detail_parking_list) {
+            ShowAllParking();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
     private void initToolbar() {
         setSupportActionBar(mTbParking);
         ActionBar actionBar = getSupportActionBar();
@@ -137,7 +163,7 @@ public class ParkingListActivity extends BaseActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
         }
-        mTbParking.setTitle(mEstateBean.getName());
+        mTvParkingName.setText(mEstateBean.getName());
         mTbParking.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
         mTbParking.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -147,10 +173,10 @@ public class ParkingListActivity extends BaseActivity {
         });
     }
 
-    private void initTimePickerData(){
+    private void initTimePickerData() {
         Calendar startCalendar = Calendar.getInstance();
         int currentMin = startCalendar.get(Calendar.MINUTE);
-        int period = (int) Math.ceil(currentMin/MIN_CHARGING_PERIOD);
+        int period = (int) Math.ceil(currentMin / MIN_CHARGING_PERIOD);
         startCalendar.set(Calendar.MINUTE, period * MIN_CHARGING_PERIOD);
         startCalendar.add(Calendar.MINUTE, MIN_CHARGING_PERIOD);
         startCalendar.set(Calendar.SECOND, 0);
@@ -170,13 +196,13 @@ public class ParkingListActivity extends BaseActivity {
         mStartTime = TIME_FORMAT.format(startTime);
         mEndTime = TIME_FORMAT.format(endTime);
 
-        while (startTime <= startFinalTime){
+        while (startTime <= startFinalTime) {
             mStartTimes.add(TIME_FORMAT.format(startTime));
             mStartTimeMillisList.add(startTime);
             endTime = startTime + MIN_SHARING_PERIOD * 60 * 1000;
             ArrayList<String> tmpList = new ArrayList<>();
             ArrayList<Long> tmpMillisList = new ArrayList<>();
-            while (endTime <= endFinalTime){
+            while (endTime <= endFinalTime) {
                 tmpList.add(TIME_FORMAT.format(endTime));
                 tmpMillisList.add(endTime);
                 endTime += MIN_CHARGING_PERIOD * 60 * 1000;
@@ -235,11 +261,11 @@ public class ParkingListActivity extends BaseActivity {
 
     }
 
-    private void initEndTimeDataSourse(int startHour, int startMin, boolean needChange){
+    private void initEndTimeDataSourse(int startHour, int startMin, boolean needChange) {
         Calendar calendar = Calendar.getInstance();
-        if (startHour == -1){
+        if (startHour == -1) {
             calendar.setTime(TimeUtil.getInstance().millis2Date(System.currentTimeMillis() + QUARTER_TIME * 2));
-        }else {
+        } else {
             calendar.set(Calendar.HOUR_OF_DAY, startHour);
             calendar.set(Calendar.MINUTE, startMin);
             calendar.set(Calendar.SECOND, 0);
@@ -250,7 +276,7 @@ public class ParkingListActivity extends BaseActivity {
         }
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int min = calendar.get(Calendar.MINUTE);
-        if(needChange){
+        if (needChange) {
             mEndTimeMillis = calendar.getTimeInMillis();
             mEndTime = TIME_FORMAT.format(calendar.getTimeInMillis());
         }
@@ -304,7 +330,7 @@ public class ParkingListActivity extends BaseActivity {
                     mEndTime = TIME_FORMAT.format(mEndTimeMillisList.get(options1).get(options2));
                     mStartTimeMillis = mStartTimeMillisList.get(options1);
                     mEndTimeMillis = mEndTimeMillisList.get(options1).get(options2);
-                    float hours = (float)(mEndTimeMillisList.get(options1).get(options2) - mStartTimeMillisList.get(options1))/60/60/1000;
+                    float hours = (float) (mEndTimeMillisList.get(options1).get(options2) - mStartTimeMillisList.get(options1)) / 60 / 60 / 1000;
                     mPrice = hours * mUnitPrice;
                     mAdapter.notifyDataSetChanged();
                 }
@@ -347,7 +373,7 @@ public class ParkingListActivity extends BaseActivity {
                     mEndTime = TIME_FORMAT.format(mEndTimeMillisList.get(options1).get(options2));
                     mStartTimeMillis = mStartTimeMillisList.get(options1);
                     mEndTimeMillis = mEndTimeMillisList.get(options1).get(options2);
-                    float hours = (float) (mEndTimeMillisList.get(options1).get(options2) - mStartTimeMillisList.get(options1))/60/60/1000;
+                    float hours = (float) (mEndTimeMillisList.get(options1).get(options2) - mStartTimeMillisList.get(options1)) / 60 / 60 / 1000;
                     mPrice = hours * mUnitPrice;
                     mAdapter.notifyDataSetChanged();
                 }
@@ -413,7 +439,7 @@ public class ParkingListActivity extends BaseActivity {
             if (holder instanceof ParkingHolderNoBtn) {
                 if (position == LIST_PARKING_INFO) {
                     ((ParkingHolderNoBtn) holder).tv_title.setText(mEstateBean.getName());
-                    ((ParkingHolderNoBtn) holder).tv_content.setText("￥"+ String.format(DECIMAL_2, (float) mEstateBean.getUnitPrice()) +"/小时");
+                    ((ParkingHolderNoBtn) holder).tv_content.setText("￥" + String.format(DECIMAL_2, (float) mEstateBean.getUnitPrice()) + "/小时");
                 }
                 if (position == LIST_TOTAL_FEE) {
                     ((ParkingHolderNoBtn) holder).tv_title.setText("预计停车费");
@@ -465,7 +491,7 @@ public class ParkingListActivity extends BaseActivity {
     @OnClick(R.id.btn_parking_reserve)
     public void onViewClicked() {
         String phoneNum = SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, "");
-        if (TextUtils.isEmpty(phoneNum)){
+        if (TextUtils.isEmpty(phoneNum)) {
             new MaterialDialog.Builder(mContext)
                     .title("去登录")
                     .content("确定登录吗？")
@@ -478,14 +504,14 @@ public class ParkingListActivity extends BaseActivity {
                         }
                     })
                     .show();
-        }else {
+        } else {
             ReserveService reserveService = ServiceGenerator.createService(ReserveService.class);
             final ReserveRequest reserveRequest = new ReserveRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, Constant.TEST_PHONE_NUM), EncryptUtil.ALGO.SHA_256), mEstateBean.getId(), mStartTimeMillis, mEndTimeMillis);
             Call<ReserveResponse> call = reserveService.reserve(reserveRequest);
             call.enqueue(new Callback<ReserveResponse>() {
                 @Override
                 public void onResponse(Call<ReserveResponse> call, Response<ReserveResponse> response) {
-                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
+                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                         // TODO: 2017/8/23 修改预约接口，增加错误选项，正确跳转支付担保费
                         Intent intent = new Intent(ParkingListActivity.this, PayActivity.class);
                         intent.putExtra("fee", mGuaranteeFee);
@@ -494,19 +520,50 @@ public class ParkingListActivity extends BaseActivity {
                         SharedPreferenceUtil.setLong(mContext, Constant.ORDER_CREATE_TIME, System.currentTimeMillis());
                         startActivity(intent);
                         ToastUtil.showToast(mContext, "预约成功");
-                    }else {
-                        final AlertDialog.Builder reserveFailedDialog = new AlertDialog.Builder(ParkingListActivity.this);
-                        //reserveFailedDialog.setIcon(R.drawable.icon_dialog);
-                        //可以增加APPlogo
-                        reserveFailedDialog.setTitle("预约失败");
-                        reserveFailedDialog.setMessage("没有合适的车位，请重新选择小区或时间");
-                        reserveFailedDialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-
-                            }
-                        });
-                        reserveFailedDialog.show();
+                    } else if (response.body().getErrcode() == UNPAY_ORDER) {
+                        new MaterialDialog.Builder(mContext)
+                                .title("预约失败")
+                                .content("您有尚未支付的订单，请先完成支付")
+                                .positiveText("去支付")
+                                .negativeText("取消")
+                                .canceledOnTouchOutside(false)
+                                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                    @Override
+                                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                        Intent intent = new Intent(ParkingListActivity.this, ReserveListActivity.class);
+                                        startActivity(intent);
+                                    }
+                                })
+                                .show();
+                    } else if (response.body().getErrcode() == RESERVED_ORDER) {
+                        new MaterialDialog.Builder(mContext)
+                                .title("预约失败")
+                                .content("您已有预约的订单")
+                                .positiveText("去停车")
+                                .negativeText("取消")
+                                .canceledOnTouchOutside(false)
+                                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                    @Override
+                                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                        Intent intent = new Intent(ParkingListActivity.this, ReserveListActivity.class);
+                                        startActivity(intent);
+                                    }
+                                })
+                                .show();
+                    } else if (response.body().getErrcode() == RESERVE_ERROR) {
+                        new MaterialDialog.Builder(mContext)
+                                .title("预约失败")
+                                .content("没有满足条件的车位")
+                                .positiveText("查看全部车位")
+                                .negativeText("取消")
+                                .canceledOnTouchOutside(false)
+                                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                    @Override
+                                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                        ShowAllParking();
+                                    }
+                                })
+                                .show();
                     }
                 }
 
@@ -517,6 +574,14 @@ public class ParkingListActivity extends BaseActivity {
             });
         }
 
+    }
+
+    private void ShowAllParking() {
+        Intent intent = new Intent(ParkingListActivity.this, ParkingTimelineActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("estate", mEstateBean);
+        intent.putExtras(bundle);
+        startActivity(intent);
     }
 
 
