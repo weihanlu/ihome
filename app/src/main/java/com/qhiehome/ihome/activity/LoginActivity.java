@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.EditText;
@@ -14,10 +15,14 @@ import android.widget.EditText;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.SMS.SMSResponse;
+import com.qhiehome.ihome.network.model.inquiry.orderusing.OrderUsingRequest;
+import com.qhiehome.ihome.network.model.inquiry.orderusing.OrderUsingResponse;
+import com.qhiehome.ihome.network.model.park.reserve.ReserveResponse;
 import com.qhiehome.ihome.network.model.signin.SigninRequest;
 import com.qhiehome.ihome.network.model.signin.SigninResponse;
 import com.qhiehome.ihome.network.service.SMS.SMSService;
 import com.qhiehome.ihome.network.service.SMS.SMSServiceGenerator;
+import com.qhiehome.ihome.network.service.inquiry.OrderUsingService;
 import com.qhiehome.ihome.network.service.signin.SigninService;
 import com.qhiehome.ihome.observer.SMSContentObserver;
 import com.qhiehome.ihome.util.CommonUtil;
@@ -139,8 +144,9 @@ public class LoginActivity extends BaseActivity {
             @Override
             public void onResponse(@NonNull Call<SigninResponse> call, @NonNull Response<SigninResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                    MainActivity.start(LoginActivity.this);
+//                    MainActivity.start(LoginActivity.this);
                     SharedPreferenceUtil.setString(LoginActivity.this, Constant.PHONE_KEY, mPhoneNum);
+                    getOrderInfo();
                 }
             }
             @Override
@@ -264,5 +270,37 @@ public class LoginActivity extends BaseActivity {
         }
     }
 
+    /********重新登录时恢复用户订单数据********/
+    private void getOrderInfo(){
+        OrderUsingService orderUsingService = ServiceGenerator.createService(OrderUsingService.class);
+        OrderUsingRequest orderUsingRequest = new OrderUsingRequest(EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.SHA_256));
+        Call<OrderUsingResponse> call = orderUsingService.orderUsing(orderUsingRequest);
+        call.enqueue(new Callback<OrderUsingResponse>() {
+            @Override
+            public void onResponse(Call<OrderUsingResponse> call, Response<OrderUsingResponse> response) {
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
+                    if (response.body().getData().getOrder() == null){
+                        MainActivity.start(LoginActivity.this);
+                    }else {
+                        OrderUsingResponse.DataBean.OrderBean orderBean = response.body().getData().getOrder();
+                        SharedPreferenceUtil.setLong(LoginActivity.this, Constant.PARKING_START_TIME, orderBean.getStartTime());
+                        SharedPreferenceUtil.setLong(LoginActivity.this, Constant.PARKING_END_TIME, orderBean.getEndTime());
+                        SharedPreferenceUtil.setString(LoginActivity.this, Constant.RESERVE_LOCK_MAC, orderBean.getParking().getLockMac());
+                        SharedPreferenceUtil.setString(LoginActivity.this, Constant.RESERVE_LOCK_PWD, orderBean.getParking().getPassword());
+                        SharedPreferenceUtil.setString(LoginActivity.this, Constant.RESERVE_GATEWAY_ID, orderBean.getParking().getGateWayId());
+                        SharedPreferenceUtil.setInt(LoginActivity.this, Constant.ORDER_STATE, orderBean.getState());
+                        MainActivity.start(LoginActivity.this);
+                    }
+                }else {
+                    ToastUtil.showToast(LoginActivity.this, "服务器繁忙，请稍后再试");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<OrderUsingResponse> call, Throwable t) {
+                ToastUtil.showToast(LoginActivity.this, "网络连接异常");
+            }
+        });
+    }
 
 }

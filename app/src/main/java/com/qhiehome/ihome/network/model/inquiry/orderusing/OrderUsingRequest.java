@@ -12,6 +12,10 @@ public class OrderUsingRequest {
 
     private String phone;
 
+    public OrderUsingRequest(String phone) {
+        this.phone = phone;
+    }
+
     public String getPhone() {
         return phone;
     }

@@ -134,7 +134,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
     private static final int ORDER_STATE_PARKED = 32;//导航+升降车位锁+小区地图  info：停车时间+最晚离开时间
     private static final int ORDER_STATE_NOT_PAID = 33;//支付 info：支付金额
     private static final int ORDER_STATE_PAID = 34;//NA  info：支付金额
-    private static final int ORDER_STATE_TIMEOUT = 38;//支付 info：支付金额
+    private static final int ORDER_STATE_TIMEOUT = 38;//NA info：支付金额
     private static final int ORDER_STATE_CANCEL = 39;//NA
 
     private static final int PARKING_USING = 201;
@@ -176,7 +176,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
     @Override
     public void onStartLoadingGroup(int groupOrdinal) {
         //只有第一项且第一项不是已取消、已支付订单时展开显示详细内容
-        if (groupOrdinal == 0 && mOrderBeanList.get(0).getState() != ORDER_STATE_CANCEL && mOrderBeanList.get(0).getState() != ORDER_STATE_PAID) {
+        if (groupOrdinal == 0 && mOrderBeanList.get(0).getState() != ORDER_STATE_CANCEL && mOrderBeanList.get(0).getState() != ORDER_STATE_PAID && mOrderBeanList.get(0).getState() != ORDER_STATE_TIMEOUT) {
             new LoadDataTask(groupOrdinal, mLvReserve).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
     }
@@ -201,7 +201,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
     @Override
     public void bindCollectionHeaderView(Context context, AsyncHeaderViewHolder holder, int groupOrdinal, String headerItem) {
         MyHeaderViewHolder myHeaderViewHolder = (MyHeaderViewHolder) holder;
-        if (groupOrdinal != 0 || mOrderBeanList.get(0).getState() == ORDER_STATE_CANCEL || mOrderBeanList.get(0).getState() == ORDER_STATE_PAID) {
+        if (groupOrdinal != 0 || mOrderBeanList.get(0).getState() == ORDER_STATE_CANCEL || mOrderBeanList.get(0).getState() == ORDER_STATE_PAID || mOrderBeanList.get(0).getState() == ORDER_STATE_TIMEOUT) {
             myHeaderViewHolder.getIvExpansionIndicator().setVisibility(View.INVISIBLE);
             myHeaderViewHolder.getmProgressBar().setVisibility(View.INVISIBLE);
             myHeaderViewHolder.setEnableClick(false);
@@ -216,6 +216,10 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
             case ORDER_STATE_PAID:
                 myHeaderViewHolder.getIvState().setVisibility(View.VISIBLE);
                 myHeaderViewHolder.getIvState().setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_order_finish));
+                break;
+            case ORDER_STATE_TIMEOUT:
+                myHeaderViewHolder.getIvState().setVisibility(View.VISIBLE);
+                myHeaderViewHolder.getIvState().setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_timeout));
                 break;
             default:
                 myHeaderViewHolder.getIvState().setVisibility(View.INVISIBLE);
@@ -237,13 +241,14 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
             String info;
             String info2;
             switch (mOrderBeanList.get(0).getState()) {
-                case ORDER_STATE_TEMP_RESERVED:
+                case ORDER_STATE_TEMP_RESERVED://state--30
                     detailItemHolder.getVpReserve().setVisibility(View.GONE);
 
                     info = "需支付担保费   " + String.format(Locale.CHINA, DECIMAL_2, (float) mOrderBeanList.get(0).getPayFee()) + "元";
                     detailItemHolder.getTvDetailInfo().setText(info);
                     mTvCountDown = detailItemHolder.getTvDetailInfo2();
-                    long timeRemaining = SharedPreferenceUtil.getLong(mContext, Constant.ORDER_CREATE_TIME, System.currentTimeMillis()) + QUARTER - System.currentTimeMillis();
+
+                    long timeRemaining = mOrderBeanList.get(0).getCreateTime() + QUARTER - System.currentTimeMillis();
                     if (mCountDownTimer == null) {
                         mCountDownTimer = new MyCountDownTimer(timeRemaining, INTERVAL);
                     }
@@ -270,7 +275,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                     detailItemHolder.getBtnNavi().setVisibility(View.INVISIBLE);
 
                     break;
-                case ORDER_STATE_RESERVED:
+                case ORDER_STATE_RESERVED://state--31
                     detailItemHolder.getVpReserve().setVisibility(View.VISIBLE);
                     /*********临时数据**********/
                     List<View> viewList = new ArrayList<>();
@@ -289,6 +294,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                         viewPagerAdapter.notifyDataSetChanged();
                     }
 
+                    // TODO: 2017/8/28 停车时间改为可配置
                     info = "最晚停车时间   ";
                     info += END_TIME_FORMAT.format(mOrderBeanList.get(0).getStartTime() + QUARTER);
                     detailItemHolder.getTvDetailInfo().setText(info);
@@ -303,7 +309,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                             }
                         });
                     }else {
-                        detailItemHolder.getBtnFunction().setText("降车位锁");
+                        detailItemHolder.getBtnFunction().setText("开始停车");
                         detailItemHolder.getBtnFunction().setVisibility(View.VISIBLE);
                         detailItemHolder.getBtnFunction().setOnClickListener(new View.OnClickListener() {
                             @Override
@@ -331,7 +337,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                     });
 
                     break;
-                case ORDER_STATE_PARKED:
+                case ORDER_STATE_PARKED://state--32
                     detailItemHolder.getVpReserve().setVisibility(View.VISIBLE);
                     /*********临时数据**********/
                     List<View> viewList2 = new ArrayList<>();
@@ -349,9 +355,9 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                         e.printStackTrace();
                         viewPagerAdapter2.notifyDataSetChanged();
                     }
-                    // TODO: 2017/8/25 停车时间改为从服务器获取
                     info = "停车时间   ";
-                    info += START_TIME_FORMAT.format(SharedPreferenceUtil.getLong(mContext, Constant.PARKING_ENTER_TIME, 0));
+//                    info += START_TIME_FORMAT.format(SharedPreferenceUtil.getLong(mContext, Constant.PARKING_ENTER_TIME, 0));
+                    info += START_TIME_FORMAT.format(mOrderBeanList.get(0).getEnterTime());
                     info += "\n";
                     info += "最晚可停至   ";
                     info += START_TIME_FORMAT.format(mOrderBeanList.get(0).getEndTime());
@@ -383,12 +389,11 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                         }
                     });
                     break;
-                case ORDER_STATE_NOT_PAID:
+                case ORDER_STATE_NOT_PAID://state--33
                     detailItemHolder.getVpReserve().setVisibility(View.GONE);
-                    // TODO: 2017/8/25 停车离开时间改为从服务器获取
-                    info = "停车时间   " + START_TIME_FORMAT.format(SharedPreferenceUtil.getLong(mContext, Constant.PARKING_ENTER_TIME, 0));
+                    info = "停车时间   " + START_TIME_FORMAT.format(mOrderBeanList.get(0).getEnterTime());
                     info += "\n";
-                    info += "离开时间   " + START_TIME_FORMAT.format(SharedPreferenceUtil.getLong(mContext, Constant.PARKING_LEAVE_TIME, 0));
+                    info += "离开时间   " + START_TIME_FORMAT.format(mOrderBeanList.get(0).getEndTime());
                     info += "\n";
                     info += "总金额   " + String.format(Locale.CHINA, DECIMAL_2, (float)mOrderBeanList.get(0).getPayFee()) + "元";
                     detailItemHolder.getTvDetailInfo().setText(info);
@@ -405,11 +410,11 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                         }
                     });
                     break;
-                case ORDER_STATE_PAID:
+                case ORDER_STATE_PAID://state--34
                     break;
-                case ORDER_STATE_TIMEOUT:
+                case ORDER_STATE_TIMEOUT://state--38
                     break;
-                case ORDER_STATE_CANCEL:
+                case ORDER_STATE_CANCEL://state--39
                     break;
                 default:
                     break;
@@ -735,10 +740,6 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
 
     private void updateData() {
 
-        if (mOrderBeanList.size() > 0 && mOrderBeanList.get(0).getState()<SharedPreferenceUtil.getInt(mContext, Constant.ORDER_STATE, mOrderBeanList.get(0).getState())){
-            mOrderBeanList.get(0).setState(SharedPreferenceUtil.getInt(mContext, Constant.ORDER_STATE, mOrderBeanList.get(0).getState()));
-        }
-
         mInventory = new CollectionView.Inventory<>();
 
         for (int i = 0; i < mOrderBeanList.size(); i++) {
@@ -869,6 +870,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
             SharedPreferenceUtil.setLong(mContext, Constant.PARKING_LEAVE_TIME, System.currentTimeMillis());
             SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, ORDER_STATE_NOT_PAID);
             updateData();
+            // TODO: 2017/8/28 增加停车离开计费接口
         }
     }
 
