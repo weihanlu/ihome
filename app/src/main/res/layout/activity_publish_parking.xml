@@ -58,7 +58,7 @@
         app:fabSize="auto"
         android:clickable="false"
         android:src="@android:drawable/ic_input_add"
-        android:layout_gravity="bottom|right"
+        android:layout_gravity="bottom|center"
         />
 
 </android.support.design.widget.CoordinatorLayout>

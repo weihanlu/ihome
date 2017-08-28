@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.text.TextUtilsCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
@@ -14,8 +13,8 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -47,11 +46,11 @@ import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.TimeUtil;
 import com.qhiehome.ihome.util.ToastUtil;
+import com.qhiehome.ihome.view.WeekPickView;
 import com.qhiehome.ihome.view.RecyclerViewEmptySupport;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -210,7 +209,6 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
           public void onCallbackPublish(View view, final int position) {
               final PublishBean publishBean = mPublishList.get(position);
               final int shareId = publishBean.getShareId();
-              LogUtil.d(TAG, "callback share id is " + shareId);
               int red = ContextCompat.getColor(mContext, android.R.color.holo_red_light);
               new MaterialDialog.Builder(mContext)
                       .title("警告")
@@ -248,6 +246,38 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                           }
                       })
                       .show();
+          }
+
+          @Override
+          public void onToggleRepublish(final View view, boolean isChecked, int position) {
+              // republish
+              if (isChecked) {
+                  View customView = LayoutInflater.from(mContext).inflate(R.layout.dialog_select_days, null);
+                  final WeekPickView datePickView = (WeekPickView) customView.findViewById(R.id.dpv_selected);
+                  new MaterialDialog.Builder(mContext)
+                          .title("选择")
+                          .customView(customView, false)
+                          .positiveText("确定")
+                          .negativeText("取消")
+                          .onPositive(new MaterialDialog.SingleButtonCallback() {
+                              @Override
+                              public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                  boolean[] selectStatus = datePickView.getSelectStatus();
+                                  // TODO: 2017/8/28 send to server
+                              }
+                          })
+                          .onNegative(new MaterialDialog.SingleButtonCallback() {
+                              @Override
+                              public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                  ((SwitchCompat)view).setChecked(false);
+                              }
+                          })
+                          .canceledOnTouchOutside(false)
+                          .show();
+
+              } else {
+                  // TODO: 2017/8/28  取消重复发布
+              }
           }
       });
     }

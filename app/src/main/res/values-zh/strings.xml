@@ -19,4 +19,7 @@
     <string name="login_getVerification">获取</string>
     <string name="login_successGetVerification">获取成功</string>
     <string name="hello_blank_fragment">空Fragment</string>
+
+    <!-- MainActivity -->
+    <string name="format_user_balance">账户余额：%.2f元</string>
 </resources>

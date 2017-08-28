@@ -27,6 +27,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -36,9 +37,12 @@ import com.qhiehome.ihome.fragment.ParkFragment;
 import com.qhiehome.ihome.manager.ActivityManager;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.avatar.UploadAvatarResponse;
+import com.qhiehome.ihome.network.model.pay.accountbalance.AccountBalanceRequest;
+import com.qhiehome.ihome.network.model.pay.accountbalance.AccountBalanceResponse;
 import com.qhiehome.ihome.network.model.update.CheckUpdateResponse;
 import com.qhiehome.ihome.network.service.avatar.DownloadAvatarService;
 import com.qhiehome.ihome.network.service.avatar.UploadAvatarService;
+import com.qhiehome.ihome.network.service.pay.AccountBalanceService;
 import com.qhiehome.ihome.network.service.update.PgyService;
 import com.qhiehome.ihome.network.service.update.PgyServiceGenerator;
 import com.qhiehome.ihome.util.CommonUtil;
@@ -59,6 +63,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -83,6 +88,8 @@ public class MainActivity extends BaseActivity {
 
     @BindView(R.id.iv_avatar)
     CircleImageView ivAvatar;
+    @BindView(R.id.tv_user_balance)
+    TextView mTvUserBalance;
     @BindView(R.id.bt_login)
     Button btLogin;
     @BindView(R.id.drawer)
@@ -112,6 +119,8 @@ public class MainActivity extends BaseActivity {
 
     private boolean isFirst;
 
+    private String mPhoneNum;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -131,21 +140,42 @@ public class MainActivity extends BaseActivity {
     }
 
     private void checkLogin() {
-        String phoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, "");
-        if (!TextUtils.isEmpty(phoneNum)) {
+        mPhoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, "");
+        if (!TextUtils.isEmpty(mPhoneNum)) {
             isLogin = true;
         }
         ivAvatar.setVisibility(isLogin? View.VISIBLE: View.INVISIBLE);
+        mTvUserBalance.setVisibility(isLogin? View.VISIBLE: View.INVISIBLE);
         btLogin.setVisibility(isLogin? View.INVISIBLE: View.VISIBLE);
-        if (isLogin & isFirst) {
-            initAvatar();
-            isFirst = false;
+        if (isLogin) {
+            initBalance();
+            if (isFirst) {
+                initAvatar();
+                isFirst = false;
+            }
         }
     }
 
+    private void initBalance() {
+        AccountBalanceService accountBalanceService = ServiceGenerator.createService(AccountBalanceService.class);
+        AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.SHA_256), 0.0);
+        Call<AccountBalanceResponse> call = accountBalanceService.account(accountBalanceRequest);
+        call.enqueue(new Callback<AccountBalanceResponse>() {
+            @Override
+            public void onResponse(Call<AccountBalanceResponse> call, Response<AccountBalanceResponse> response) {
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                    mTvUserBalance.setText(String.format(getString(R.string.format_user_balance), response.body().getData().getAccount()));
+                }
+            }
+            @Override
+            public void onFailure(Call<AccountBalanceResponse> call, Throwable t) {
+                ToastUtil.showToast(mContext, "网络连接异常");
+            }
+        });
+    }
+
     private void initAvatar() {
-        String phoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, "");
-        mAvatarName = "portrait_" + phoneNum;
+        mAvatarName = "portrait_" + mPhoneNum;
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         mAvatarFile = new File(storageDir, mAvatarName + ".jpg");
         mAvatarPath = mAvatarFile.getAbsolutePath();
@@ -528,8 +558,7 @@ public class MainActivity extends BaseActivity {
         File avatarDir = mAvatarFile.getParentFile();
         if (avatarDir.isDirectory() && avatarDir.listFiles().length != 0) {
             UploadAvatarService uploadAvatarService = ServiceGenerator.createService(UploadAvatarService.class);
-            String phoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, "");
-            RequestBody requestPhone = RequestBody.create(MediaType.parse("multipart/form-data"), EncryptUtil.encrypt(phoneNum, EncryptUtil.ALGO.SHA_256));
+            RequestBody requestPhone = RequestBody.create(MediaType.parse("multipart/form-data"), EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.SHA_256));
             final RequestBody requestAvatar = RequestBody.create(MediaType.parse("multipart/form-data"), mAvatarFile);
             LogUtil.d(TAG, "file length is " + mAvatarFile.length());
             String encryptedAvatarName = EncryptUtil.encrypt(mAvatarName, EncryptUtil.ALGO.MD5);
