@@ -54,7 +54,7 @@ public class PayActivity extends AppCompatActivity {
     RecyclerView mRvPay;
     @BindView(R.id.btn_pay)
     Button mBtnPay;
-    @BindView(R.id.layout_pay)
+    @BindView(R.id.layout_pay_add)
     RelativeLayout mLayoutPay;
     @BindView(R.id.btn_add_balance_1)
     Button mBtnAddBalance1;
@@ -75,6 +75,7 @@ public class PayActivity extends AppCompatActivity {
     private int mButtonClicked = 1;
     private int mOrderId = 0;
     private List<Button> mBtnList = new ArrayList<>();
+    private boolean mIsFirstLoad;
 
     private static final int ALI_PAY = 0;
     private static final int WECHAT_PAY = 1;
@@ -91,6 +92,8 @@ public class PayActivity extends AppCompatActivity {
         mOrderId = intent.getIntExtra("orderId", 0);
         mContext = this;
         mSelectedNum = ALI_PAY;
+        mIsFirstLoad = true;
+
         initToolbar();
         initRecyclerView();
 
@@ -217,6 +220,8 @@ public class PayActivity extends AppCompatActivity {
                                 @Override
                                 public void onResponse(Call<PayGuaranteeResponse> call, Response<PayGuaranteeResponse> response) {
                                     if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                                        SharedPreferenceUtil.setLong(mContext, Constant.PARKING_START_TIME, response.body().getData().getEstate().getParking().getShare().getStartTime());
+                                        SharedPreferenceUtil.setLong(mContext, Constant.PARKING_END_TIME, response.body().getData().getEstate().getParking().getShare().getEndTime());
                                         SharedPreferenceUtil.setString(mContext, Constant.RESERVE_LOCK_MAC, response.body().getData().getEstate().getParking().getLockMac());
                                         SharedPreferenceUtil.setString(mContext, Constant.RESERVE_LOCK_PWD, response.body().getData().getEstate().getParking().getPassword());
                                         SharedPreferenceUtil.setString(mContext, Constant.RESERVE_GATEWAY_ID, response.body().getData().getEstate().getParking().getGatewayId());
@@ -321,7 +326,11 @@ public class PayActivity extends AppCompatActivity {
                     holder.iv_pay.setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_pay_account));
                     holder.tv_pay.setText("账户余额");
                     holder.tv_pay_info.setText("正在获取账户余额");
-                    getAccountBalance(holder);
+                    if (mIsFirstLoad){
+                        getAccountBalance(holder);
+                        mIsFirstLoad = false;
+                    }
+
                     if (mSelectedNum == ACCOUNT_BALANCE) {
                         holder.iv_pay_select.setVisibility(View.VISIBLE);
                     } else {
@@ -388,4 +397,5 @@ public class PayActivity extends AppCompatActivity {
             }
         });
     }
+
 }
