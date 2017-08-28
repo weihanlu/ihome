@@ -85,8 +85,5 @@ public class TimeUtil {
         return new Date(millis);
     }
 
-    public void recordTime(Context context, boolean isStart){
-        SharedPreferenceUtil.setLong(context, isStart ? Constant.PARKING_START_TIME : Constant.PARKING_END_TIME, System.currentTimeMillis());
-    }
 
 }

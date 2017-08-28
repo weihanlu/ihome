@@ -17,8 +17,24 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
             android:minHeight="?attr/actionBarSize"
-            android:theme="?attr/actionBarTheme"
-            />
+            android:theme="?attr/actionBarTheme">
+
+            <TextView
+                android:id="@+id/tv_parking_name_parkinglist"
+                android:layout_width="240dp"
+                android:layout_height="wrap_content"
+                tools:text="北京邮电大学停车场"
+                android:textColor="@color/white"
+                android:marqueeRepeatLimit="-1"
+                android:textSize="18sp"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:singleLine="true"
+                android:ellipsize="marquee"/>
+
+        </android.support.v7.widget.Toolbar>
+
+
 
     </android.support.design.widget.AppBarLayout>
 

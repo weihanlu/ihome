@@ -17,6 +17,6 @@ public interface ParkingUsingService {
             "Content-Type: application/json",
             "Accept: application/json"
     })
-    @POST("parking/using")
+    @POST("occupation")
     Call<ParkingUsingResponse> parkingUsingQuery(@Body ParkingUsingRequest parkingUsingRequest);
 }

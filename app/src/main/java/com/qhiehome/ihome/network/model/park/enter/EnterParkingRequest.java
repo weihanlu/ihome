@@ -4,11 +4,16 @@ public class EnterParkingRequest {
 
     /**
      * phone : xxxx...xxxx
-     * gateway_id : xxxxxx
+     * enterTime : 1499826000000
      */
 
     private String phone;
-    private String gateway_id;
+    private long enterTime;
+
+    public EnterParkingRequest(String phone, long enterTime) {
+        this.phone = phone;
+        this.enterTime = enterTime;
+    }
 
     public String getPhone() {
         return phone;
@@ -18,11 +23,11 @@ public class EnterParkingRequest {
         this.phone = phone;
     }
 
-    public String getGateway_id() {
-        return gateway_id;
+    public long getEnterTime() {
+        return enterTime;
     }
 
-    public void setGateway_id(String gateway_id) {
-        this.gateway_id = gateway_id;
+    public void setEnterTime(long enterTime) {
+        this.enterTime = enterTime;
     }
 }

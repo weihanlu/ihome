@@ -283,8 +283,7 @@ public class PayActivity extends AppCompatActivity {
     private class PayListAdapter extends RecyclerView.Adapter<PayListAdapter.PayListHolder> {
         @Override
         public PayListHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            PayListHolder payListHolder = new PayListHolder(LayoutInflater.from(mContext).inflate(R.layout.item_pay_list, parent, false));
-            return payListHolder;
+            return new PayListHolder(LayoutInflater.from(mContext).inflate(R.layout.item_pay_list, parent, false));
         }
 
         @Override
@@ -321,7 +320,6 @@ public class PayActivity extends AppCompatActivity {
                 case ACCOUNT_BALANCE:
                     holder.iv_pay.setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_pay_account));
                     holder.tv_pay.setText("账户余额");
-                    // TODO: 2017/8/14 网络请求获得账户余额
                     holder.tv_pay_info.setText("正在获取账户余额");
                     getAccountBalance(holder);
                     if (mSelectedNum == ACCOUNT_BALANCE) {
@@ -337,7 +335,11 @@ public class PayActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            return 3;
+            if (mPayState == Constant.PAY_STATE_ADD_ACCOUNT){
+                return 2;
+            }else {
+                return 3;
+            }
         }
 
         class PayListHolder extends RecyclerView.ViewHolder {
