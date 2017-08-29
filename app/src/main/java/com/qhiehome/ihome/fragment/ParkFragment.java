@@ -17,6 +17,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,7 +56,6 @@ import com.qhiehome.ihome.activity.MainActivity;
 import com.qhiehome.ihome.activity.MapSearchActivity;
 import com.qhiehome.ihome.activity.NaviGuideActivity;
 import com.qhiehome.ihome.activity.ParkingListActivity;
-import com.qhiehome.ihome.activity.ParkingTimelineActivity;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.baiduMap.BaiduMapResponse;
 import com.qhiehome.ihome.network.model.base.ParkingResponse;
@@ -68,6 +68,7 @@ import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
+import com.qhiehome.ihome.view.SharePopupWindow;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -109,7 +110,6 @@ public class ParkFragment extends Fragment {
     Button mBtnMapRefresh;
     @BindView(R.id.btn_map_marker)
     Button mBtnMapMarker;
-
     @BindView((R.id.tv_current_city))
     TextView mTvCurrentCity;
 
@@ -168,6 +168,8 @@ public class ParkFragment extends Fragment {
     private boolean mMapStateParkingNum = true;
     private String mCity;
 
+    private View mView;
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -177,9 +179,9 @@ public class ParkFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_park, container, false);
-        unbinder = ButterKnife.bind(this, view);
-        initView(view);
+        mView = inflater.inflate(R.layout.fragment_park, container, false);
+        unbinder = ButterKnife.bind(this, mView);
+        initView(mView);
         initMap();
         initLocate();
 //        mParkingSQLHelper = new ParkingSQLHelper(mContext);
@@ -190,7 +192,7 @@ public class ParkFragment extends Fragment {
 //        AlarmTimer.setRepeatAlarmTime(mContext, System.currentTimeMillis(),
 //                10 * 1000, Constant.TIMER_ACTION, AlarmManager.RTC_WAKEUP);
         mIsSearch = false;
-        return view;
+        return mView;
     }
 
     private void initToolbar() {
@@ -637,7 +639,18 @@ public class ParkFragment extends Fragment {
 
     @OnClick(R.id.iv_open_drawer)
     public void onOpenDrawer() {
-        ((MainActivity)getActivity()).openDrawer();
+        ((MainActivity) getActivity()).openDrawer();
+    }
+
+    @OnClick(R.id.iv_share)
+    public void onShareClick() {
+        showPopFormBottom();
+    }
+
+    private void showPopFormBottom() {
+        SharePopupWindow sharePopupWindow = new SharePopupWindow(mContext, getActivity(), 200);
+        //showAtLocation(View parent, int gravity, int x, int y)
+        sharePopupWindow.showAtLocation(mView, Gravity.BOTTOM, 0, 0);
     }
 
 

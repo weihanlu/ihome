@@ -34,6 +34,7 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.baidu.mapapi.SDKInitializer;
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.adapter.UserLockAdapter;
 import com.qhiehome.ihome.fragment.ParkFragment;
 import com.qhiehome.ihome.manager.ActivityManager;
 import com.qhiehome.ihome.network.ServiceGenerator;
@@ -389,7 +390,7 @@ public class MainActivity extends BaseActivity {
         switch (view.getId()) {
             case R.id.ll_my_lock:
                 if (isLogin) {
-                    UserInfoActivity.start(mContext);
+                    UserLockActivity.start(mContext);
                 } else {
                     LoginActivity.start(mContext);
                 }
@@ -618,12 +619,6 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    @OnClick(R.id.iv_share)
-    public void onViewClicked() {
-        ToastUtil.showToast(mContext, "share");
-        showPopFormBottom();
-    }
-
     private class DownloadAsyncTask extends AsyncTask<String, Void, Void> {
 
         @Override
@@ -727,12 +722,4 @@ public class MainActivity extends BaseActivity {
             return null;
         }
     }
-
-    public void showPopFormBottom() {
-        SharePopupWindow sharePopupWindow = new SharePopupWindow(mContext);
-        //showAtLocation(View parent, int gravity, int x, int y)
-        sharePopupWindow.showAtLocation(findViewById(R.id.drawer), Gravity.BOTTOM, 0, 0);
-    }
-
-
 }

@@ -76,7 +76,6 @@
             android:exported="false"
             android:process=":remote" />
 
-        <activity android:name=".activity.UserInfoActivity" />
         <activity android:name=".activity.ParkingListActivity" />
         <activity android:name=".activity.PublishParkingActivity" />
         <activity android:name=".activity.OrderListActivity" />
@@ -130,6 +129,7 @@
         <activity android:name=".activity.PayActivity" />
         <activity android:name=".activity.ParkingTimelineActivity" />
         <activity android:name=".activity.ReserveActivity"/>
+        <activity android:name=".activity.UserLockActivity"/>
     </application>
 
 </manifest>

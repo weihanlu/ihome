@@ -3,9 +3,7 @@
     android:id="@+id/layout_share"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_gravity="bottom"
-
-    android:background="@color/white">
+    android:background="@color/colorAccent">
 
     <TextView
         android:id="@+id/tv_share_title"
@@ -14,6 +12,7 @@
         android:layout_centerHorizontal="true"
         android:padding="16dp"
         android:text="分享到"
+        android:textColor="@color/white"
         android:textSize="18sp" />
 
     <android.support.v7.widget.RecyclerView
@@ -21,7 +20,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/tv_share_title"
-        android:layout_centerHorizontal="true"></android.support.v7.widget.RecyclerView>
+        android:layout_centerHorizontal="true"/>
 
 
 </RelativeLayout>

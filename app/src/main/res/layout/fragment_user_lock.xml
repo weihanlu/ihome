@@ -1,0 +1,15 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.qhiehome.ihome.fragment.UserLockFragment">
+
+    <ViewStub
+        android:id="@+id/vs_user_locks"
+        android:layout="@layout/rv_user_locks"
+        android:inflatedId="@+id/rv_user_locks"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        />
+
+</FrameLayout>
