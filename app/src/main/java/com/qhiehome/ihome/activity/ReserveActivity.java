@@ -696,7 +696,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
         }
-        mTbReserve.setTitle("我的预约");
+        mTbReserve.setTitle("历史订单");
         mTbReserve.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
         mTbReserve.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
