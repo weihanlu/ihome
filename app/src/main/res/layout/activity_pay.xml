@@ -25,13 +25,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:padding="4dp"
         android:background="@color/light_gray">
 
         <RelativeLayout
-            android:id="@+id/tips_fee_add"
+            android:id="@+id/layout_title_add"
             android:layout_width="match_parent"
-            android:layout_height="40dp">
+            android:layout_height="wrap_content">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -40,23 +39,25 @@
                 android:layout_alignParentStart="true"
                 android:layout_marginStart="8dp"
                 android:text="请选择充值金额"
+                android:padding="8dp"
                 android:textSize="18sp"/>
 
         </RelativeLayout>
 
         <RelativeLayout
-            android:id="@+id/layout_pay_add"
+            android:id="@+id/layout_detail_add"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/tips_fee_add"
+            android:layout_below="@id/layout_title_add"
             android:background="@color/white">
 
             <TextView
-                android:id="@+id/tv_info_fee_add"
+                android:id="@+id/tv_add"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="充值金额："
                 android:textSize="18sp"
+                android:padding="8dp"
                 android:layout_centerVertical="true"
                 android:layout_alignParentStart="true"
                 android:layout_marginStart="8dp"
@@ -68,8 +69,10 @@
                 android:layout_height="40dp"
                 android:background="@drawable/round_button_green"
                 android:layout_centerVertical="true"
-                android:layout_toRightOf="@id/tv_info_fee_add"
-                android:layout_marginStart="8dp"
+                android:layout_toRightOf="@id/tv_add"
+                android:layout_marginStart="0dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
                 android:text="10元"/>
 
             <Button
@@ -79,7 +82,7 @@
                 android:background="@drawable/round_button_green"
                 android:layout_centerVertical="true"
                 android:layout_toRightOf="@id/btn_add_balance_1"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="4dp"
                 android:text="30元"/>
 
             <Button
@@ -89,7 +92,7 @@
                 android:background="@drawable/round_button_green"
                 android:layout_centerVertical="true"
                 android:layout_toRightOf="@id/btn_add_balance_2"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="4dp"
                 android:text="50元"/>
 
             <Button
@@ -99,17 +102,64 @@
                 android:background="@drawable/round_button_green"
                 android:layout_centerVertical="true"
                 android:layout_toRightOf="@id/btn_add_balance_3"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="4dp"
                 android:text="100元"/>
 
 
         </RelativeLayout>
 
+    <RelativeLayout
+        android:id="@+id/layout_detail_pay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/layout_detail_add"
+        android:background="@color/white">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="支付金额"
+            android:textSize="18sp"
+            android:paddingStart="8dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="8dp"
+            />
+
+        <TextView
+            android:id="@+id/tv_pay_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="元"
+            android:textSize="18sp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="8dp"
+            android:padding="8dp"
+            />
+
+        <TextView
+            android:id="@+id/tv_pay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="20.00"
+            android:textColor="@color/colorPrimary"
+            android:textSize="18sp"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@id/tv_pay_1"
+            android:layout_marginEnd="8dp"
+            />
+
+
+    </RelativeLayout>
+
         <RelativeLayout
-            android:id="@+id/tips_way_add"
+            android:id="@+id/layout_title_way"
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:layout_below="@id/layout_pay_add">
+            android:layout_below="@id/layout_detail_pay">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -117,6 +167,7 @@
                 android:layout_centerVertical="true"
                 android:layout_alignParentStart="true"
                 android:layout_marginStart="8dp"
+                android:padding="8dp"
                 android:text="请选择支付方式"
                 android:textSize="18sp"/>
 
@@ -127,7 +178,7 @@
             android:id="@+id/rv_pay"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/tips_way_add">
+            android:layout_below="@+id/layout_title_way">
 
         </android.support.v7.widget.RecyclerView>
 

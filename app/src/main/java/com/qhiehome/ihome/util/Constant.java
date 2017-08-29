@@ -26,49 +26,41 @@ public class Constant {
 
     public static final int VERIFY_NUM = 6;
 
-    public static final String CURRENT_LONGITUDE = "CURRENT_LONGITUDE";
-
-    public static final String CURRENT_LATITUDE = "CURRENT_LATITUDE";
-
-    public static final String SEARCH_LONGITUDE = "SEARCH_LONGITUDE";
-
-    public static final String SEARCH_LATITUDE = "SEARCH_LATITUDE";
-
-    public static final String SEARCH_NAME = "SEARCH_NAME";
-
     public static final String OWNED_PARKING_KEY = "owned_parking_key";
 
     public static final String TIMER_ACTION= "TIMER_ACTION";
 
     public static final String CONTRACT_URL = "http://weixin.qq.com/agreement?lang=zh_CN";
 
+    /*******persistence data********/
+    //navigation
+    public static final String CURRENT_LONGITUDE = "CURRENT_LONGITUDE";
+    public static final String CURRENT_LATITUDE = "CURRENT_LATITUDE";
+    public static final String ESTATE_LONGITUDE = "ESTATE_LONGITUDE";
+    public static final String ESTATE_LATITUDE = "ESTATE_LATITUDE";
+    public static final String ESTATE_NAME = "ESTATE_NAME";
+    //目前不知道有啥用，就先留着吧
     public static final String ORDER_CREATE_TIME = "orderCreateTime";
-
-    public static final String SHARE_ID = "shareId";
-    public static final String ORDER_ID = "orderId";
-
     public static final String ORDER_STATE = "ORDER_STATE";
-
+    //record enter/leave time without network
     public static final String PARKING_ENTER_TIME = "enterTime";
-
     public static final String PARKING_LEAVE_TIME = "leaveTime";
-
-    public static final String PARKING_START_TIME = "startTime";
-
-    public static final String PARKING_END_TIME = "endTime";
-
     public static final String NEED_POST_ENTER_TIME = "NEED_POST_ENTER_TIME";
-
     public static final String NEED_POST_LEAVE_TIME = "NEED_POST_LEAVE_TIME";
+    //remind user parking/leave without network
+    public static final String PARKING_START_TIME = "startTime";
+    public static final String PARKING_END_TIME = "endTime";
+    //control lock without network
+    public static final String RESERVE_LOCK_MAC = "RESERVE_LOCK_MAC";
+    public static final String RESERVE_LOCK_PWD = "RESERVE_LOCK_PWD";
+    public static final String RESERVE_GATEWAY_ID = "RESERVE_GATEWAY_ID";
+    /*******persistence data********/
 
     public static final int PAY_STATE_ADD_ACCOUNT = 0;
     public static final int PAY_STATE_GUARANTEE = 1;
     public static final int PAY_STATE_TOTAL = 2;
 
-    // reserve lock
-    public static final String RESERVE_LOCK_MAC = "RESERVE_LOCK_MAC";
-    public static final String RESERVE_LOCK_PWD = "RESERVE_LOCK_PWD";
-    public static final String RESERVE_GATEWAY_ID = "RESERVE_GATEWAY_ID";
+
 
     // update module
 

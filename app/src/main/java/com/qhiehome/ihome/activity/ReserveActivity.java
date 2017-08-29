@@ -208,21 +208,47 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
         } else {
             myHeaderViewHolder.setEnableClick(true);
         }
+        String feeInfo;
         switch (mOrderBeanList.get(groupOrdinal).getState()) {
+            case ORDER_STATE_TEMP_RESERVED:
+                feeInfo = "待支付：" + String.format(Locale.CHINA, DECIMAL_2, (float)mOrderBeanList.get(groupOrdinal).getPayFee()) + "元（担保费）";
+                myHeaderViewHolder.getTv_fee().setText(feeInfo);
+                myHeaderViewHolder.getIvState().setVisibility(View.INVISIBLE);
+                break;
+            case ORDER_STATE_RESERVED:
+                feeInfo = "订单仍在进行...";
+                myHeaderViewHolder.getTv_fee().setText(feeInfo);
+                myHeaderViewHolder.getIvState().setVisibility(View.INVISIBLE);
+                break;
+            case ORDER_STATE_PARKED:
+                feeInfo = "订单仍在进行...";
+                myHeaderViewHolder.getTv_fee().setText(feeInfo);
+                myHeaderViewHolder.getIvState().setVisibility(View.INVISIBLE);
+                break;
+            case ORDER_STATE_NOT_PAID:
+                feeInfo = "待支付：" + String.format(Locale.CHINA, DECIMAL_2, (float)mOrderBeanList.get(groupOrdinal).getPayFee()) + "元（停车费）";
+                myHeaderViewHolder.getTv_fee().setText(feeInfo);
+                myHeaderViewHolder.getIvState().setVisibility(View.INVISIBLE);
+                break;
             case ORDER_STATE_CANCEL:
+                feeInfo = "订单已取消";
+                myHeaderViewHolder.getTv_fee().setText(feeInfo);
                 myHeaderViewHolder.getIvState().setVisibility(View.VISIBLE);
                 myHeaderViewHolder.getIvState().setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_order_cancel));
                 break;
             case ORDER_STATE_PAID:
+                feeInfo = "已支付：" + String.format(Locale.CHINA, DECIMAL_2, (float)mOrderBeanList.get(groupOrdinal).getPayFee()) + "元";
+                myHeaderViewHolder.getTv_fee().setText(feeInfo);
                 myHeaderViewHolder.getIvState().setVisibility(View.VISIBLE);
                 myHeaderViewHolder.getIvState().setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_order_finish));
                 break;
             case ORDER_STATE_TIMEOUT:
+                feeInfo = "超时已扣除：" + String.format(Locale.CHINA, DECIMAL_2, (float)mOrderBeanList.get(groupOrdinal).getPayFee()) + "元（担保费）";
+                myHeaderViewHolder.getTv_fee().setText(feeInfo);
                 myHeaderViewHolder.getIvState().setVisibility(View.VISIBLE);
                 myHeaderViewHolder.getIvState().setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_timeout));
                 break;
             default:
-                myHeaderViewHolder.getIvState().setVisibility(View.INVISIBLE);
                 break;
         }
         myHeaderViewHolder.getTv_parking().setText(headerItem);
@@ -521,6 +547,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
         private final TextView tv_parking;
         private final TextView tv_time;
         private final TextView tv_orderId;
+        private final TextView tv_fee;
         private final ProgressBar mProgressBar;
         private ImageView ivExpansionIndicator;
         private RelativeLayout relativeLayout;
@@ -532,6 +559,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
             tv_parking = (TextView) v.findViewById(R.id.tv_item_reserve_parking);
             tv_time = (TextView) v.findViewById(R.id.tv_item_reserve_time);
             tv_orderId = (TextView) v.findViewById(R.id.tv_item_reserve_orderid);
+            tv_fee = (TextView) v.findViewById(R.id.tv_item_reserve_fee);
             mProgressBar = (ProgressBar) v.findViewById(R.id.pb_item_reserve);
             mProgressBar.getIndeterminateDrawable().setColorFilter(0xFFFFFFFF,
                     PorterDuff.Mode.MULTIPLY);
@@ -550,6 +578,10 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
 
         public TextView getTv_orderId() {
             return tv_orderId;
+        }
+
+        public TextView getTv_fee() {
+            return tv_fee;
         }
 
         public RelativeLayout getRelativeLayout() {
