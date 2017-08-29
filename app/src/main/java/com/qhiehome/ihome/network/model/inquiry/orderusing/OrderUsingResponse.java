@@ -9,7 +9,7 @@ import com.qhiehome.ihome.network.model.base.Response;
 public class OrderUsingResponse extends Response {
 
     /**
-     * data : {"order":{"id":123456789,"state":31,"parking":{"id":123456789,"name":"xxxxxxxx","gateWayId":"xxxxxxxx","lockMac":"xxxxxxxx","password":"xxxxxxxx"},"startTime":1499826000000,"endTime":1499826000000}}
+     * data : {"order":{"id":123456789,"state":31,"parking":{"id":123456789,"name":"xxxxxxxx","gateWayId":"xxxxxxxx","lockMac":"xxxxxxxx","password":"xxxxxxxx"},"startTime":1499826000000,"endTime":1499826000000},"estate":{"id":123456789,"name":"xxxxxxxx","x":12.345678,"y":87.654321}}
      */
 
     private DataBean data;
@@ -25,9 +25,11 @@ public class OrderUsingResponse extends Response {
     public static class DataBean {
         /**
          * order : {"id":123456789,"state":31,"parking":{"id":123456789,"name":"xxxxxxxx","gateWayId":"xxxxxxxx","lockMac":"xxxxxxxx","password":"xxxxxxxx"},"startTime":1499826000000,"endTime":1499826000000}
+         * estate : {"id":123456789,"name":"xxxxxxxx","x":12.345678,"y":87.654321}
          */
 
         private OrderBean order;
+        private EstateBean estate;
 
         public OrderBean getOrder() {
             return order;
@@ -35,6 +37,14 @@ public class OrderUsingResponse extends Response {
 
         public void setOrder(OrderBean order) {
             this.order = order;
+        }
+
+        public EstateBean getEstate() {
+            return estate;
+        }
+
+        public void setEstate(EstateBean estate) {
+            this.estate = estate;
         }
 
         public static class OrderBean {
@@ -146,6 +156,52 @@ public class OrderUsingResponse extends Response {
                 public void setPassword(String password) {
                     this.password = password;
                 }
+            }
+        }
+
+        public static class EstateBean {
+            /**
+             * id : 123456789
+             * name : xxxxxxxx
+             * x : 12.345678
+             * y : 87.654321
+             */
+
+            private int id;
+            private String name;
+            private double x;
+            private double y;
+
+            public int getId() {
+                return id;
+            }
+
+            public void setId(int id) {
+                this.id = id;
+            }
+
+            public String getName() {
+                return name;
+            }
+
+            public void setName(String name) {
+                this.name = name;
+            }
+
+            public double getX() {
+                return x;
+            }
+
+            public void setX(double x) {
+                this.x = x;
+            }
+
+            public double getY() {
+                return y;
+            }
+
+            public void setY(double y) {
+                this.y = y;
             }
         }
     }

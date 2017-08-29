@@ -27,6 +27,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
@@ -52,6 +53,7 @@ import com.qhiehome.ihome.util.FileUtils;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
+import com.qhiehome.ihome.view.SharePopupWindow;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -63,7 +65,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -144,9 +145,9 @@ public class MainActivity extends BaseActivity {
         if (!TextUtils.isEmpty(mPhoneNum)) {
             isLogin = true;
         }
-        ivAvatar.setVisibility(isLogin? View.VISIBLE: View.INVISIBLE);
-        mTvUserBalance.setVisibility(isLogin? View.VISIBLE: View.INVISIBLE);
-        btLogin.setVisibility(isLogin? View.INVISIBLE: View.VISIBLE);
+        ivAvatar.setVisibility(isLogin ? View.VISIBLE : View.INVISIBLE);
+        mTvUserBalance.setVisibility(isLogin ? View.VISIBLE : View.INVISIBLE);
+        btLogin.setVisibility(isLogin ? View.INVISIBLE : View.VISIBLE);
         if (isLogin) {
             initBalance();
             if (isFirst) {
@@ -167,6 +168,7 @@ public class MainActivity extends BaseActivity {
                     mTvUserBalance.setText(String.format(getString(R.string.format_user_balance), response.body().getData().getAccount()));
                 }
             }
+
             @Override
             public void onFailure(Call<AccountBalanceResponse> call, Throwable t) {
                 ToastUtil.showToast(mContext, "网络连接异常");
@@ -616,6 +618,12 @@ public class MainActivity extends BaseActivity {
         }
     }
 
+    @OnClick(R.id.iv_share)
+    public void onViewClicked() {
+        ToastUtil.showToast(mContext, "share");
+        showPopFormBottom();
+    }
+
     private class DownloadAsyncTask extends AsyncTask<String, Void, Void> {
 
         @Override
@@ -719,5 +727,12 @@ public class MainActivity extends BaseActivity {
             return null;
         }
     }
+
+    public void showPopFormBottom() {
+        SharePopupWindow sharePopupWindow = new SharePopupWindow(mContext);
+        //showAtLocation(View parent, int gravity, int x, int y)
+        sharePopupWindow.showAtLocation(findViewById(R.id.drawer), Gravity.BOTTOM, 0, 0);
+    }
+
 
 }
