@@ -512,7 +512,6 @@ public class ParkingListActivity extends BaseActivity {
                 @Override
                 public void onResponse(Call<ReserveResponse> call, Response<ReserveResponse> response) {
                     if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                        // TODO: 2017/8/23 修改预约接口，增加错误选项，正确跳转支付担保费
                         Intent intent = new Intent(ParkingListActivity.this, PayActivity.class);
                         intent.putExtra("fee", mGuaranteeFee);
                         intent.putExtra("payState", Constant.PAY_STATE_GUARANTEE);
@@ -530,7 +529,7 @@ public class ParkingListActivity extends BaseActivity {
                                 .onPositive(new MaterialDialog.SingleButtonCallback() {
                                     @Override
                                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                        Intent intent = new Intent(ParkingListActivity.this, ReserveListActivity.class);
+                                        Intent intent = new Intent(ParkingListActivity.this, ReserveActivity.class);
                                         startActivity(intent);
                                     }
                                 })
@@ -545,7 +544,7 @@ public class ParkingListActivity extends BaseActivity {
                                 .onPositive(new MaterialDialog.SingleButtonCallback() {
                                     @Override
                                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                        Intent intent = new Intent(ParkingListActivity.this, ReserveListActivity.class);
+                                        Intent intent = new Intent(ParkingListActivity.this, ReserveActivity.class);
                                         startActivity(intent);
                                     }
                                 })
