@@ -249,11 +249,11 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
           }
 
           @Override
-          public void onToggleRepublish(final View view, boolean isChecked, int position) {
+          public void onToggleRepublish(final View view, boolean isChecked, int position, final TextView textView) {
               // republish
               if (isChecked) {
                   View customView = LayoutInflater.from(mContext).inflate(R.layout.dialog_select_days, null);
-                  final WeekPickView datePickView = (WeekPickView) customView.findViewById(R.id.dpv_selected);
+                  final WeekPickView weekPickView = (WeekPickView) customView.findViewById(R.id.dpv_selected);
                   new MaterialDialog.Builder(mContext)
                           .title("选择")
                           .customView(customView, false)
@@ -262,8 +262,14 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                           .onPositive(new MaterialDialog.SingleButtonCallback() {
                               @Override
                               public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                  boolean[] selectStatus = datePickView.getSelectStatus();
-                                  // TODO: 2017/8/28 send to server
+                                  boolean invalid = weekPickView.isInvalid();
+                                  boolean allWeek = weekPickView.isAllWeek();
+                                  if (invalid) {
+                                      ((SwitchCompat)view).setChecked(false);
+                                  } else {
+                                      textView.setVisibility(View.VISIBLE);
+                                      textView.setText(allWeek? "一周": weekPickView.getSelectDayInfo());
+                                  }
                               }
                           })
                           .onNegative(new MaterialDialog.SingleButtonCallback() {
@@ -277,6 +283,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
 
               } else {
                   // TODO: 2017/8/28  取消重复发布
+                  textView.setVisibility(View.INVISIBLE);
               }
           }
       });

@@ -49,7 +49,7 @@ public class PublishParkingAdapter extends RecyclerView.Adapter<PublishParkingAd
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (onItemClickListener != null) {
-                    onItemClickListener.onToggleRepublish(buttonView, isChecked, holder.getLayoutPosition());
+                    onItemClickListener.onToggleRepublish(buttonView, isChecked, holder.getLayoutPosition(), holder.mTvRepublishDate);
                 }
             }
         });
@@ -77,6 +77,7 @@ public class PublishParkingAdapter extends RecyclerView.Adapter<PublishParkingAd
         TextView mTvParkingPeriod;
         ImageView mIvCallbackPublish;
         SwitchCompat mScRepublish;
+        TextView mTvRepublishDate;
 
         private PublishParkingHolder(View itemView) {
             super(itemView);
@@ -84,6 +85,7 @@ public class PublishParkingAdapter extends RecyclerView.Adapter<PublishParkingAd
             mTvParkingPeriod = (TextView) itemView.findViewById(R.id.tv_parking_period);
             mIvCallbackPublish = (ImageView) itemView.findViewById(R.id.iv_callback_publish);
             mScRepublish = (SwitchCompat) itemView.findViewById(R.id.sc_republish);
+            mTvRepublishDate = (TextView) itemView.findViewById(R.id.tv_date_selected);
         }
     }
 
@@ -91,7 +93,7 @@ public class PublishParkingAdapter extends RecyclerView.Adapter<PublishParkingAd
     public interface OnItemClickListener {
         void onItemClick(View view, int position);
         void onCallbackPublish(View view, int position);
-        void onToggleRepublish(View view, boolean isChecked, int position);
+        void onToggleRepublish(View view, boolean isChecked, int position, TextView textView);
     }
 
     public void setOnItemClickListener(OnItemClickListener listener) {

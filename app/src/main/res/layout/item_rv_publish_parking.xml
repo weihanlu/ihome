@@ -2,7 +2,9 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/selector_item">
+    android:background="@drawable/selector_item"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp">
 
     <TextView
         android:id="@+id/tv_parking_id"
@@ -24,7 +26,7 @@
         android:text="预约时段：12:00 ~ 13:00"
         android:textColor="@color/colorAccent"
         android:layout_alignStart="@id/tv_parking_id"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
         />
 
     <TextView
@@ -47,6 +49,16 @@
         android:layout_marginStart="16dp"
         />
 
+    <TextView
+        android:id="@+id/tv_date_selected"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/gray"
+        android:layout_toEndOf="@id/sc_republish"
+        android:layout_alignBaseline="@id/sc_republish"
+        android:layout_marginStart="16dp"
+        />
+
     <ImageView
         android:id="@+id/iv_callback_publish"
         android:layout_width="wrap_content"
@@ -57,7 +69,5 @@
         android:layout_centerVertical="true"
         android:layout_marginEnd="4dp"
         />
-
-
 
 </RelativeLayout>

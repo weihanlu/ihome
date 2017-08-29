@@ -79,7 +79,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="我的车锁"
+                android:text="我的车位"
                 android:textColor="@color/black"
                 android:textSize="16sp"
                 android:layout_marginStart="32dp"/>
@@ -126,25 +126,6 @@
 
         <LinearLayout
             android:layout_below="@id/ll_my_publish"
-            android:id="@+id/ll_my_order"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:background="@drawable/selector_item">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="历史订单"
-                android:textColor="@color/black"
-                android:textSize="16sp"
-                android:layout_marginStart="32dp"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_below="@id/ll_my_order"
             android:id="@+id/ll_my_wallet"
             android:layout_width="match_parent"
             android:layout_height="50dp"

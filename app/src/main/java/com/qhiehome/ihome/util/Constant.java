@@ -30,7 +30,7 @@ public class Constant {
 
     public static final String TIMER_ACTION= "TIMER_ACTION";
 
-    public static final String CONTRACT_URL = "http://weixin.qq.com/agreement?lang=zh_CN";
+    public static final String CONTRACT_URL = "http://39.108.77.50:3389/api/service_contract.html";
 
     /*******persistence data********/
     //navigation

@@ -105,7 +105,6 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
 
 
     private void initData() {
-
         OrderOwnerService orderOwnerService = ServiceGenerator.createService(OrderOwnerService.class);
         //OrderRequest orderRequest = new OrderRequest(EncryptUtil.encrypt("8888", EncryptUtil.ALGO.SHA_256));
         OrderOwnerRequest orderOwnerRequest = new OrderOwnerRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256));

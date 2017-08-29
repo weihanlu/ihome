@@ -387,7 +387,7 @@ public class UserInfoActivity extends BaseActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
         }
-        mTbUserInfo.setTitle("我的车锁");
+        mTbUserInfo.setTitle("我的车位");
         mTbUserInfo.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
         mTbUserInfo.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
