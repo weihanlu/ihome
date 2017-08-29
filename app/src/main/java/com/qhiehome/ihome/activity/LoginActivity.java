@@ -278,22 +278,32 @@ public class LoginActivity extends BaseActivity {
         call.enqueue(new Callback<OrderUsingResponse>() {
             @Override
             public void onResponse(Call<OrderUsingResponse> call, Response<OrderUsingResponse> response) {
-                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
-                    if (response.body().getData().getOrder() == null){
-                        MainActivity.start(LoginActivity.this);
+                try {
+                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
+                        if (response.body().getData().getOrder() == null && response.body().getData().getEstate() == null){
+                            MainActivity.start(LoginActivity.this);
+                        }else {
+                            OrderUsingResponse.DataBean.OrderBean orderBean = response.body().getData().getOrder();
+                            OrderUsingResponse.DataBean.EstateBean estateBean = response.body().getData().getEstate();
+                            SharedPreferenceUtil.setLong(LoginActivity.this, Constant.PARKING_START_TIME, orderBean.getStartTime());
+                            SharedPreferenceUtil.setLong(LoginActivity.this, Constant.PARKING_END_TIME, orderBean.getEndTime());
+                            SharedPreferenceUtil.setString(LoginActivity.this, Constant.RESERVE_LOCK_MAC, orderBean.getParking().getLockMac());
+                            SharedPreferenceUtil.setString(LoginActivity.this, Constant.RESERVE_LOCK_PWD, orderBean.getParking().getPassword());
+                            SharedPreferenceUtil.setString(LoginActivity.this, Constant.RESERVE_GATEWAY_ID, orderBean.getParking().getGateWayId());
+                            SharedPreferenceUtil.setInt(LoginActivity.this, Constant.ORDER_STATE, orderBean.getState());
+                            SharedPreferenceUtil.setString(LoginActivity.this, Constant.ESTATE_NAME, estateBean.getName());
+                            SharedPreferenceUtil.setFloat(LoginActivity.this, Constant.ESTATE_LONGITUDE, (float) estateBean.getX());
+                            SharedPreferenceUtil.setFloat(LoginActivity.this, Constant.ESTATE_LATITUDE, (float) estateBean.getY());
+                            MainActivity.start(LoginActivity.this);
+                        }
                     }else {
-                        OrderUsingResponse.DataBean.OrderBean orderBean = response.body().getData().getOrder();
-                        SharedPreferenceUtil.setLong(LoginActivity.this, Constant.PARKING_START_TIME, orderBean.getStartTime());
-                        SharedPreferenceUtil.setLong(LoginActivity.this, Constant.PARKING_END_TIME, orderBean.getEndTime());
-                        SharedPreferenceUtil.setString(LoginActivity.this, Constant.RESERVE_LOCK_MAC, orderBean.getParking().getLockMac());
-                        SharedPreferenceUtil.setString(LoginActivity.this, Constant.RESERVE_LOCK_PWD, orderBean.getParking().getPassword());
-                        SharedPreferenceUtil.setString(LoginActivity.this, Constant.RESERVE_GATEWAY_ID, orderBean.getParking().getGateWayId());
-                        SharedPreferenceUtil.setInt(LoginActivity.this, Constant.ORDER_STATE, orderBean.getState());
-                        MainActivity.start(LoginActivity.this);
+                        ToastUtil.showToast(LoginActivity.this, "服务器繁忙，请稍后再试");
                     }
-                }else {
-                    ToastUtil.showToast(LoginActivity.this, "服务器繁忙，请稍后再试");
+                }catch (Exception e){
+                    e.printStackTrace();
+                    ToastUtil.showToast(LoginActivity.this, "服务器错误，请稍后再试");
                 }
+
             }
 
             @Override

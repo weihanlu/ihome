@@ -29,6 +29,15 @@
             android:layout_height="192dp"
             android:background="@color/colorAccent">
 
+            <ImageView
+                android:id="@+id/iv_share"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@drawable/ic_share"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:padding="10dp"/>
+
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/iv_avatar"
                 android:layout_width="96dp"

@@ -183,9 +183,9 @@ public class ParkFragment extends Fragment {
         initMap();
         initLocate();
 //        mParkingSQLHelper = new ParkingSQLHelper(mContext);
-//        if (initDirs()) {
-//            initNavi();
-//        }
+        if (initDirs()) {
+            initNavi();
+        }
         //暂时不需定时器
 //        AlarmTimer.setRepeatAlarmTime(mContext, System.currentTimeMillis(),
 //                10 * 1000, Constant.TIMER_ACTION, AlarmManager.RTC_WAKEUP);
@@ -771,23 +771,23 @@ public class ParkFragment extends Fragment {
 
                     @Override
                     public void run() {
-                        Toast.makeText(mContext, authinfo, Toast.LENGTH_LONG).show();
+//                        Toast.makeText(mContext, authinfo, Toast.LENGTH_LONG).show();
                     }
                 });
             }
 
             public void initSuccess() {
-                Toast.makeText(mContext, "百度导航引擎初始化成功", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, "百度导航引擎初始化成功", Toast.LENGTH_SHORT).show();
                 hasInitSuccess = true;
                 initSetting();
             }
 
             public void initStart() {
-                Toast.makeText(mContext, "百度导航引擎初始化开始", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, "百度导航引擎初始化开始", Toast.LENGTH_SHORT).show();
             }
 
             public void initFailed() {
-                Toast.makeText(mContext, "百度导航引擎初始化失败", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, "百度导航引擎初始化失败", Toast.LENGTH_SHORT).show();
             }
 
         }, null, ttsHandler, ttsPlayStateListener);
@@ -837,7 +837,7 @@ public class ParkFragment extends Fragment {
                     this.requestPermissions(authComArr, authComRequestCode);
                     return;
                 } else {
-                    Toast.makeText(mContext, "没有完备的权限!", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(mContext, "没有完备的权限!", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -862,6 +862,7 @@ public class ParkFragment extends Fragment {
 //            }
             case BD09LL: {
                 sNode = new BNRoutePlanNode(mCurrentPt.longitude, mCurrentPt.latitude, "我的位置", null, coType);
+                eNode = new BNRoutePlanNode(SharedPreferenceUtil.getFloat(mContext, Constant.ESTATE_LONGITUDE, 0), SharedPreferenceUtil.getFloat(mContext, Constant.ESTATE_LATITUDE, 0), SharedPreferenceUtil.getString(mContext, Constant.ESTATE_NAME, ""), null, coType);
                 //查询数据库得到目的地经纬度
 //                mParkingReadDB = mParkingSQLHelper.getReadableDatabase();
 //                Cursor cursor = mParkingReadDB.query(ParkingSQLHelper.TABLE_NAME,
@@ -907,9 +908,9 @@ public class ParkFragment extends Fragment {
 
     @OnClick(R.id.btn_map_navi)
     public void onNaviClicked() {
-//        if (BaiduNaviManager.isNaviInited()) {
-//            routeplanToNavi(CoordinateType.BD09LL);
-//        }
+        if (BaiduNaviManager.isNaviInited()) {
+            routeplanToNavi(CoordinateType.BD09LL);
+        }
     }
 
     public class DemoRoutePlanListener implements BaiduNaviManager.RoutePlanListener {
@@ -943,7 +944,7 @@ public class ParkFragment extends Fragment {
 
         @Override
         public void onRoutePlanFailed() {
-            Toast.makeText(mContext, "算路失败", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(mContext, "算路失败", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -955,7 +956,7 @@ public class ParkFragment extends Fragment {
                 if (ret == 0) {
                     continue;
                 } else {
-                    Toast.makeText(mContext, "缺少导航基本的权限!", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(mContext, "缺少导航基本的权限!", Toast.LENGTH_SHORT).show();
                     return;
                 }
             }
