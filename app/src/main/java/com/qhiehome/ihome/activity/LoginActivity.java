@@ -9,6 +9,7 @@ import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -280,7 +281,7 @@ public class LoginActivity extends BaseActivity {
             public void onResponse(Call<OrderUsingResponse> call, Response<OrderUsingResponse> response) {
                 try {
                     if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
-                        if (response.body().getData().getOrder() == null && response.body().getData().getEstate() == null){
+                        if (response.body().getData() == null){
                             MainActivity.start(LoginActivity.this);
                         }else {
                             OrderUsingResponse.DataBean.OrderBean orderBean = response.body().getData().getOrder();
