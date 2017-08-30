@@ -13,8 +13,8 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.fragment.OrderOwnerFragment;
 import com.qhiehome.ihome.fragment.UserLockFragment;
-import com.qhiehome.ihome.fragment.TwoFragment;
 import com.qhiehome.ihome.util.CommonUtil;
 
 import java.util.ArrayList;
@@ -58,7 +58,7 @@ public class UserLockActivity extends BaseActivity {
         }};
         mFragments = new ArrayList<Fragment>() {{
             add(new UserLockFragment());
-            add(new TwoFragment());
+            add(new OrderOwnerFragment());
         }};
     }
 

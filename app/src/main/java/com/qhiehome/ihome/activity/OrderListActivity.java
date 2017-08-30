@@ -106,32 +106,32 @@ public class OrderListActivity extends BaseActivity implements SwipeRefreshLayou
 
     private void initData() {
         OrderOwnerService orderOwnerService = ServiceGenerator.createService(OrderOwnerService.class);
-        //OrderRequest orderRequest = new OrderRequest(EncryptUtil.encrypt("8888", EncryptUtil.ALGO.SHA_256));
-        OrderOwnerRequest orderOwnerRequest = new OrderOwnerRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256));
-        Call<OrderOwnerResponse> call = orderOwnerService.orderOwner(orderOwnerRequest);
-        call.enqueue(new Callback<OrderOwnerResponse>() {
-            @Override
-            public void onResponse(Call<OrderOwnerResponse> call, Response<OrderOwnerResponse> response) {
-                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                    mData = response.body().getData().getOrderList();
-                    if (mFirstInquiry){
-                        mAdapter.notifyDataSetChanged();
-                        mSrlOrderList.setRefreshing(false);
-                        mFirstInquiry = false;
-                    }
-                }
-            }
-            @Override
-            public void onFailure(Call<OrderOwnerResponse> call, Throwable t) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        ToastUtil.showToast(OrderListActivity.this, "网络连接异常");
-                        mSrlOrderList.setRefreshing(false);
-                    }
-                });
-            }
-        });
+//        OrderRequest orderRequest = new OrderRequest(EncryptUtil.encrypt("8888", EncryptUtil.ALGO.SHA_256));
+//        OrderOwnerRequest orderOwnerRequest = new OrderOwnerRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256));
+//        Call<OrderOwnerResponse> call = orderOwnerService.orderOwner(orderOwnerRequest);
+//        call.enqueue(new Callback<OrderOwnerResponse>() {
+//            @Override
+//            public void onResponse(Call<OrderOwnerResponse> call, Response<OrderOwnerResponse> response) {
+//                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+//                    mData = response.body().getData().getOrderList();
+//                    if (mFirstInquiry){
+//                        mAdapter.notifyDataSetChanged();
+//                        mSrlOrderList.setRefreshing(false);
+//                        mFirstInquiry = false;
+//                    }
+//                }
+//            }
+//            @Override
+//            public void onFailure(Call<OrderOwnerResponse> call, Throwable t) {
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        ToastUtil.showToast(OrderListActivity.this, "网络连接异常");
+//                        mSrlOrderList.setRefreshing(false);
+//                    }
+//                });
+//            }
+//        });
 
     }
 

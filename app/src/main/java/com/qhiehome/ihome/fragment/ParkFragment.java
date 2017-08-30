@@ -66,6 +66,7 @@ import com.qhiehome.ihome.network.service.baiduMap.BaiduMapServiceGenerator;
 import com.qhiehome.ihome.network.service.inquiry.ParkingEmptyService;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.LogUtil;
+import com.qhiehome.ihome.util.NaviUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 import com.qhiehome.ihome.view.SharePopupWindow;
@@ -168,6 +169,8 @@ public class ParkFragment extends Fragment {
     private boolean mMapStateParkingNum = true;
     private String mCity;
 
+    private NaviUtil mNavi;
+
     private View mView;
 
     @Override
@@ -185,8 +188,11 @@ public class ParkFragment extends Fragment {
         initMap();
         initLocate();
 //        mParkingSQLHelper = new ParkingSQLHelper(mContext);
-        if (initDirs()) {
-            initNavi();
+        mNavi = NaviUtil.getInstance();
+        mNavi.setmActivity(this.getActivity());
+        mNavi.setmContext(mContext);
+        if (mNavi.initDirs()) {
+            mNavi.initNavi();
         }
         //暂时不需定时器
 //        AlarmTimer.setRepeatAlarmTime(mContext, System.currentTimeMillis(),
@@ -652,310 +658,15 @@ public class ParkFragment extends Fragment {
     }
 
 
-    static class startTimeComparator implements Comparator {
-        @Override
-        public int compare(Object o, Object t1) {
-            ParkingResponse.DataBean.EstateBean.ParkingListBean.ShareListBean shareBean1 = (ParkingResponse.DataBean.EstateBean.ParkingListBean.ShareListBean) o;
-            ParkingResponse.DataBean.EstateBean.ParkingListBean.ShareListBean shareBean2 = (ParkingResponse.DataBean.EstateBean.ParkingListBean.ShareListBean) t1;
-            if (shareBean1.getStartTime() != shareBean2.getStartTime()) {
-                return Long.valueOf(shareBean1.getStartTime()).compareTo(shareBean2.getStartTime());
-            } else {
-                return Long.valueOf(shareBean1.getEndTime()).compareTo(shareBean2.getEndTime());
-            }
-        }
-    }
-
-    /*********导航***********/
-
-    private boolean initDirs() {
-        mSDCardPath = getSdcardDir();
-        if (mSDCardPath == null) {
-            return false;
-        }
-        File f = new File(mSDCardPath, APP_FOLDER_NAME);
-        if (!f.exists()) {
-            try {
-                f.mkdir();
-            } catch (Exception e) {
-                e.printStackTrace();
-                return false;
-            }
-        }
-        return true;
-    }
-
-    String authinfo = null;
-    /**
-     * 内部TTS播报状态回传handler
-     */
-    private Handler ttsHandler = new Handler() {
-        public void handleMessage(Message msg) {
-            int type = msg.what;
-            switch (type) {
-                case BaiduNaviManager.TTSPlayMsgType.PLAY_START_MSG: {
-                    // showToastMsg("Handler : TTS play start");
-                    break;
-                }
-                case BaiduNaviManager.TTSPlayMsgType.PLAY_END_MSG: {
-                    // showToastMsg("Handler : TTS play end");
-                    break;
-                }
-                default:
-                    break;
-            }
-        }
-    };
-
-    /**
-     * 内部TTS播报状态回调接口
-     */
-    private BaiduNaviManager.TTSPlayStateListener ttsPlayStateListener = new BaiduNaviManager.TTSPlayStateListener() {
-
-        @Override
-        public void playEnd() {
-            // showToastMsg("TTSPlayStateListener : TTS play end");
-        }
-
-        @Override
-        public void playStart() {
-            // showToastMsg("TTSPlayStateListener : TTS play start");
-        }
-    };
-
-    public void showToastMsg(final String msg) {
-
-        this.getActivity().runOnUiThread(new Runnable() {
-
-            @Override
-            public void run() {
-                Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private boolean hasBasePhoneAuth() {
-
-        PackageManager pm = this.getActivity().getPackageManager();
-        for (String auth : authBaseArr) {
-            if (pm.checkPermission(auth, this.getActivity().getPackageName()) != PackageManager.PERMISSION_GRANTED) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean hasCompletePhoneAuth() {
-
-        PackageManager pm = this.getActivity().getPackageManager();
-        for (String auth : authComArr) {
-            if (pm.checkPermission(auth, this.getActivity().getPackageName()) != PackageManager.PERMISSION_GRANTED) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private void initNavi() {
-
-        BNOuterTTSPlayerCallback ttsCallback = null;
-
-        // 申请权限
-        if (Build.VERSION.SDK_INT >= 23) {
-
-            if (!hasBasePhoneAuth()) {
-
-                this.requestPermissions(authBaseArr, authBaseRequestCode);
-                return;
-
-            }
-        }
-
-        BaiduNaviManager.getInstance().init(this.getActivity(), mSDCardPath, APP_FOLDER_NAME, new BaiduNaviManager.NaviInitListener() {
-            @Override
-            public void onAuthResult(int status, String msg) {
-                if (0 == status) {
-                    authinfo = "key校验成功!";
-                } else {
-                    authinfo = "key校验失败, " + msg;
-                }
-                getActivity().runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-//                        Toast.makeText(mContext, authinfo, Toast.LENGTH_LONG).show();
-                    }
-                });
-            }
-
-            public void initSuccess() {
-//                Toast.makeText(mContext, "百度导航引擎初始化成功", Toast.LENGTH_SHORT).show();
-                hasInitSuccess = true;
-                initSetting();
-            }
-
-            public void initStart() {
-//                Toast.makeText(mContext, "百度导航引擎初始化开始", Toast.LENGTH_SHORT).show();
-            }
-
-            public void initFailed() {
-//                Toast.makeText(mContext, "百度导航引擎初始化失败", Toast.LENGTH_SHORT).show();
-            }
-
-        }, null, ttsHandler, ttsPlayStateListener);
-
-    }
-
-    private void initSetting() {
-        // BNaviSettingManager.setDayNightMode(BNaviSettingManager.DayNightMode.DAY_NIGHT_MODE_DAY);
-        BNaviSettingManager
-                .setShowTotalRoadConditionBar(BNaviSettingManager.PreViewRoadCondition.ROAD_CONDITION_BAR_SHOW_ON);
-        BNaviSettingManager.setVoiceMode(BNaviSettingManager.VoiceMode.Veteran);
-        // BNaviSettingManager.setPowerSaveMode(BNaviSettingManager.PowerSaveMode.DISABLE_MODE);
-        BNaviSettingManager.setRealRoadCondition(BNaviSettingManager.RealRoadCondition.NAVI_ITS_ON);
-        BNaviSettingManager.setIsAutoQuitWhenArrived(true);
-        Bundle bundle = new Bundle();
-        // 必须设置APPID，否则会静音
-        bundle.putString(BNCommonSettingParam.TTS_APP_ID, APP_ID);
-        BNaviSettingManager.setNaviSdkParam(bundle);
-    }
-
-    private String getSdcardDir() {
-        if (Environment.getExternalStorageState().equalsIgnoreCase(Environment.MEDIA_MOUNTED)) {
-            return Environment.getExternalStorageDirectory().toString();
-        }
-        return null;
-    }
-
-    private void addDestInfoOverlay(LatLng latLng) {
-        mBaiduMap.clear();
-        OverlayOptions options = new MarkerOptions().position(latLng)
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ico_car))
-                .zIndex(5);
-        mBaiduMap.addOverlay(options);
-    }
-
-    private void routeplanToNavi(CoordinateType coType) {
-        mCoordinateType = coType;
-        if (!hasInitSuccess) {
-            Toast.makeText(mContext, "还未初始化!", Toast.LENGTH_SHORT).show();
-        }
-        // 权限申请
-        if (Build.VERSION.SDK_INT >= 23) {
-            // 保证导航功能完备
-            if (!hasCompletePhoneAuth()) {
-                if (!hasRequestComAuth) {
-                    hasRequestComAuth = true;
-                    this.requestPermissions(authComArr, authComRequestCode);
-                    return;
-                } else {
-//                    Toast.makeText(mContext, "没有完备的权限!", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-        }
-        BNRoutePlanNode sNode = null;
-        BNRoutePlanNode eNode = null;
-        switch (coType) {
-//            case GCJ02: {
-//                sNode = new BNRoutePlanNode(116.30142, 40.05087, "百度大厦", null, coType);
-//                eNode = new BNRoutePlanNode(116.39750, 39.90882, "北京天安门", null, coType);
-//                break;
-//            }
-//            case WGS84: {
-//                sNode = new BNRoutePlanNode(116.300821, 40.050969, "百度大厦", null, coType);
-//                eNode = new BNRoutePlanNode(116.397491, 39.908749, "北京天安门", null, coType);
-//                break;
-//            }
-//            case BD09_MC: {
-//                sNode = new BNRoutePlanNode(12947471, 4846474, "百度大厦", null, coType);
-//                eNode = new BNRoutePlanNode(12958160, 4825947, "北京天安门", null, coType);
-//                break;
-//            }
-            case BD09LL: {
-                sNode = new BNRoutePlanNode(mCurrentPt.longitude, mCurrentPt.latitude, "我的位置", null, coType);
-                eNode = new BNRoutePlanNode(SharedPreferenceUtil.getFloat(mContext, Constant.ESTATE_LONGITUDE, 0), SharedPreferenceUtil.getFloat(mContext, Constant.ESTATE_LATITUDE, 0), SharedPreferenceUtil.getString(mContext, Constant.ESTATE_NAME, ""), null, coType);
-                //查询数据库得到目的地经纬度
-//                mParkingReadDB = mParkingSQLHelper.getReadableDatabase();
-//                Cursor cursor = mParkingReadDB.query(ParkingSQLHelper.TABLE_NAME,
-//                        new String[]{"startTime", "estateName", "x", "y"},
-//                        null, null, null, null, "startTime ASC");
-//                while (cursor.moveToNext()) {
-//                    long startTime = cursor.getLong(cursor.getColumnIndex("startTime"));
-//                    if (startTime >= System.currentTimeMillis()) {
-//                        String estateName = cursor.getString(cursor.getColumnIndex("estateName"));
-//                        double x = cursor.getDouble(cursor.getColumnIndex("x"));
-//                        double y = cursor.getDouble(cursor.getColumnIndex("y"));
-//                        eNode = new BNRoutePlanNode(x, y, estateName, null, coType);
-//                        break;
-//                    }
-//                }
-
-
-//                mParkingReadDB.close();
-                break;
-            }
-            default:
-                ;
-        }
-        if (sNode != null && eNode != null) {
-            List<BNRoutePlanNode> list = new ArrayList<BNRoutePlanNode>();
-            list.add(sNode);
-            list.add(eNode);
-
-            // 开发者可以使用旧的算路接口，也可以使用新的算路接口,可以接收诱导信息等
-            BaiduNaviManager.getInstance().launchNavigator(this.getActivity(), list, 1, true, new DemoRoutePlanListener(sNode));
-            //BaiduNaviManager.getInstance().launchNavigator(this.getActivity(), list, 1, true, new DemoRoutePlanListener(sNode),
-            //        eventListerner);
-        }
-    }
-
-    BaiduNaviManager.NavEventListener eventListerner = new BaiduNaviManager.NavEventListener() {
-
-        @Override
-        public void onCommonEventCall(int what, int arg1, int arg2, Bundle bundle) {
-            //BNEventHandler.getInstance().handleNaviEvent(what, arg1, arg2, bundle);
-        }
-    };
 
     @OnClick(R.id.btn_map_navi)
     public void onNaviClicked() {
         if (BaiduNaviManager.isNaviInited()) {
-            routeplanToNavi(CoordinateType.BD09LL);
-        }
-    }
-
-    public class DemoRoutePlanListener implements BaiduNaviManager.RoutePlanListener {
-
-        private BNRoutePlanNode mBNRoutePlanNode = null;
-
-        public DemoRoutePlanListener(BNRoutePlanNode node) {
-            mBNRoutePlanNode = node;
-        }
-
-        @Override
-        public void onJumpToNavigator() {
-            /*
-             * 设置途径点以及resetEndNode会回调该接口
-             */
-
-            for (Activity ac : activityList) {
-
-                if (ac.getClass().getName().endsWith("BNDemoGuideActivity")) {
-
-                    return;
-                }
-            }
-            Intent intent = new Intent(getActivity(), NaviGuideActivity.class);
-            Bundle bundle = new Bundle();
-            bundle.putSerializable(ROUTE_PLAN_NODE, (BNRoutePlanNode) mBNRoutePlanNode);
-            intent.putExtras(bundle);
-            startActivity(intent);
-
-        }
-
-        @Override
-        public void onRoutePlanFailed() {
-//            Toast.makeText(mContext, "算路失败", Toast.LENGTH_SHORT).show();
+            mNavi.setsNodeLocation(mCurrentPt);
+            mNavi.setsNodeName("我的位置");
+            mNavi.seteNodeLocation(new LatLng((double) SharedPreferenceUtil.getFloat(mContext, Constant.ESTATE_LATITUDE, 0), (double) SharedPreferenceUtil.getFloat(mContext, Constant.ESTATE_LONGITUDE, 0)));
+            mNavi.seteNodeName(SharedPreferenceUtil.getString(mContext, Constant.ESTATE_NAME, ""));
+            mNavi.routeplanToNavi(CoordinateType.BD09LL);
         }
     }
 
@@ -971,14 +682,14 @@ public class ParkFragment extends Fragment {
                     return;
                 }
             }
-            initNavi();
+            mNavi.initNavi();
         } else if (requestCode == authComRequestCode) {
             for (int ret : grantResults) {
                 if (ret == 0) {
                     continue;
                 }
             }
-            routeplanToNavi(mCoordinateType);
+            mNavi.routeplanToNavi(mCoordinateType);
         }
 
     }

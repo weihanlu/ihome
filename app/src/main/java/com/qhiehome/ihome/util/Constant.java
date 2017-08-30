@@ -60,7 +60,14 @@ public class Constant {
     public static final int PAY_STATE_GUARANTEE = 1;
     public static final int PAY_STATE_TOTAL = 2;
 
-
+    /********OrderState********/
+    public static final int ORDER_STATE_TEMP_RESERVED = 30;//btn：取消+支付  info：剩余支付时间，支付金额
+    public static final int ORDER_STATE_RESERVED = 31;//取消+导航+升降车位锁+小区地图+出入证  info：最晚停车时间
+    public static final int ORDER_STATE_PARKED = 32;//导航+升降车位锁+小区地图  info：停车时间+最晚离开时间
+    public static final int ORDER_STATE_NOT_PAID = 33;//支付 info：支付金额
+    public static final int ORDER_STATE_PAID = 34;//NA  info：支付金额
+    public static final int ORDER_STATE_TIMEOUT = 38;//NA info：支付金额
+    public static final int ORDER_STATE_CANCEL = 39;//NA
 
     // update module
 
