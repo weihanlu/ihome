@@ -65,6 +65,7 @@ import com.qhiehome.ihome.network.service.inquiry.OrderService;
 import com.qhiehome.ihome.network.service.inquiry.ParkingUsingService;
 import com.qhiehome.ihome.network.service.park.EnterParkingService;
 import com.qhiehome.ihome.network.service.park.ReserveCancelService;
+import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.NaviUtil;
@@ -82,6 +83,7 @@ import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import me.shihao.library.XStatusBarHelper;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -137,6 +139,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        CommonUtil.setStatusBarGradient(this);
         setContentView(R.layout.activity_reserve);
         ButterKnife.bind(this);
         mContext = this;

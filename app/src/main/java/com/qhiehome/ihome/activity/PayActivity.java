@@ -29,6 +29,7 @@ import com.qhiehome.ihome.network.model.pay.guarantee.PayGuaranteeRequest;
 import com.qhiehome.ihome.network.model.pay.guarantee.PayGuaranteeResponse;
 import com.qhiehome.ihome.network.service.pay.AccountBalanceService;
 import com.qhiehome.ihome.network.service.pay.PayGuaranteeService;
+import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
@@ -42,6 +43,7 @@ import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import me.shihao.library.XStatusBarHelper;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -92,6 +94,7 @@ public class PayActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        CommonUtil.setStatusBarGradient(this);
         setContentView(R.layout.activity_pay);
         ButterKnife.bind(this);
         Intent intent = this.getIntent();

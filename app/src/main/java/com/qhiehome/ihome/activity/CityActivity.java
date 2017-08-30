@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.util.CommonUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.Objects;
 import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import me.shihao.library.XStatusBarHelper;
 
 public class CityActivity extends AppCompatActivity {
 
@@ -40,6 +42,7 @@ public class CityActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        CommonUtil.setStatusBarGradient(this);
         setContentView(R.layout.activity_city);
         ButterKnife.bind(this);
         Intent intent = this.getIntent();

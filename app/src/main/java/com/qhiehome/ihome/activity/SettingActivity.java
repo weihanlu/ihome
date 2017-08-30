@@ -45,6 +45,7 @@ import java.util.List;
 import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import me.shihao.library.XStatusBarHelper;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -75,6 +76,7 @@ public class SettingActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        CommonUtil.setStatusBarGradient(this);
         setContentView(R.layout.activity_setting);
         ButterKnife.bind(this);
         initView();

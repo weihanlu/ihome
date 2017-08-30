@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal" android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="?attr/colorPrimary"
+    android:layout_height="?attr/actionBarSize"
+    android:background="@drawable/bg_theme_gradient"
     android:padding="8dp">
 
     <ImageView
@@ -12,25 +12,6 @@
         android:src="@mipmap/ic_launcher_logo"
         android:layout_gravity="center_vertical"
         />
-
-    <TextView
-        android:id="@+id/tv_current_city"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="北京市"
-        android:textColor="@color/white"
-        android:textSize="14sp"
-        android:layout_gravity="center_vertical"
-        android:layout_marginStart="2dp"
-        />
-
-    <ImageView
-        android:id="@+id/iv_select_city"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:src="@drawable/spinner_arrow"/>
-
     <RelativeLayout
         android:id="@+id/rl_input_location"
         android:layout_marginStart="8dp"
@@ -61,14 +42,23 @@
 
     </RelativeLayout>
 
-    <ImageView
-        android:id="@+id/iv_share"
-        android:layout_width="28dp"
-        android:layout_height="28dp"
-        android:src="@drawable/ic_share"
+    <TextView
+        android:id="@+id/tv_current_city"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="北京市"
+        android:textColor="@color/white"
+        android:textSize="14sp"
         android:layout_gravity="center_vertical"
         android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
         />
+
+    <ImageView
+        android:id="@+id/iv_select_city"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:src="@drawable/spinner_arrow"/>
+
 
 </LinearLayout>

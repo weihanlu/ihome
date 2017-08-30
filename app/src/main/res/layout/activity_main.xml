@@ -28,7 +28,7 @@
             android:id="@+id/rl_avatar"
             android:layout_width="match_parent"
             android:layout_height="192dp"
-            android:background="@color/colorAccent">
+            android:background="@drawable/bg_theme_gradient">
 
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/iv_avatar"

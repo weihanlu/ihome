@@ -29,6 +29,7 @@ import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyRespons
 import com.qhiehome.ihome.network.model.park.reserve.ReserveRequest;
 import com.qhiehome.ihome.network.model.park.reserve.ReserveResponse;
 import com.qhiehome.ihome.network.service.park.ReserveService;
+import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
@@ -50,6 +51,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import in.myinnos.alphabetsindexfastscrollrecycler.IndexFastScrollRecyclerView;
+import me.shihao.library.XStatusBarHelper;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -104,6 +106,7 @@ public class ParkingTimelineActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        CommonUtil.setStatusBarGradient(this);
         setContentView(R.layout.activity_parking_timeline);
         ButterKnife.bind(this);
         mContext = this;

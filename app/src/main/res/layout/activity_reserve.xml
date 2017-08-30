@@ -15,7 +15,7 @@
             android:id="@+id/tb_reserve_list"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
+            android:background="@drawable/bg_theme_gradient"
             android:minHeight="?attr/actionBarSize"
             android:theme="?attr/actionBarTheme"/>
 
@@ -30,7 +30,8 @@
         >
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:background="@color/white">
 
             <ViewStub
                 android:id="@+id/viewstub_reserve_list"
