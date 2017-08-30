@@ -6,18 +6,20 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
+import android.os.Process;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.ActionBar;
-import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -29,7 +31,6 @@ import com.qhiehome.ihome.network.service.update.PgyService;
 import com.qhiehome.ihome.network.service.update.PgyServiceGenerator;
 import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
-import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
@@ -45,7 +46,6 @@ import java.util.List;
 import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import me.shihao.library.XStatusBarHelper;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -59,11 +59,12 @@ public class SettingActivity extends BaseActivity {
 
     private Context mContext;
 
-    @BindView(R.id.toolbar)
-    Toolbar mToolbar;
+//    @BindView(R.id.toolbar)
+//    Toolbar mToolbar;
 
     @BindView(R.id.rv_setting)
     RecyclerView mRvSetting;
+
 
     private boolean cancelUpdate;
 
@@ -73,12 +74,17 @@ public class SettingActivity extends BaseActivity {
 
     private String mSavedPath;
 
+    private TextView mTvTitleToolbar;
+    private Toolbar mToolbar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         CommonUtil.setStatusBarGradient(this);
         setContentView(R.layout.activity_setting);
         ButterKnife.bind(this);
+        mToolbar = (Toolbar) findViewById(R.id.toolbar_center);
+        mTvTitleToolbar = (TextView) findViewById(R.id.tv_title_toolbar);
         initView();
         mContext = this;
     }
@@ -121,7 +127,7 @@ public class SettingActivity extends BaseActivity {
                         View aboutApp = LayoutInflater.from(mContext).inflate(R.layout.dialog_about_app, null);
                         new MaterialDialog.Builder(mContext)
                                 .title("关于Ihome")
-                                .customView(aboutApp ,false)
+                                .customView(aboutApp, false)
                                 .show();
                         break;
                     case 4:
@@ -163,7 +169,8 @@ public class SettingActivity extends BaseActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                if (mUpdateInfoDialog == null) buildUpdateInfoDialog(appUpdateDescription, appKey);
+                                if (mUpdateInfoDialog == null)
+                                    buildUpdateInfoDialog(appUpdateDescription, appKey);
                                 mUpdateInfoDialog.show();
                             }
                         });
@@ -193,19 +200,19 @@ public class SettingActivity extends BaseActivity {
         }
         formatUpdateInfo.deleteCharAt(formatUpdateInfo.length() - 1);
         mUpdateInfoDialog = new MaterialDialog.Builder(this)
-               .title("新特性")
-               .content(formatUpdateInfo.toString())
-               .positiveText("立即更新")
-               .negativeText("取消")
-               .onPositive(new MaterialDialog.SingleButtonCallback() {
-                   @Override
-                   public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                       if (mUpdateProcessDialog == null) buildUpdateProcessDialog();
-                       mUpdateProcessDialog.show();
-                       downloadApk(String.format(Constant.APK_UPDATE_URL_PATTERN, appKey));
-                   }
-               })
-               .canceledOnTouchOutside(true).build();
+                .title("新特性")
+                .content(formatUpdateInfo.toString())
+                .positiveText("立即更新")
+                .negativeText("取消")
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        if (mUpdateProcessDialog == null) buildUpdateProcessDialog();
+                        mUpdateProcessDialog.show();
+                        downloadApk(String.format(Constant.APK_UPDATE_URL_PATTERN, appKey));
+                    }
+                })
+                .canceledOnTouchOutside(true).build();
     }
 
     private void buildUpdateProcessDialog() {
@@ -234,7 +241,7 @@ public class SettingActivity extends BaseActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
         }
-        mToolbar.setTitle("设置");
+        mToolbar.setTitle("");
         mToolbar.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -242,6 +249,7 @@ public class SettingActivity extends BaseActivity {
                 finish();
             }
         });
+        mTvTitleToolbar.setText("设置");
     }
 
     public static void start(Context context) {
@@ -265,7 +273,7 @@ public class SettingActivity extends BaseActivity {
             intent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive");
         }
         startActivity(intent);
-        android.os.Process.killProcess(android.os.Process.myPid());
+        Process.killProcess(Process.myPid());
     }
 
     private class DownloadAsyncTask extends AsyncTask<String, Void, Void> {
@@ -295,7 +303,7 @@ public class SettingActivity extends BaseActivity {
                     do {
                         int numRead = is.read(buf);
                         count += numRead;
-                        final int progress = (int)(((float)count / length) * 100);
+                        final int progress = (int) (((float) count / length) * 100);
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
