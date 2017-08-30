@@ -642,11 +642,9 @@ public class ParkFragment extends Fragment {
         ((MainActivity) getActivity()).openDrawer();
     }
 
-    @OnClick(R.id.iv_share)
-    public void onShareClick() {
-        showPopFormBottom();
-    }
-
+    /**
+     * remain for future use
+     */
     private void showPopFormBottom() {
         SharePopupWindow sharePopupWindow = new SharePopupWindow(mContext, getActivity(), 200);
         //showAtLocation(View parent, int gravity, int x, int y)

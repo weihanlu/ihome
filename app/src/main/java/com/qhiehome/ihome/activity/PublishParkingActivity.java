@@ -40,6 +40,7 @@ import com.qhiehome.ihome.network.model.park.publishcancel.PublishCancelResponse
 import com.qhiehome.ihome.network.service.inquiry.ParkingOwnedService;
 import com.qhiehome.ihome.network.service.park.PublishCallbackService;
 import com.qhiehome.ihome.network.service.park.PublishParkService;
+import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.LogUtil;
@@ -58,6 +59,7 @@ import java.util.Locale;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import me.shihao.library.XStatusBarHelper;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -99,6 +101,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        CommonUtil.setStatusBarGradient(this);
         setContentView(R.layout.activity_publish_parking);
         ButterKnife.bind(this);
         initSwiperRefreshLayout();

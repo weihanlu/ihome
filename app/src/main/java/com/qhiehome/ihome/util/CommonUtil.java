@@ -1,15 +1,22 @@
 package com.qhiehome.ihome.util;
 
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
+import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.application.IhomeApplication;
 
 public class CommonUtil {
@@ -54,6 +61,18 @@ public class CommonUtil {
     public static boolean checkCameraHardware(Context context) {
         // this device has a camera
         return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public static void setStatusBarGradient(Activity activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Window window = activity.getWindow();
+            Drawable background = ContextCompat.getDrawable(activity, R.drawable.bg_theme_gradient);
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            window.setStatusBarColor(ContextCompat.getColor(activity, R.color.transparent));
+            window.setNavigationBarColor(ContextCompat.getColor(activity, R.color.transparent));
+            window.setBackgroundDrawable(background);
+        }
     }
 
 }

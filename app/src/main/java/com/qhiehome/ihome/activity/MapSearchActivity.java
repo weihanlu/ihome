@@ -2,8 +2,6 @@ package com.qhiehome.ihome.activity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -11,9 +9,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.CursorAdapter;
 import android.widget.SimpleAdapter;
-import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import com.arlib.floatingsearchview.FloatingSearchView;
@@ -26,16 +22,12 @@ import com.baidu.mapapi.search.sug.SuggestionSearchOption;
 import com.qhiehome.ihome.R;
 
 import com.qhiehome.ihome.application.IhomeApplication;
-import com.qhiehome.ihome.persistence.DaoMaster;
-import com.qhiehome.ihome.persistence.DaoSession;
 import com.qhiehome.ihome.persistence.MapSearch;
 import com.qhiehome.ihome.persistence.MapSearchDao;
-import com.qhiehome.ihome.persistence.ParkingSQLHelper;
+import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.view.Search_ListView;
 
-import org.greenrobot.greendao.annotation.Entity;
-import org.greenrobot.greendao.database.Database;
 import org.greenrobot.greendao.query.Query;
 
 import java.lang.ref.WeakReference;
@@ -107,6 +99,7 @@ public class MapSearchActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        CommonUtil.setStatusBarGradient(this);
         setContentView(R.layout.activity_map_search);
         ButterKnife.bind(this);
         mContext = this;

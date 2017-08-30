@@ -25,6 +25,7 @@ import com.qhiehome.ihome.util.ToastUtil;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import me.shihao.library.XStatusBarHelper;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -43,6 +44,7 @@ public class FeedbackActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        CommonUtil.setStatusBarGradient(this);
         setContentView(R.layout.activity_feedback);
         ButterKnife.bind(this);
         initToolbar();

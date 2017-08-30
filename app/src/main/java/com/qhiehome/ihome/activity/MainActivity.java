@@ -71,6 +71,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import de.hdodenhof.circleimageview.CircleImageView;
+import me.shihao.library.XStatusBarHelper;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -127,6 +128,7 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         SDKInitializer.initialize(getApplicationContext());
+        CommonUtil.setStatusBarGradient(this);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         mContext = this;

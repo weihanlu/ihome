@@ -15,11 +15,13 @@ import android.view.View;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.fragment.UserLockFragment;
 import com.qhiehome.ihome.fragment.TwoFragment;
+import com.qhiehome.ihome.util.CommonUtil;
 
 import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import me.shihao.library.XStatusBarHelper;
 
 public class UserLockActivity extends BaseActivity {
 
@@ -41,6 +43,7 @@ public class UserLockActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        CommonUtil.setStatusBarGradient(this);
         setContentView(R.layout.activity_user_lock);
         ButterKnife.bind(this);
         mContext = this;
@@ -51,7 +54,7 @@ public class UserLockActivity extends BaseActivity {
     private void initData() {
         mTitles = new ArrayList<String>(){{
             add("我的车锁");
-            add("车位使用");
+            add("使用历史");
         }};
         mFragments = new ArrayList<Fragment>() {{
             add(new UserLockFragment());

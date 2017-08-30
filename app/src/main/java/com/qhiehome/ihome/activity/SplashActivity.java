@@ -27,7 +27,7 @@ public class SplashActivity extends BaseActivity {
                 finish();
             }
         }, SPLASH_DURATION);
-        XStatusBarHelper.tintStatusBar(this, ContextCompat.getColor(this, R.color.white));
+        XStatusBarHelper.immersiveStatusBar(this);
     }
 
 }

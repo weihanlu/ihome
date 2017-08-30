@@ -9,10 +9,12 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.view.ProgressWebView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import me.shihao.library.XStatusBarHelper;
 
 import static com.qhiehome.ihome.util.Constant.CONTRACT_URL;
 
@@ -29,6 +31,7 @@ public class ServiceContractActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        CommonUtil.setStatusBarGradient(this);
         setContentView(R.layout.activity_service_contract);
         ButterKnife.bind(this);
         initView();
