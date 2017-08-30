@@ -46,6 +46,7 @@ import java.util.List;
 import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -129,20 +130,6 @@ public class SettingActivity extends BaseActivity {
                                 .title("关于Ihome")
                                 .customView(aboutApp, false)
                                 .show();
-                        break;
-                    case 4:
-                        new MaterialDialog.Builder(mContext)
-                                .content("确定退出当前账号吗？")
-                                .positiveText("退出")
-                                .negativeText("取消")
-                                .onPositive(new MaterialDialog.SingleButtonCallback() {
-                                    @Override
-                                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                        ActivityManager.finishAll();
-                                        SharedPreferenceUtil.setString(mContext, Constant.PHONE_KEY, "");
-                                        LoginActivity.start(mContext);
-                                    }
-                                }).show();
                         break;
                     default:
                         break;
@@ -274,6 +261,26 @@ public class SettingActivity extends BaseActivity {
         }
         startActivity(intent);
         Process.killProcess(Process.myPid());
+    }
+
+    private void switchAccount() {
+        new MaterialDialog.Builder(mContext)
+                .content("确定退出当前账号吗？")
+                .positiveText("退出")
+                .negativeText("取消")
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        ActivityManager.finishAll();
+                        SharedPreferenceUtil.setString(mContext, Constant.PHONE_KEY, "");
+                        LoginActivity.start(mContext);
+                    }
+                }).show();
+    }
+
+    @OnClick(R.id.btn_switch_account)
+    public void onSwitchAccount() {
+        switchAccount();
     }
 
     private class DownloadAsyncTask extends AsyncTask<String, Void, Void> {

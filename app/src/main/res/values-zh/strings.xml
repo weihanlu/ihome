@@ -21,5 +21,8 @@
     <string name="hello_blank_fragment">空Fragment</string>
 
     <!-- MainActivity -->
-    <string name="format_user_balance">账户余额：%.2f元</string>
+    <string name="format_user_balance">%.2f</string>
+
+    <!-- PublishParkingActivity -->
+    <string name="republish_format">重复发布 %s</string>
 </resources>

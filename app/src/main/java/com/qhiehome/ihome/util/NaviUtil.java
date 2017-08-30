@@ -153,13 +153,13 @@ public class NaviUtil {
 
     public void showToastMsg(final String msg) {
 
-        mActivity.runOnUiThread(new Runnable() {
-
-            @Override
-            public void run() {
-                Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show();
-            }
-        });
+//        mActivity.runOnUiThread(new Runnable() {
+//
+//            @Override
+//            public void run() {
+////                Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show();
+//            }
+//        });
     }
 
     private boolean hasBasePhoneAuth() {
@@ -207,27 +207,27 @@ public class NaviUtil {
                 } else {
                     authinfo = "key校验失败, " + msg;
                 }
-                mActivity.runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        Toast.makeText(mContext, authinfo, Toast.LENGTH_LONG).show();
-                    }
-                });
+//                mActivity.runOnUiThread(new Runnable() {
+//
+//                    @Override
+//                    public void run() {
+//                        Toast.makeText(mContext, authinfo, Toast.LENGTH_LONG).show();
+//                    }
+//                });
             }
 
             public void initSuccess() {
-                Toast.makeText(mContext, "百度导航引擎初始化成功", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, "百度导航引擎初始化成功", Toast.LENGTH_SHORT).show();
                 hasInitSuccess = true;
                 initSetting();
             }
 
             public void initStart() {
-                Toast.makeText(mContext, "百度导航引擎初始化开始", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, "百度导航引擎初始化开始", Toast.LENGTH_SHORT).show();
             }
 
             public void initFailed() {
-                Toast.makeText(mContext, "百度导航引擎初始化失败", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, "百度导航引擎初始化失败", Toast.LENGTH_SHORT).show();
             }
 
         }, null, ttsHandler, ttsPlayStateListener);
@@ -259,7 +259,7 @@ public class NaviUtil {
     public void routeplanToNavi(BNRoutePlanNode.CoordinateType coType) {
         mCoordinateType = coType;
         if (!hasInitSuccess) {
-            Toast.makeText(mContext, "还未初始化!", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(mContext, "还未初始化!", Toast.LENGTH_SHORT).show();
         }
         // 权限申请
         if (Build.VERSION.SDK_INT >= 23) {
@@ -270,7 +270,7 @@ public class NaviUtil {
                     mActivity.requestPermissions(authComArr, authComRequestCode);
                     return;
                 } else {
-                    Toast.makeText(mContext, "没有完备的权限!", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(mContext, "没有完备的权限!", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -371,7 +371,7 @@ public class NaviUtil {
 
         @Override
         public void onRoutePlanFailed() {
-            Toast.makeText(mContext, "算路失败", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(mContext, "算路失败", Toast.LENGTH_SHORT).show();
         }
     }
 

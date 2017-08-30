@@ -35,16 +35,16 @@ public class PublishParkingAdapter extends RecyclerView.Adapter<PublishParkingAd
     @Override
     public void onBindViewHolder(final PublishParkingHolder holder, final int position) {
         PublishBean publishBean = mPublishList.get(position);
-        holder.mTvParkingId.setText("车位号：" + publishBean.getParkingId());
-        holder.mTvParkingPeriod.setText("发布时间段 " + publishBean.getStartTime() + " ~ " + publishBean.getEndTime());
-        holder.mIvCallbackPublish.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (onItemClickListener != null) {
-                    onItemClickListener.onCallbackPublish(holder.itemView, holder.getLayoutPosition());
-                }
-            }
-        });
+        holder.mTvParkingId.setText(publishBean.getParkingId());
+        holder.mTvParkingPeriod.setText(publishBean.getStartTime() + " - " + publishBean.getEndTime());
+//        holder.mIvCallbackPublish.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (onItemClickListener != null) {
+//                    onItemClickListener.onCallbackPublish(holder.itemView, holder.getLayoutPosition());
+//                }
+//            }
+//        });
         holder.mScRepublish.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -75,7 +75,6 @@ public class PublishParkingAdapter extends RecyclerView.Adapter<PublishParkingAd
 
         TextView mTvParkingId;
         TextView mTvParkingPeriod;
-        ImageView mIvCallbackPublish;
         SwitchCompat mScRepublish;
         TextView mTvRepublishDate;
 
@@ -83,7 +82,6 @@ public class PublishParkingAdapter extends RecyclerView.Adapter<PublishParkingAd
             super(itemView);
             mTvParkingId = (TextView) itemView.findViewById(R.id.tv_parking_id);
             mTvParkingPeriod = (TextView) itemView.findViewById(R.id.tv_parking_period);
-            mIvCallbackPublish = (ImageView) itemView.findViewById(R.id.iv_callback_publish);
             mScRepublish = (SwitchCompat) itemView.findViewById(R.id.sc_republish);
             mTvRepublishDate = (TextView) itemView.findViewById(R.id.tv_date_selected);
         }

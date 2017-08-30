@@ -9,7 +9,7 @@ android {
         applicationId "com.qhiehome.ihome"
         minSdkVersion 19
         targetSdkVersion 22
-        versionCode 18
+        versionCode 19
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -66,7 +66,6 @@ dependencies {
     compile 'com.contrarywind:Android-PickerView:3.2.6'
     compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2'
     compile 'com.github.arimorty:floatingsearchview:2.1.1'
-    compile 'com.github.fodroid:XStatusBarHelper:v1.1'
     compile 'de.hdodenhof:circleimageview:2.1.0'
     compile 'com.vivian.widgets:TimeLineItemDecoration:1.2'
     compile 'com.github.myinnos:AlphabetIndex-Fast-Scroll-RecyclerView:1.0.8'

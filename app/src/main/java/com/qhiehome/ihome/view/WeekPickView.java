@@ -134,7 +134,7 @@ public class WeekPickView extends LinearLayout {
         return true;
     }
 
-    public boolean isAllWeek() {
+    private boolean isAllWeek() {
         for (boolean selected: mSelected) {
             if (!selected) {
                 return false;
@@ -146,12 +146,18 @@ public class WeekPickView extends LinearLayout {
     public String getSelectDayInfo() {
         String[] dayInfo = {"日", "一", "二", "三", "四", "五", "六"};
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < mSelected.length; i++) {
-            if (mSelected[i]) {
-                sb.append(dayInfo[i]).append(",");
+        sb.append("(");
+        if (isAllWeek()) {
+            sb.append("一周)");
+            return sb.toString();
+        } else {
+            for (int i = 0; i < mSelected.length; i++) {
+                if (mSelected[i]) {
+                    sb.append(dayInfo[i]).append(",");
+                }
             }
+            return sb.deleteCharAt(sb.length() - 1).append(")").toString();
         }
-        return sb.deleteCharAt(sb.length() - 1).toString();
     }
 
 }

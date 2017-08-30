@@ -71,7 +71,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import de.hdodenhof.circleimageview.CircleImageView;
-import me.shihao.library.XStatusBarHelper;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -95,6 +94,12 @@ public class MainActivity extends BaseActivity {
     TextView mTvUserBalance;
     @BindView(R.id.bt_login)
     Button btLogin;
+    @BindView(R.id.tv_add_balance)
+    TextView mTvAddBalance;
+    @BindView(R.id.tv_user_account)
+    TextView mTvUserAccount;
+    @BindView(R.id.tv_label_balance)
+    TextView mTvBalanceLabel;
     @BindView(R.id.drawer)
     DrawerLayout drawer;
 
@@ -151,10 +156,14 @@ public class MainActivity extends BaseActivity {
         ivAvatar.setVisibility(isLogin ? View.VISIBLE : View.INVISIBLE);
         mTvUserBalance.setVisibility(isLogin ? View.VISIBLE : View.INVISIBLE);
         btLogin.setVisibility(isLogin ? View.INVISIBLE : View.VISIBLE);
+        mTvAddBalance.setVisibility(isLogin? View.VISIBLE: View.INVISIBLE);
+        mTvUserAccount.setVisibility(isLogin? View.VISIBLE: View.INVISIBLE);
+        mTvBalanceLabel.setVisibility(isLogin? View.VISIBLE: View.INVISIBLE);
         if (isLogin) {
             initBalance();
             if (isFirst) {
                 initAvatar();
+                mTvUserAccount.setText(mPhoneNum);
                 isFirst = false;
             }
         }
@@ -386,8 +395,8 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    @OnClick({R.id.ll_my_lock, R.id.ll_my_reserve, R.id.ll_my_publish, R.id.ll_my_wallet, R.id.ll_setting, R.id.ll_quit,
-            R.id.iv_avatar, R.id.bt_login})
+    @OnClick({R.id.ll_my_lock, R.id.ll_my_reserve, R.id.ll_my_publish, R.id.ll_setting,
+            R.id.iv_avatar, R.id.bt_login, R.id.tv_add_balance})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.ll_my_lock:
@@ -411,24 +420,12 @@ public class MainActivity extends BaseActivity {
                     LoginActivity.start(mContext);
                 }
                 break;
-            case R.id.ll_my_wallet:
-                if (isLogin) {
-                    Intent intent = new Intent(mContext, PayActivity.class);
-                    intent.putExtra("payState", Constant.PAY_STATE_ADD_ACCOUNT);
-                    startActivity(intent);
-                } else {
-                    LoginActivity.start(mContext);
-                }
-                break;
             case R.id.ll_setting:
                 if (isLogin) {
                     SettingActivity.start(mContext);
                 } else {
                     LoginActivity.start(mContext);
                 }
-                break;
-            case R.id.ll_quit:
-                ActivityManager.finishAll();
                 break;
             case R.id.iv_avatar:
                 new MaterialDialog.Builder(this)
@@ -457,6 +454,13 @@ public class MainActivity extends BaseActivity {
                 break;
             case R.id.bt_login:
                 LoginActivity.start(mContext);
+                break;
+            case R.id.tv_add_balance:
+                Intent intent = new Intent(mContext, PayActivity.class);
+                intent.putExtra("payState", Constant.PAY_STATE_ADD_ACCOUNT);
+                startActivity(intent);
+                break;
+            default:
                 break;
         }
     }

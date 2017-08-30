@@ -59,7 +59,6 @@ import java.util.Locale;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import me.shihao.library.XStatusBarHelper;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -97,6 +96,8 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
     private String mPhoneNum;
 
     private int selectedPosition;
+
+    private boolean mIsChecked;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -253,6 +254,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
 
           @Override
           public void onToggleRepublish(final View view, boolean isChecked, int position, final TextView textView) {
+              mIsChecked = isChecked;
               // republish
               if (isChecked) {
                   View customView = LayoutInflater.from(mContext).inflate(R.layout.dialog_select_days, null);
@@ -266,12 +268,10 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                               @Override
                               public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                                   boolean invalid = weekPickView.isInvalid();
-                                  boolean allWeek = weekPickView.isAllWeek();
                                   if (invalid) {
                                       ((SwitchCompat)view).setChecked(false);
                                   } else {
-                                      textView.setVisibility(View.VISIBLE);
-                                      textView.setText(allWeek? "一周": weekPickView.getSelectDayInfo());
+                                      textView.setText(String.format(getString(R.string.republish_format), weekPickView.getSelectDayInfo()));
                                   }
                               }
                           })
@@ -286,7 +286,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
 
               } else {
                   // TODO: 2017/8/28  取消重复发布
-                  textView.setVisibility(View.INVISIBLE);
+                  textView.setText("仅一次");
               }
           }
       });

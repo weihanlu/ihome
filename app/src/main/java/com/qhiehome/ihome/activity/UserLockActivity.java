@@ -21,7 +21,6 @@ import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import me.shihao.library.XStatusBarHelper;
 
 public class UserLockActivity extends BaseActivity {
 

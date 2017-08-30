@@ -14,7 +14,6 @@ import com.qhiehome.ihome.view.ProgressWebView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import me.shihao.library.XStatusBarHelper;
 
 import static com.qhiehome.ihome.util.Constant.CONTRACT_URL;
 

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">@color/light_green</color>
-    <color name="colorPrimaryDark">@color/dark_green</color>
-    <color name="colorAccent">@color/light_green</color>
+    <color name="colorPrimary">@color/theme_center_color</color>
+    <color name="colorPrimaryDark">@color/theme_end_color</color>
+    <color name="colorAccent">@color/theme_start_color</color>
     <color name="gray">#666666</color>
     <color name="white">#FFF</color>
     <color name="black">#000</color>
@@ -19,4 +19,10 @@
     <color name="pale_green">#66CD00</color>
     <color name="shallow_green">#C1FFC1</color>
     <color name="card">#fff</color>
+
+    <color name="theme_start_color">#4D97D5</color>
+    <color name="theme_center_color">#7482DC</color>
+    <color name="theme_end_color">#9A6DE3</color>
+
+    <color name="light_red">#FE5F62</color>
 </resources>

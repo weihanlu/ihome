@@ -21,6 +21,9 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <!-- MainActivity -->
-    <string name="format_user_balance">User Account：¥ %.2f</string>
+    <string name="format_user_balance">%.2f</string>
+
+    <!-- PublishParkingActivity -->
+    <string name="republish_format">republish %s</string>
 
 </resources>

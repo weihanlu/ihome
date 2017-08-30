@@ -26,7 +26,7 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <FrameLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
@@ -35,11 +35,26 @@
         <android.support.v7.widget.RecyclerView
             android:id="@+id/rv_setting"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"/>
 
-        </android.support.v7.widget.RecyclerView>
+        <Button
+            android:id="@+id/btn_switch_account"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="切换账号"
+            android:textSize="18sp"
+            android:textColor="@color/white"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/bg_btn_switch_account"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
+            android:layout_marginBottom="64dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            />
 
-    </FrameLayout>
+    </RelativeLayout>
 
 
 

@@ -25,7 +25,6 @@ import java.util.Objects;
 import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import me.shihao.library.XStatusBarHelper;
 
 public class CityActivity extends AppCompatActivity {
 
