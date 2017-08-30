@@ -22,10 +22,10 @@ public class UserLockBean {
     private int parkingId;
 
     @NotNull
-    @Unique
     private String gatewayId;
 
     @NotNull
+    @Unique
     private String lockMac;
 
     @NotNull

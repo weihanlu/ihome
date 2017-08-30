@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <TextView
+        android:id="@+id/tv_item_order_owner_parking"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="20dp"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:gravity="center_vertical|left"
+        android:maxLines="1"
+        android:paddingStart="8dp"
+        android:paddingTop="8dp"
+        android:text="北京邮电大学停车场-3号停车位"
+        android:textColor="@android:color/black"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/tv_item_order_owner_id"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_item_order_owner_parking"
+        android:layout_alignStart="@id/tv_item_order_owner_parking"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:gravity="center_vertical|left"
+        android:maxLines="1"
+        android:paddingStart="8dp"
+        android:paddingTop="8dp"
+        android:textColor="@android:color/black"
+        android:textSize="14sp"
+        tools:text="订单:29101923" />
+
+    <TextView
+        android:id="@+id/tv_item_order_owner_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:gravity="center_vertical|left"
+        android:maxLines="1"
+        android:paddingStart="8dp"
+        android:paddingTop="8dp"
+        android:textColor="@android:color/black"
+        android:textSize="14sp"
+        tools:text="2017.4.5 16:30 - 17:32"
+        android:layout_below="@id/tv_item_order_owner_id"
+        android:layout_alignStart="@id/tv_item_order_owner_id" />
+
+    <TextView
+        android:id="@+id/tv_item_order_owner_fee"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_item_order_owner_time"
+        tools:text="已支付：23.45元"
+        android:textSize="14sp"
+        android:textColor="@color/black"
+        android:layout_alignStart="@id/tv_item_order_owner_time"
+        android:padding="8dp"
+        />
+
+
+
+
+</RelativeLayout>

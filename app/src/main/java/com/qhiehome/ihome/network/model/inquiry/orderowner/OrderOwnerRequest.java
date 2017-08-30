@@ -7,20 +7,20 @@ package com.qhiehome.ihome.network.model.inquiry.orderowner;
 public class OrderOwnerRequest {
 
     /**
-     * phone : xxxxxxxxx
+     * parkingId : 123456789
      */
 
-    private String phone;
+    private int parkingId;
 
-    public OrderOwnerRequest(String phone) {
-        this.phone = phone;
+    public OrderOwnerRequest(int parkingId) {
+        this.parkingId = parkingId;
     }
 
-    public String getPhone() {
-        return phone;
+    public int getParkingId() {
+        return parkingId;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setParkingId(int parkingId) {
+        this.parkingId = parkingId;
     }
 }
