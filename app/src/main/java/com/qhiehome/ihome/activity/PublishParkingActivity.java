@@ -17,6 +17,7 @@ import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewParent;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -98,8 +99,6 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
     private String mPhoneNum;
 
     private int selectedPosition;
-
-    private boolean mIsChecked;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -200,15 +199,16 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
         rv.setLayoutManager(new LinearLayoutManager(this));
         rv.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         mPublishAdapter = new PublishParkingAdapter(this, mPublishList);
-        initListener(mPublishAdapter);
+        initListener(rv);
         rv.setAdapter(mPublishAdapter);
     }
 
-    private void initListener(final PublishParkingAdapter mPublishAdapter) {
-        mPublishAdapter.setOnItemClickListener(new PublishParkingAdapter.OnItemClickListener() {
+    private void initListener(final RecyclerViewEmptySupport rv) {
+        rv.setOnItemClickListneer(new PublishParkingAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-
+                SwitchCompat switcher = (SwitchCompat) view.findViewById(R.id.sc_republish);
+                switcher.setChecked(!switcher.isChecked());
             }
 
             @Override
@@ -255,8 +255,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
             }
 
             @Override
-            public void onToggleRepublish(final View view, boolean isChecked, int position, final TextView textView) {
-                mIsChecked = isChecked;
+            public void onToggleRepublish(final View switcher, boolean isChecked, int position, final TextView textView) {
                 // republish
                 if (isChecked) {
                     View customView = LayoutInflater.from(mContext).inflate(R.layout.dialog_select_days, null);
@@ -271,7 +270,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                                     boolean invalid = weekPickView.isInvalid();
                                     if (invalid) {
-                                        ((SwitchCompat) view).setChecked(false);
+                                        ((SwitchCompat) switcher).setChecked(false);
                                     } else {
                                         textView.setText(String.format(getString(R.string.republish_format), weekPickView.getSelectDayInfo()));
                                     }
@@ -280,7 +279,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                             .onNegative(new MaterialDialog.SingleButtonCallback() {
                                 @Override
                                 public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                    ((SwitchCompat) view).setChecked(false);
+                                    ((SwitchCompat) switcher).setChecked(false);
                                 }
                             })
                             .canceledOnTouchOutside(false)

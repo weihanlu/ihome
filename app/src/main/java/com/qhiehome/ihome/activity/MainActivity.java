@@ -212,11 +212,14 @@ public class MainActivity extends BaseActivity {
                             e.printStackTrace();
                         }
                         writtenToAvatarFile(response.body());
+                    } else {
+                        mIvAvatar.setBackground(ContextCompat.getDrawable(mContext, R.drawable.selector_bg_avatar));
                     }
                 }
 
                 @Override
                 public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+                    mIvAvatar.setBackground(ContextCompat.getDrawable(mContext, R.drawable.selector_bg_avatar));
                 }
             });
         }
@@ -239,8 +242,13 @@ public class MainActivity extends BaseActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Bitmap avatarBitmap = BitmapFactory.decodeFile(mAvatarPath);
-                    mIvAvatar.setImageBitmap(avatarBitmap);
+                    if (mAvatarFile != null && mAvatarFile.length() == 0) {
+                        mIvAvatar.setBackground(ContextCompat.getDrawable(mContext, R.drawable.selector_bg_avatar));
+                    } else {
+                        Bitmap avatarBitmap = BitmapFactory.decodeFile(mAvatarPath);
+                        mIvAvatar.setImageBitmap(avatarBitmap);
+                    }
+
                 }
             });
         } catch (IOException e) {

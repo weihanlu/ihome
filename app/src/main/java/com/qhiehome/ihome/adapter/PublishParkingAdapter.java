@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
@@ -37,22 +38,6 @@ public class PublishParkingAdapter extends RecyclerView.Adapter<PublishParkingAd
         PublishBean publishBean = mPublishList.get(position);
         holder.mTvParkingId.setText(publishBean.getParkingId());
         holder.mTvParkingPeriod.setText(publishBean.getStartTime() + " - " + publishBean.getEndTime());
-//        holder.mIvCallbackPublish.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                if (onItemClickListener != null) {
-//                    onItemClickListener.onCallbackPublish(holder.itemView, holder.getLayoutPosition());
-//                }
-//            }
-//        });
-        holder.mScRepublish.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (onItemClickListener != null) {
-                    onItemClickListener.onToggleRepublish(buttonView, isChecked, holder.getLayoutPosition(), holder.mTvRepublishDate);
-                }
-            }
-        });
     }
 
     @Override
@@ -71,12 +56,14 @@ public class PublishParkingAdapter extends RecyclerView.Adapter<PublishParkingAd
         notifyItemRemoved(position);
     }
 
-    static class PublishParkingHolder extends RecyclerView.ViewHolder {
+    public static class PublishParkingHolder extends RecyclerView.ViewHolder {
 
         TextView mTvParkingId;
         TextView mTvParkingPeriod;
         SwitchCompat mScRepublish;
         TextView mTvRepublishDate;
+        TextView mTvItemDelete;
+        public LinearLayout mLayout;
 
         private PublishParkingHolder(View itemView) {
             super(itemView);
@@ -84,6 +71,8 @@ public class PublishParkingAdapter extends RecyclerView.Adapter<PublishParkingAd
             mTvParkingPeriod = (TextView) itemView.findViewById(R.id.tv_parking_period);
             mScRepublish = (SwitchCompat) itemView.findViewById(R.id.sc_republish);
             mTvRepublishDate = (TextView) itemView.findViewById(R.id.tv_date_selected);
+            mTvItemDelete = (TextView) itemView.findViewById(R.id.tv_item_delete);
+            mLayout = (LinearLayout) itemView.findViewById(R.id.item_layout);
         }
     }
 
@@ -91,12 +80,7 @@ public class PublishParkingAdapter extends RecyclerView.Adapter<PublishParkingAd
     public interface OnItemClickListener {
         void onItemClick(View view, int position);
         void onCallbackPublish(View view, int position);
-        void onToggleRepublish(View view, boolean isChecked, int position, TextView textView);
+        void onToggleRepublish(View switcher, boolean isChecked, int position, TextView textView);
     }
 
-    public void setOnItemClickListener(OnItemClickListener listener) {
-        this.onItemClickListener = listener;
-    }
-
-    private OnItemClickListener onItemClickListener;
 }
