@@ -9,7 +9,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.Gravity;
@@ -18,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.ZoomControls;
 
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
@@ -90,14 +90,14 @@ public class ParkFragment extends Fragment {
     @BindView(R.id.iv_map_location)
     ImageView mIvMapLocation;
     Unbinder unbinder;
-    @BindView(R.id.iv_map_navi)
-    ImageView mIvMapNavi;
     @BindView(R.id.iv_map_refresh)
     ImageView mIvMapRefresh;
     @BindView(R.id.iv_map_marker)
     ImageView mIvMapMarker;
     @BindView((R.id.tv_current_city))
     TextView mTvCurrentCity;
+    @BindView(R.id.iv_map_navi)
+    ImageView mIvMapNavi;
 
     private Context mContext;
 
@@ -206,6 +206,11 @@ public class ParkFragment extends Fragment {
         if (mHasInit) {
             mIvMapRefresh.performClick();
         }
+        if (SharedPreferenceUtil.getInt(mContext, Constant.ORDER_STATE, 0) == 0) {
+            mIvMapNavi.setVisibility(View.GONE);
+        }else {
+            mIvMapNavi.setVisibility(View.VISIBLE);
+        }
 
     }
 
@@ -258,6 +263,11 @@ public class ParkFragment extends Fragment {
         //settings.setScrollGesturesEnabled(false);//禁用地图拖拽
         settings.setRotateGesturesEnabled(false);//禁用地图旋转
         settings.setOverlookingGesturesEnabled(false);
+        //隐藏logo
+        View child = mMapView.getChildAt(1);
+        if (child != null && (child instanceof ImageView || child instanceof ZoomControls)) {
+            child.setVisibility(View.INVISIBLE);
+        }
     }
 
     /**
@@ -553,7 +563,7 @@ public class ParkFragment extends Fragment {
         getActivity().startActivityForResult(intent, REQUEST_CODE_SEARCH);
     }
 
-    @OnClick(R.id.iv_select_city)
+    @OnClick({R.id.iv_select_city, R.id.tv_current_city})
     public void onSelectCity() {
         Intent intent = new Intent(getActivity(), CityActivity.class);
         Bundle bundle = new Bundle();
@@ -641,7 +651,6 @@ public class ParkFragment extends Fragment {
         //showAtLocation(View parent, int gravity, int x, int y)
         sharePopupWindow.showAtLocation(mView, Gravity.BOTTOM, 0, 0);
     }
-
 
 
     @OnClick(R.id.iv_map_navi)
