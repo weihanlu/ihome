@@ -32,8 +32,8 @@
 
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/iv_avatar"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
+                android:layout_width="98dp"
+                android:layout_height="98dp"
                 android:src="@drawable/img_portrait"
                 app:civ_border_width="2dp"
                 app:civ_border_color="@color/white"
@@ -48,7 +48,6 @@
                 android:layout_centerHorizontal="true"
                 android:layout_below="@id/iv_avatar"
                 android:textSize="12sp"
-                android:textStyle="bold"
                 android:textColor="@color/white"
                 android:layout_marginTop="10dp"
                 />
@@ -61,7 +60,6 @@
                 android:layout_below="@id/tv_user_account"
                 android:text="余额(元)"
                 android:textSize="12sp"
-                android:textStyle="bold"
                 android:textColor="@color/white"
                 android:layout_marginTop="20dp"
                 />
@@ -73,9 +71,7 @@
                 android:layout_centerHorizontal="true"
                 android:layout_below="@id/tv_label_balance"
                 android:textSize="24sp"
-                android:textStyle="bold"
                 android:textColor="@color/white"
-                android:layout_marginTop="4dp"
                 />
 
             <TextView
@@ -87,7 +83,8 @@
                 android:textColor="@color/white"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentEnd="true"
-                android:padding="16dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginTop="20dp"
                 />
 
             <Button

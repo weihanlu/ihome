@@ -89,7 +89,7 @@ public class MainActivity extends BaseActivity {
     private static final int REQUEST_FOR_COPY_LOCAL_FILE = 4;
 
     @BindView(R.id.iv_avatar)
-    CircleImageView ivAvatar;
+    CircleImageView mIvAvatar;
     @BindView(R.id.tv_user_balance)
     TextView mTvUserBalance;
     @BindView(R.id.bt_login)
@@ -153,7 +153,7 @@ public class MainActivity extends BaseActivity {
         if (!TextUtils.isEmpty(mPhoneNum)) {
             isLogin = true;
         }
-        ivAvatar.setVisibility(isLogin ? View.VISIBLE : View.INVISIBLE);
+        mIvAvatar.setVisibility(isLogin ? View.VISIBLE : View.INVISIBLE);
         mTvUserBalance.setVisibility(isLogin ? View.VISIBLE : View.INVISIBLE);
         btLogin.setVisibility(isLogin ? View.INVISIBLE : View.VISIBLE);
         mTvAddBalance.setVisibility(isLogin? View.VISIBLE: View.INVISIBLE);
@@ -196,7 +196,7 @@ public class MainActivity extends BaseActivity {
         File avatarDir = mAvatarFile.getParentFile();
         if (avatarDir.isDirectory() && avatarDir.listFiles().length != 0) {
             Bitmap avatarBitmap = BitmapFactory.decodeFile(mAvatarPath);
-            ivAvatar.setImageBitmap(avatarBitmap);
+            mIvAvatar.setImageBitmap(avatarBitmap);
         } else {
             LogUtil.d(TAG, "download avatar");
             DownloadAvatarService downloadAvatarService = ServiceGenerator.createService(DownloadAvatarService.class);
@@ -217,7 +217,6 @@ public class MainActivity extends BaseActivity {
 
                 @Override
                 public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
-
                 }
             });
         }
@@ -241,7 +240,7 @@ public class MainActivity extends BaseActivity {
                 @Override
                 public void run() {
                     Bitmap avatarBitmap = BitmapFactory.decodeFile(mAvatarPath);
-                    ivAvatar.setImageBitmap(avatarBitmap);
+                    mIvAvatar.setImageBitmap(avatarBitmap);
                 }
             });
         } catch (IOException e) {
@@ -536,7 +535,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void showOriginalImage() {
-        final Bitmap portraitBitmap = getScaledImage(mAvatarPath, ivAvatar);
+        final Bitmap portraitBitmap = getScaledImage(mAvatarPath, mIvAvatar);
         // 将bitmap写入文件中
         BitmapToFileTask bitmapToFileTask = new BitmapToFileTask();
         bitmapToFileTask.execute(portraitBitmap);
@@ -721,7 +720,7 @@ public class MainActivity extends BaseActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    ivAvatar.setImageBitmap(bitmap[0]);
+                    mIvAvatar.setImageBitmap(bitmap[0]);
                 }
             });
             uploadAvatar();

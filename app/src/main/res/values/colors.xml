@@ -5,8 +5,6 @@
     <color name="colorAccent">@color/theme_start_color</color>
 
     <color name="gray">#666666</color>
-    <color name="white">#FFF</color>
-    <color name="black">#000</color>
     <color name="light_gray">#dadada</color>
     <color name="slight_gray">#f2f0f0</color>
     <color name="light_blue">#2e8abb</color><!-- 浅蓝色 -->
@@ -32,6 +30,8 @@
     <color name="major_text">#333333</color>
     <color name="minor_text">#8e8e93</color>
     <color name="hint_text">#999999</color>
+    <color name="white">#FFF</color>
+    <color name="black">#000</color>
     
     
 </resources>
