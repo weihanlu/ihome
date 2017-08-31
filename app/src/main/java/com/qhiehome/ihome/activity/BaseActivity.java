@@ -5,6 +5,7 @@ import android.os.Bundle;
 
 import com.qhiehome.ihome.manager.ActivityManager;
 
+
 public class BaseActivity extends AppCompatActivity {
 
     @Override

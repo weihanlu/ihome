@@ -17,46 +17,53 @@
         android:layout_below="@id/layout_top"
         />
 
-    <!--返回我的位置-->
-    <ImageView
-        android:id="@+id/iv_map_location"
-        android:src="@drawable/ic_location"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="222dp"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="10dp"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="222dp"/>
+        android:orientation="vertical">
 
-    <!--刷新-->
-    <ImageView
-        android:id="@+id/iv_map_refresh"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_reload"
-        android:layout_above="@id/iv_map_location"
-        android:layout_marginBottom="20dp"
-        android:layout_alignStart="@id/iv_map_location" />
+        <!--价格/车位-->
+        <ImageView
+            android:id="@+id/iv_map_marker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:src="@drawable/ic_number" />
 
-    <!--导航-->
-    <ImageView
-        android:id="@+id/iv_map_navi"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_navigation"
-        android:layout_above="@id/iv_map_refresh"
-        android:layout_alignStart="@+id/iv_map_location"
-        android:layout_marginBottom="20dp" />
+        <!--导航-->
+        <ImageView
+            android:id="@+id/iv_map_navi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/selector_bg_navi"
+            android:layout_marginBottom="20dp" />
 
-    <!--价格/车位-->
-    <ImageView
-        android:id="@+id/iv_map_marker"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@id/iv_map_location"
-        android:layout_above="@id/iv_map_navi"
-        android:layout_marginBottom="20dp"
-        android:src="@drawable/ic_number" />
+        <!--刷新-->
+        <ImageView
+            android:id="@+id/iv_map_refresh"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/selector_bg_reload"
+            android:layout_marginBottom="20dp"
+            />
+
+        <!--返回我的位置-->
+        <ImageView
+            android:id="@+id/iv_map_location"
+            android:background="@drawable/selector_bg_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="0dp"
+            />
+
+
+
+    </LinearLayout>
+
 
 
 </RelativeLayout>
