@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.network.ServiceGenerator;
@@ -31,12 +32,15 @@ import retrofit2.Response;
 
 public class FeedbackActivity extends AppCompatActivity {
 
-    @BindView(R.id.tb_feedback)
-    Toolbar mTbFeedback;
+
     @BindView(R.id.et_feedback)
     EditText mEtFeedback;
     @BindView(R.id.btn_feedback)
     Button mBtnFeedback;
+    @BindView(R.id.toolbar_center)
+    Toolbar mTbFeedback;
+    @BindView(R.id.tv_title_toolbar)
+    TextView mTvTitleToolbar;
 
     private Context mContext;
 
@@ -89,8 +93,8 @@ public class FeedbackActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
         }
-        mTbFeedback.setTitle("意见反馈");
-        mTbFeedback.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
+        mTbFeedback.setTitle("");
+        mTvTitleToolbar.setText("意见反馈");
         mTbFeedback.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

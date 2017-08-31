@@ -11,13 +11,10 @@
         android:layout_height="wrap_content"
         android:theme="@style/toolbar_theme">
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/tb_feedback"
+        <include layout="@layout/layout_toolbar_centertitle"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@drawable/bg_theme_gradient"
-            android:minHeight="?attr/actionBarSize"
-            android:theme="?attr/actionBarTheme"/>
+            android:layout_height="?attr/actionBarSize">
+        </include>
 
     </android.support.design.widget.AppBarLayout>
 

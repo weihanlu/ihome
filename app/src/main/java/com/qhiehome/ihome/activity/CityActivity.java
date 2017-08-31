@@ -17,25 +17,23 @@ import android.widget.TextView;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.util.CommonUtil;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class CityActivity extends AppCompatActivity {
 
-    @BindView(R.id.tb_city)
-    Toolbar mTbCity;
+
     @BindView(R.id.rv_city)
     RecyclerView mRvCity;
     @BindArray(R.array.cities)
     String[] mCities;
+    @BindView(R.id.toolbar_center)
+    Toolbar mTbCity;
+    @BindView(R.id.tv_title_toolbar)
+    TextView mTvTitleToolbar;
 
-//    private List<String> mCities = new ArrayList<>();
+    //    private List<String> mCities = new ArrayList<>();
     private String mCurrentCity;
 
     @Override
@@ -67,8 +65,8 @@ public class CityActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
         }
-        mTbCity.setTitle("选择城市");
-        mTbCity.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
+        mTbCity.setTitle("");
+        mTvTitleToolbar.setText("选择城市");
         mTbCity.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -77,17 +75,17 @@ public class CityActivity extends AppCompatActivity {
         });
     }
 
-    private void initRecyclerView(){
+    private void initRecyclerView() {
         mRvCity.setLayoutManager(new LinearLayoutManager(this));
         CityAdapter adapter = new CityAdapter();
         adapter.setOnItemClickListener(new OnClickListener() {
             @Override
             public void onClick(View view, int i) {
                 String city_selected;
-                if (i == 0){
+                if (i == 0) {
                     city_selected = mCurrentCity;
-                }else {
-                    city_selected = mCities[i-1];
+                } else {
+                    city_selected = mCities[i - 1];
 //                    city_selected = mCities.get(i-1);
                 }
 
@@ -112,11 +110,11 @@ public class CityActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(final MyViewHolder holder, int position) {
-            if (position == 0){
+            if (position == 0) {
                 holder.tv_city.setText(mCurrentCity);
                 holder.tv_hint.setText("当前城市");
-            }else {
-                holder.tv_city.setText(mCities[position-1]);
+            } else {
+                holder.tv_city.setText(mCities[position - 1]);
 //                holder.tv_city.setText(mCities.get(position-1));
                 holder.tv_hint.setText("");
             }

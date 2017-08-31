@@ -49,8 +49,7 @@ import retrofit2.Response;
 
 public class PayActivity extends AppCompatActivity {
 
-    @BindView(R.id.tb_pay)
-    Toolbar mTbPay;
+
     @BindView(R.id.rv_pay)
     RecyclerView mRvPay;
     @BindView(R.id.btn_pay)
@@ -73,6 +72,10 @@ public class PayActivity extends AppCompatActivity {
     Button mBtnAddBalance4;
     @BindArray(R.array.add_balance)
     String[] mPriceList;
+    @BindView(R.id.toolbar_center)
+    Toolbar mTbPay;
+    @BindView(R.id.tv_title_toolbar)
+    TextView mTvTitleToolbar;
 
     private Context mContext;
     private PayListAdapter mAdapter;
@@ -107,7 +110,7 @@ public class PayActivity extends AppCompatActivity {
         initRecyclerView();
 
         //支付
-        switch (mPayState){
+        switch (mPayState) {
             case Constant.PAY_STATE_ADD_ACCOUNT:    //充值
                 mLayoutDetailPay.setVisibility(View.GONE);
                 mBtnList.add(mBtnAddBalance1);
@@ -116,7 +119,7 @@ public class PayActivity extends AppCompatActivity {
                 mBtnList.add(mBtnAddBalance4);
                 mButtonClicked = 1;
                 mBtnAddBalance1.setTextColor(ContextCompat.getColor(mContext, R.color.white));
-                mBtnPay.setText("确认支付：" + mPriceList[mButtonClicked-1] + "元");
+                mBtnPay.setText("确认支付：" + mPriceList[mButtonClicked - 1] + "元");
                 break;
             case Constant.PAY_STATE_GUARANTEE:      //支付担保费
                 mLayoutTitleAdd.setVisibility(View.GONE);
@@ -137,7 +140,6 @@ public class PayActivity extends AppCompatActivity {
         }
 
 
-
     }
 
     private void initToolbar() {
@@ -147,8 +149,8 @@ public class PayActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
         }
-        mTbPay.setTitle("支付订单");
-        mTbPay.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
+        mTbPay.setTitle("");
+        mTvTitleToolbar.setText("支付订单");
         mTbPay.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -163,38 +165,38 @@ public class PayActivity extends AppCompatActivity {
         mAdapter.setOnItemClickListener(new OnClickListener() {
             @Override
             public void onClick(View view, int i) {
-                if (mPayState == Constant.PAY_STATE_ADD_ACCOUNT){//充值
-                    if (i == 1){
+                if (mPayState == Constant.PAY_STATE_ADD_ACCOUNT) {//充值
+                    if (i == 1) {
                         mSelectedNum[1] = true;
                         mSelectedNum[0] = false;
                     }
-                    if (i == 0){
+                    if (i == 0) {
                         mSelectedNum[0] = true;
                         mSelectedNum[1] = false;
                     }
-                }else {//支付
-                    if (i == 2 && mAccountBalance >= mFee){//账户余额足够支付，完全用余额支付
+                } else {//支付
+                    if (i == 2 && mAccountBalance >= mFee) {//账户余额足够支付，完全用余额支付
                         mSelectedNum[0] = false;
                         mSelectedNum[1] = false;
                         mSelectedNum[2] = true;
                     }
-                    if (i == 2 && mAccountBalance < mFee){//账户余额不够支付，选择是否要使用余额
+                    if (i == 2 && mAccountBalance < mFee) {//账户余额不够支付，选择是否要使用余额
                         mSelectedNum[2] = !mSelectedNum[2];
                     }
-                    if (i != 2 && mAccountBalance >= mFee){//账户余额足够支付，选择支付宝或微信支付
+                    if (i != 2 && mAccountBalance >= mFee) {//账户余额足够支付，选择支付宝或微信支付
                         mSelectedNum[2] = false;
                         mSelectedNum[1] = false;
                         mSelectedNum[0] = false;
                         mSelectedNum[i] = true;
                     }
-                    if (i != 2 && mAccountBalance < mFee){//账户余额不够支付，选择支付方式
+                    if (i != 2 && mAccountBalance < mFee) {//账户余额不够支付，选择支付方式
                         mSelectedNum[1] = false;
                         mSelectedNum[0] = false;
                         mSelectedNum[i] = true;
                     }
-                    if (mSelectedNum[2]){
-                        mBtnPay.setText("确认支付：" + String.format(Locale.CHINA, DECIMAL_2, mFee>=mAccountBalance?(mFee - mAccountBalance):0.0) + "元");
-                    }else {
+                    if (mSelectedNum[2]) {
+                        mBtnPay.setText("确认支付：" + String.format(Locale.CHINA, DECIMAL_2, mFee >= mAccountBalance ? (mFee - mAccountBalance) : 0.0) + "元");
+                    } else {
                         mBtnPay.setText("确认支付：" + String.format(Locale.CHINA, DECIMAL_2, mFee) + "元");
                     }
                 }
@@ -210,7 +212,7 @@ public class PayActivity extends AppCompatActivity {
     @OnClick(R.id.btn_pay)
     public void onViewClicked() {
 
-        if (mPayState == Constant.PAY_STATE_ADD_ACCOUNT){
+        if (mPayState == Constant.PAY_STATE_ADD_ACCOUNT) {
             int red = ContextCompat.getColor(mContext, android.R.color.holo_red_light);
             new MaterialDialog.Builder(mContext)
                     .title("确认支付？")
@@ -225,7 +227,7 @@ public class PayActivity extends AppCompatActivity {
                         @Override
                         public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                             AccountBalanceService accountBalanceService = ServiceGenerator.createService(AccountBalanceService.class);
-                            AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256), Double.valueOf(mPriceList[mButtonClicked-1]));
+                            AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256), Double.valueOf(mPriceList[mButtonClicked - 1]));
                             Call<AccountBalanceResponse> call = accountBalanceService.account(accountBalanceRequest);
                             call.enqueue(new Callback<AccountBalanceResponse>() {
                                 @Override
@@ -247,7 +249,7 @@ public class PayActivity extends AppCompatActivity {
         }
 
         // TODO: 2017/8/14 根据选择方式调用支付接口
-        if (mPayState == Constant.PAY_STATE_GUARANTEE){
+        if (mPayState == Constant.PAY_STATE_GUARANTEE) {
             int red = ContextCompat.getColor(mContext, android.R.color.holo_red_light);
             new MaterialDialog.Builder(mContext)
                     .title("确认支付？")
@@ -302,35 +304,35 @@ public class PayActivity extends AppCompatActivity {
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.btn_add_balance_1:
-                if (mButtonClicked != 1){
-                    mBtnList.get(mButtonClicked-1).setTextColor(ContextCompat.getColor(mContext, R.color.black));
+                if (mButtonClicked != 1) {
+                    mBtnList.get(mButtonClicked - 1).setTextColor(ContextCompat.getColor(mContext, R.color.black));
                     mButtonClicked = 1;
                     mBtnAddBalance1.setTextColor(ContextCompat.getColor(mContext, R.color.white));
-                    mBtnPay.setText("确认支付：" + mPriceList[mButtonClicked-1] + "元");
+                    mBtnPay.setText("确认支付：" + mPriceList[mButtonClicked - 1] + "元");
                 }
                 break;
             case R.id.btn_add_balance_2:
-                if (mButtonClicked != 2){
-                    mBtnList.get(mButtonClicked-1).setTextColor(ContextCompat.getColor(mContext, R.color.black));
+                if (mButtonClicked != 2) {
+                    mBtnList.get(mButtonClicked - 1).setTextColor(ContextCompat.getColor(mContext, R.color.black));
                     mButtonClicked = 2;
                     mBtnAddBalance2.setTextColor(ContextCompat.getColor(mContext, R.color.white));
-                    mBtnPay.setText("确认支付：" + mPriceList[mButtonClicked-1] + "元");
+                    mBtnPay.setText("确认支付：" + mPriceList[mButtonClicked - 1] + "元");
                 }
                 break;
             case R.id.btn_add_balance_3:
-                if (mButtonClicked != 3){
-                    mBtnList.get(mButtonClicked-1).setTextColor(ContextCompat.getColor(mContext, R.color.black));
+                if (mButtonClicked != 3) {
+                    mBtnList.get(mButtonClicked - 1).setTextColor(ContextCompat.getColor(mContext, R.color.black));
                     mButtonClicked = 3;
                     mBtnAddBalance3.setTextColor(ContextCompat.getColor(mContext, R.color.white));
-                    mBtnPay.setText("确认支付：" + mPriceList[mButtonClicked-1] + "元");
+                    mBtnPay.setText("确认支付：" + mPriceList[mButtonClicked - 1] + "元");
                 }
                 break;
             case R.id.btn_add_balance_4:
-                if (mButtonClicked != 4){
-                    mBtnList.get(mButtonClicked-1).setTextColor(ContextCompat.getColor(mContext, R.color.black));
+                if (mButtonClicked != 4) {
+                    mBtnList.get(mButtonClicked - 1).setTextColor(ContextCompat.getColor(mContext, R.color.black));
                     mButtonClicked = 4;
                     mBtnAddBalance4.setTextColor(ContextCompat.getColor(mContext, R.color.white));
-                    mBtnPay.setText("确认支付：" + mPriceList[mButtonClicked-1] + "元");
+                    mBtnPay.setText("确认支付：" + mPriceList[mButtonClicked - 1] + "元");
                 }
                 break;
         }
@@ -375,7 +377,7 @@ public class PayActivity extends AppCompatActivity {
                     break;
                 case ACCOUNT_BALANCE:
                     holder.iv_pay.setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_pay_account));
-                    if (mIsFirstLoad){
+                    if (mIsFirstLoad) {
                         holder.tv_pay.setText("账户余额");
                         holder.tv_pay_info.setText("正在获取账户余额");
                         getAccountBalance(holder);
@@ -395,9 +397,9 @@ public class PayActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            if (mPayState == Constant.PAY_STATE_ADD_ACCOUNT){
+            if (mPayState == Constant.PAY_STATE_ADD_ACCOUNT) {
                 return 2;
-            }else {
+            } else {
                 return 3;
             }
         }
@@ -428,7 +430,7 @@ public class PayActivity extends AppCompatActivity {
         void onClick(View view, int i);
     }
 
-    private void getAccountBalance(final PayListAdapter.PayListHolder holder){
+    private void getAccountBalance(final PayListAdapter.PayListHolder holder) {
         AccountBalanceService accountBalanceService = ServiceGenerator.createService(AccountBalanceService.class);
         AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256), 0.0);
         Call<AccountBalanceResponse> call = accountBalanceService.account(accountBalanceRequest);
@@ -443,6 +445,7 @@ public class PayActivity extends AppCompatActivity {
                     holder.tv_pay_info.setText(pay_info);
                 }
             }
+
             @Override
             public void onFailure(Call<AccountBalanceResponse> call, Throwable t) {
                 ToastUtil.showToast(mContext, "网络连接异常");

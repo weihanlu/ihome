@@ -229,7 +229,6 @@ public class SettingActivity extends BaseActivity {
             actionBar.setDisplayShowTitleEnabled(false);
         }
         mToolbar.setTitle("");
-        mToolbar.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
