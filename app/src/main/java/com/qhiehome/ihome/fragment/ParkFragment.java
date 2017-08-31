@@ -4,15 +4,10 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
@@ -21,10 +16,8 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
@@ -44,21 +37,15 @@ import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.UiSettings;
 import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.utils.DistanceUtil;
-import com.baidu.navisdk.adapter.BNCommonSettingParam;
-import com.baidu.navisdk.adapter.BNOuterTTSPlayerCallback;
-import com.baidu.navisdk.adapter.BNRoutePlanNode;
 import com.baidu.navisdk.adapter.BNRoutePlanNode.CoordinateType;
-import com.baidu.navisdk.adapter.BNaviSettingManager;
 import com.baidu.navisdk.adapter.BaiduNaviManager;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.activity.CityActivity;
 import com.qhiehome.ihome.activity.MainActivity;
 import com.qhiehome.ihome.activity.MapSearchActivity;
-import com.qhiehome.ihome.activity.NaviGuideActivity;
 import com.qhiehome.ihome.activity.ParkingListActivity;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.baiduMap.BaiduMapResponse;
-import com.qhiehome.ihome.network.model.base.ParkingResponse;
 import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyRequest;
 import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyResponse;
 import com.qhiehome.ihome.network.service.baiduMap.BaiduMapService;
@@ -71,10 +58,8 @@ import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 import com.qhiehome.ihome.view.SharePopupWindow;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -102,15 +87,15 @@ public class ParkFragment extends Fragment {
 
     public static final int REQUEST_CODE_CITY = 6;
 
-    @BindView(R.id.btn_map_location)
-    Button mBtnMapLocation;
+    @BindView(R.id.iv_map_location)
+    ImageView mIvMapLocation;
     Unbinder unbinder;
-    @BindView(R.id.btn_map_navi)
-    Button mBtnMapNavi;
-    @BindView(R.id.btn_map_refresh)
-    Button mBtnMapRefresh;
-    @BindView(R.id.btn_map_marker)
-    Button mBtnMapMarker;
+    @BindView(R.id.iv_map_navi)
+    ImageView mIvMapNavi;
+    @BindView(R.id.iv_map_refresh)
+    ImageView mIvMapRefresh;
+    @BindView(R.id.iv_map_marker)
+    ImageView mIvMapMarker;
     @BindView((R.id.tv_current_city))
     TextView mTvCurrentCity;
 
@@ -219,7 +204,7 @@ public class ParkFragment extends Fragment {
         mMapView.onResume();
         super.onResume();
         if (mHasInit) {
-            mBtnMapRefresh.performClick();
+            mIvMapRefresh.performClick();
         }
 
     }
@@ -478,14 +463,14 @@ public class ParkFragment extends Fragment {
                 TextView tv_marker = (TextView) customMarker.findViewById(R.id.tv_marker);
                 ImageView iv_marker = (ImageView) customMarker.findViewById(R.id.iv_marker);
                 if (mMapStateParkingNum) {
-                    iv_marker.setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_marker_numbers));
+                    iv_marker.setImageResource(R.drawable.img_bluemark);
                     int shareNum = 0;
                     for (int j = 0; j < mEstateBeanList.get(i).getParkingList().size(); j++) {
                         shareNum += mEstateBeanList.get(i).getParkingList().get(j).getShareList().size();
                     }
                     tv_marker.setText(String.valueOf(shareNum));
                 } else {
-                    iv_marker.setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_marker_price));
+                    iv_marker.setImageResource(R.drawable.img_redmark);
                     tv_marker.setText(String.format("%d", mEstateBeanList.get(i).getUnitPrice()));
                 }
                 customMarker.setDrawingCacheEnabled(true);
@@ -528,7 +513,7 @@ public class ParkFragment extends Fragment {
         unbinder.unbind();
     }
 
-    @OnClick(R.id.btn_map_location)
+    @OnClick(R.id.iv_map_location)
     public void onLocationClicked() {
         mMyPt = mCurrentPt;
         mIsSearch = false;
@@ -542,7 +527,7 @@ public class ParkFragment extends Fragment {
     }
 
 
-    @OnClick(R.id.btn_map_refresh)
+    @OnClick(R.id.iv_map_refresh)
     public void onRefreshClicked() {
         if (mMyPt == null) {
             mMyPt = mCurrentPt;
@@ -550,13 +535,13 @@ public class ParkFragment extends Fragment {
         updateMapState(mMyPt);
     }
 
-    @OnClick(R.id.btn_map_marker)
+    @OnClick(R.id.iv_map_marker)
     public void onChangeMarkerClicked() {
         mMapStateParkingNum = !mMapStateParkingNum;
         if (mMapStateParkingNum) {
-            mBtnMapMarker.setBackground(ContextCompat.getDrawable(mContext, R.drawable.btn_numbers_checked));
+            mIvMapMarker.setImageResource(R.drawable.ic_number);
         } else {
-            mBtnMapMarker.setBackground(ContextCompat.getDrawable(mContext, R.drawable.btn_price_checked));
+            mIvMapMarker.setImageResource(R.drawable.ic_price);
         }
         addMarkers();
     }
@@ -659,7 +644,7 @@ public class ParkFragment extends Fragment {
 
 
 
-    @OnClick(R.id.btn_map_navi)
+    @OnClick(R.id.iv_map_navi)
     public void onNaviClicked() {
         if (BaiduNaviManager.isNaviInited()) {
             mNavi.setsNodeLocation(mCurrentPt);

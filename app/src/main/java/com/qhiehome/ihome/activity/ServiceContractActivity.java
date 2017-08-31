@@ -2,11 +2,12 @@ package com.qhiehome.ihome.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.util.CommonUtil;
@@ -21,11 +22,13 @@ public class ServiceContractActivity extends BaseActivity {
 
     private static final String TAG = ServiceContractActivity.class.getSimpleName();
 
-    @BindView(R.id.toolbar)
-    Toolbar mToolbar;
 
     @BindView(R.id.pwv_web_contract)
     ProgressWebView mProgressWebView;
+    @BindView(R.id.toolbar_center)
+    Toolbar mToolbar;
+    @BindView(R.id.tv_title_toolbar)
+    TextView mTvTitleToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,8 +60,8 @@ public class ServiceContractActivity extends BaseActivity {
             actionBar.setDisplayShowTitleEnabled(false);
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-        mToolbar.setTitle("服务协议");
-        mToolbar.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
+        mToolbar.setTitle("");
+        mTvTitleToolbar.setText("服务协议");
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

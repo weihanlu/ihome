@@ -12,6 +12,8 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.TextView;
+
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.fragment.OrderOwnerFragment;
 import com.qhiehome.ihome.fragment.UserLockFragment;
@@ -25,11 +27,13 @@ import butterknife.ButterKnife;
 public class UserLockActivity extends BaseActivity {
 
     private static final String TAG = UserLockActivity.class.getSimpleName();
+    @BindView(R.id.toolbar_center)
+    Toolbar mToolbar;
+    @BindView(R.id.tv_title_toolbar)
+    TextView mTvTitleToolbar;
 
     private Context mContext;
 
-    @BindView(R.id.tb_user_lock)
-    Toolbar mTbUserLock;
     @BindView(R.id.tl_user_lock)
     TabLayout mTlUserLock;
     @BindView(R.id.vp_user_lock)
@@ -51,7 +55,7 @@ public class UserLockActivity extends BaseActivity {
     }
 
     private void initData() {
-        mTitles = new ArrayList<String>(){{
+        mTitles = new ArrayList<String>() {{
             add("我的车锁");
             add("使用历史");
         }};
@@ -78,15 +82,15 @@ public class UserLockActivity extends BaseActivity {
     }
 
     private void initToolbar() {
-        setSupportActionBar(mTbUserLock);
+        setSupportActionBar(mToolbar);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
         }
-        mTbUserLock.setTitle("我的车位");
-        mTbUserLock.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
-        mTbUserLock.setNavigationOnClickListener(new View.OnClickListener() {
+        mToolbar.setTitle("");
+        mTvTitleToolbar.setText("我的车位");
+        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();

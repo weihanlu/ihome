@@ -17,43 +17,46 @@
         android:layout_below="@id/layout_top"
         />
 
-    <Button
-        android:id="@+id/btn_map_location"
-        android:background="@drawable/btn_location_normal"
-        android:textAllCaps="false"
-        android:layout_width="35dp"
-        android:layout_height="35dp"
-        android:layout_below="@+id/btn_map_marker"
-        android:layout_alignStart="@+id/btn_map_marker"
-        android:layout_marginTop="41dp" />
-
-    <Button
-        android:id="@+id/btn_map_navi"
-        android:layout_width="35dp"
-        android:layout_height="35dp"
-        android:background="@drawable/btn_nav"
-        android:layout_below="@+id/btn_map_refresh"
-        android:layout_alignStart="@+id/btn_map_location"
-        android:layout_marginTop="40dp" />
-
-    <Button
-        android:id="@+id/btn_map_refresh"
-        android:layout_width="35dp"
-        android:layout_height="35dp"
-        android:background="@android:drawable/ic_popup_sync"
-        android:layout_below="@+id/btn_map_location"
-        android:layout_alignStart="@+id/btn_map_navi"
-        android:layout_marginTop="32dp" />
-
-    <Button
-        android:id="@+id/btn_map_marker"
-        android:layout_width="35dp"
-        android:layout_height="35dp"
+    <!--返回我的位置-->
+    <ImageView
+        android:id="@+id/iv_map_location"
+        android:src="@drawable/ic_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginEnd="15dp"
-        android:layout_marginTop="167dp"
-        android:background="@drawable/btn_numbers_checked" />
+        android:layout_marginEnd="10dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="222dp"/>
+
+    <!--刷新-->
+    <ImageView
+        android:id="@+id/iv_map_refresh"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_reload"
+        android:layout_above="@id/iv_map_location"
+        android:layout_marginBottom="20dp"
+        android:layout_alignStart="@id/iv_map_location" />
+
+    <!--导航-->
+    <ImageView
+        android:id="@+id/iv_map_navi"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_navigation"
+        android:layout_above="@id/iv_map_refresh"
+        android:layout_alignStart="@+id/iv_map_location"
+        android:layout_marginBottom="20dp" />
+
+    <!--价格/车位-->
+    <ImageView
+        android:id="@+id/iv_map_marker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@id/iv_map_location"
+        android:layout_above="@id/iv_map_navi"
+        android:layout_marginBottom="20dp"
+        android:src="@drawable/ic_number" />
 
 
 </RelativeLayout>

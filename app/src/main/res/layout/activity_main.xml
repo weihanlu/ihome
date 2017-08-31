@@ -27,18 +27,18 @@
         <RelativeLayout
             android:id="@+id/rl_avatar"
             android:layout_width="match_parent"
-            android:layout_height="240dp"
+            android:layout_height="230dp"
             android:background="@drawable/bg_theme_gradient">
 
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/iv_avatar"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
-                android:src="@drawable/ic_avatar_default"
+                android:src="@drawable/img_portrait"
                 app:civ_border_width="2dp"
                 app:civ_border_color="@color/white"
                 android:layout_centerHorizontal="true"
-                android:layout_marginTop="32dp"
+                android:layout_marginTop="30dp"
                 />
 
             <TextView
@@ -47,10 +47,10 @@
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
                 android:layout_below="@id/iv_avatar"
-                android:textSize="14sp"
+                android:textSize="12sp"
                 android:textStyle="bold"
                 android:textColor="@color/white"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="10dp"
                 />
 
             <TextView
@@ -60,10 +60,10 @@
                 android:layout_centerHorizontal="true"
                 android:layout_below="@id/tv_user_account"
                 android:text="余额(元)"
-                android:textSize="14sp"
+                android:textSize="12sp"
                 android:textStyle="bold"
                 android:textColor="@color/white"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="20dp"
                 />
 
             <TextView
@@ -83,7 +83,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="充值"
-                android:textSize="18sp"
+                android:textSize="16sp"
                 android:textColor="@color/white"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentEnd="true"
@@ -107,26 +107,35 @@
             android:layout_below="@id/rl_avatar"
             android:id="@+id/ll_my_lock"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="60dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
+            android:layout_marginTop="20dp"
             android:background="@drawable/selector_item">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="20dp"
+                android:src="@drawable/ic_my_parking"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="我的车位"
-                android:textColor="@color/black"
+                android:textColor="@color/major_text"
                 android:textSize="16sp"
-                android:layout_marginStart="32dp"/>
+                android:layout_marginStart="20dp"/>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="业主专用"
                 android:gravity="end"
-                android:textColor="@color/colorAccent"
-                android:layout_marginEnd="16dp"
+                android:textColor="@color/theme_start_color"
+                android:textSize="12sp"
+                android:layout_marginEnd="20dp"
                 />
 
         </LinearLayout>
@@ -135,18 +144,25 @@
             android:layout_below="@id/ll_my_lock"
             android:id="@+id/ll_my_reserve"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="60dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:background="@drawable/selector_item">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="20dp"
+                android:src="@drawable/ic_history"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="我的预约"
-                android:textColor="@color/black"
+                android:textColor="@color/major_text"
                 android:textSize="16sp"
-                android:layout_marginStart="32dp"/>
+                android:layout_marginStart="20dp"/>
 
         </LinearLayout>
 
@@ -154,18 +170,25 @@
             android:layout_below="@id/ll_my_reserve"
             android:id="@+id/ll_my_publish"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="60dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:background="@drawable/selector_item">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="20dp"
+                android:src="@drawable/ic_publish"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="发布车位"
-                android:textColor="@color/black"
+                android:textColor="@color/major_text"
                 android:textSize="16sp"
-                android:layout_marginStart="32dp"/>
+                android:layout_marginStart="20dp"/>
 
         </LinearLayout>
 
@@ -173,18 +196,25 @@
             android:layout_below="@id/ll_my_publish"
             android:id="@+id/ll_setting"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="60dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:background="@drawable/selector_item">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="20dp"
+                android:src="@drawable/ic_setting"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="系统设置"
-                android:textColor="@color/black"
+                android:textColor="@color/major_text"
                 android:textSize="16sp"
-                android:layout_marginStart="32dp"/>
+                android:layout_marginStart="20dp"/>
 
         </LinearLayout>
 

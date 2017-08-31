@@ -79,9 +79,7 @@ public class OrderOwnerFragment extends Fragment implements SwipeRefreshLayout.O
         mSrlOrderOwner.setOnRefreshListener(this);
         mSrlOrderOwner.setRefreshing(true);
         initParkings();
-        mPostTimes = 0;
-        mOrderBeanList.clear();
-        initData();
+        refreshData();
         initRecyclerView();
         return view;
     }
@@ -157,8 +155,15 @@ public class OrderOwnerFragment extends Fragment implements SwipeRefreshLayout.O
 
     @Override
     public void onRefresh() {
-        mPostTimes = 0;
-        mOrderBeanList.clear();
-        initData();
+        refreshData();
     }
+
+    public void refreshData(){
+        if (mUserLocks.size() > 0){
+            mPostTimes = 0;
+            mOrderBeanList.clear();
+            initData();
+        }
+    }
+
 }

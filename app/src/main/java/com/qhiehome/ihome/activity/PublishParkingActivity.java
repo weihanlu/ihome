@@ -2,12 +2,12 @@ package com.qhiehome.ihome.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
-import android.os.Bundle;
 import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.GridLayoutManager;
@@ -47,8 +47,8 @@ import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.TimeUtil;
 import com.qhiehome.ihome.util.ToastUtil;
-import com.qhiehome.ihome.view.WeekPickView;
 import com.qhiehome.ihome.view.RecyclerViewEmptySupport;
+import com.qhiehome.ihome.view.WeekPickView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -67,14 +67,16 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
 
     private static final String TAG = PublishParkingActivity.class.getSimpleName();
 
-    @BindView(R.id.toolbar)
-    Toolbar mToolbar;
 
     @BindView(R.id.fab)
     FloatingActionButton mFab;
 
     @BindView(R.id.srf_publish)
     SwipeRefreshLayout mSrfPublish;
+    @BindView(R.id.toolbar_center)
+    Toolbar mToolbar;
+    @BindView(R.id.tv_title_toolbar)
+    TextView mTvTitleToolbar;
 
     private ArrayList<String> mParkingIdList;
     private ArrayList<Boolean> mSelected;
@@ -147,13 +149,13 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     // first step get the parking ids, then get share info
                     List<ParkingResponse.DataBean.EstateBean> estateList = response.body().getData().getEstate();
-                    for (ParkingResponse.DataBean.EstateBean estateBean: estateList) {
+                    for (ParkingResponse.DataBean.EstateBean estateBean : estateList) {
                         List<ParkingResponse.DataBean.EstateBean.ParkingListBean> parkingList = estateBean.getParkingList();
-                        for (ParkingResponse.DataBean.EstateBean.ParkingListBean parkingBean: parkingList) {
+                        for (ParkingResponse.DataBean.EstateBean.ParkingListBean parkingBean : parkingList) {
                             mParkingIdList.add(parkingBean.getId() + "");
                             mSelected.add(false);
                             List<ParkingResponse.DataBean.EstateBean.ParkingListBean.ShareListBean> shareList = parkingBean.getShareList();
-                            for (ParkingResponse.DataBean.EstateBean.ParkingListBean.ShareListBean shareBean: shareList) {
+                            for (ParkingResponse.DataBean.EstateBean.ParkingListBean.ShareListBean shareBean : shareList) {
                                 SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.CHINA);
                                 PublishBean publishBean = new PublishBean(parkingBean.getId() + "",
                                         timeFormat.format(TimeUtil.getInstance().millis2Date(shareBean.getStartTime())),
@@ -203,93 +205,93 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
     }
 
     private void initListener(final PublishParkingAdapter mPublishAdapter) {
-      mPublishAdapter.setOnItemClickListener(new PublishParkingAdapter.OnItemClickListener() {
-          @Override
-          public void onItemClick(View view, int position) {
+        mPublishAdapter.setOnItemClickListener(new PublishParkingAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
 
-          }
+            }
 
-          @Override
-          public void onCallbackPublish(View view, final int position) {
-              final PublishBean publishBean = mPublishList.get(position);
-              final int shareId = publishBean.getShareId();
-              int red = ContextCompat.getColor(mContext, android.R.color.holo_red_light);
-              new MaterialDialog.Builder(mContext)
-                      .title("警告")
-                      .titleColor(red)
-                      .content("确定取消发布吗？")
-                      .contentColor(red)
-                      .positiveText("确定")
-                      .positiveColor(red)
-                      .negativeText("取消")
-                      .canceledOnTouchOutside(false)
-                      .onPositive(new MaterialDialog.SingleButtonCallback() {
-                          @Override
-                          public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                              PublishCallbackService publishCallbackService = ServiceGenerator.createService(PublishCallbackService.class);
-                              PublishCancelRequest publishCancelRequest = new PublishCancelRequest(shareId, Constant.DEFAULT_PASSWORD);
-                              Call<PublishCancelResponse> call = publishCallbackService.callback(publishCancelRequest);
-                              call.enqueue(new Callback<PublishCancelResponse>() {
-                                  @Override
-                                  public void onResponse(@NonNull Call<PublishCancelResponse> call,@NonNull Response<PublishCancelResponse> response) {
-                                      if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                                          mPublishAdapter.removeItem(position);
-                                          if (mPublishList.size() == 0) {
-                                              mPublishAdapter.notifyDataSetChanged();
-                                          }
-                                      } else {
-                                          ToastUtil.showToast(mContext, "取消失败");
-                                      }
-                                  }
+            @Override
+            public void onCallbackPublish(View view, final int position) {
+                final PublishBean publishBean = mPublishList.get(position);
+                final int shareId = publishBean.getShareId();
+                int red = ContextCompat.getColor(mContext, android.R.color.holo_red_light);
+                new MaterialDialog.Builder(mContext)
+                        .title("警告")
+                        .titleColor(red)
+                        .content("确定取消发布吗？")
+                        .contentColor(red)
+                        .positiveText("确定")
+                        .positiveColor(red)
+                        .negativeText("取消")
+                        .canceledOnTouchOutside(false)
+                        .onPositive(new MaterialDialog.SingleButtonCallback() {
+                            @Override
+                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                PublishCallbackService publishCallbackService = ServiceGenerator.createService(PublishCallbackService.class);
+                                PublishCancelRequest publishCancelRequest = new PublishCancelRequest(shareId, Constant.DEFAULT_PASSWORD);
+                                Call<PublishCancelResponse> call = publishCallbackService.callback(publishCancelRequest);
+                                call.enqueue(new Callback<PublishCancelResponse>() {
+                                    @Override
+                                    public void onResponse(@NonNull Call<PublishCancelResponse> call, @NonNull Response<PublishCancelResponse> response) {
+                                        if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                                            mPublishAdapter.removeItem(position);
+                                            if (mPublishList.size() == 0) {
+                                                mPublishAdapter.notifyDataSetChanged();
+                                            }
+                                        } else {
+                                            ToastUtil.showToast(mContext, "取消失败");
+                                        }
+                                    }
 
-                                  @Override
-                                  public void onFailure(@NonNull Call<PublishCancelResponse> call, @NonNull Throwable t) {
+                                    @Override
+                                    public void onFailure(@NonNull Call<PublishCancelResponse> call, @NonNull Throwable t) {
 
-                                  }
-                              });
-                          }
-                      })
-                      .show();
-          }
+                                    }
+                                });
+                            }
+                        })
+                        .show();
+            }
 
-          @Override
-          public void onToggleRepublish(final View view, boolean isChecked, int position, final TextView textView) {
-              mIsChecked = isChecked;
-              // republish
-              if (isChecked) {
-                  View customView = LayoutInflater.from(mContext).inflate(R.layout.dialog_select_days, null);
-                  final WeekPickView weekPickView = (WeekPickView) customView.findViewById(R.id.dpv_selected);
-                  new MaterialDialog.Builder(mContext)
-                          .title("选择")
-                          .customView(customView, false)
-                          .positiveText("确定")
-                          .negativeText("取消")
-                          .onPositive(new MaterialDialog.SingleButtonCallback() {
-                              @Override
-                              public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                  boolean invalid = weekPickView.isInvalid();
-                                  if (invalid) {
-                                      ((SwitchCompat)view).setChecked(false);
-                                  } else {
-                                      textView.setText(String.format(getString(R.string.republish_format), weekPickView.getSelectDayInfo()));
-                                  }
-                              }
-                          })
-                          .onNegative(new MaterialDialog.SingleButtonCallback() {
-                              @Override
-                              public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                  ((SwitchCompat)view).setChecked(false);
-                              }
-                          })
-                          .canceledOnTouchOutside(false)
-                          .show();
+            @Override
+            public void onToggleRepublish(final View view, boolean isChecked, int position, final TextView textView) {
+                mIsChecked = isChecked;
+                // republish
+                if (isChecked) {
+                    View customView = LayoutInflater.from(mContext).inflate(R.layout.dialog_select_days, null);
+                    final WeekPickView weekPickView = (WeekPickView) customView.findViewById(R.id.dpv_selected);
+                    new MaterialDialog.Builder(mContext)
+                            .title("选择")
+                            .customView(customView, false)
+                            .positiveText("确定")
+                            .negativeText("取消")
+                            .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                @Override
+                                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                    boolean invalid = weekPickView.isInvalid();
+                                    if (invalid) {
+                                        ((SwitchCompat) view).setChecked(false);
+                                    } else {
+                                        textView.setText(String.format(getString(R.string.republish_format), weekPickView.getSelectDayInfo()));
+                                    }
+                                }
+                            })
+                            .onNegative(new MaterialDialog.SingleButtonCallback() {
+                                @Override
+                                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                    ((SwitchCompat) view).setChecked(false);
+                                }
+                            })
+                            .canceledOnTouchOutside(false)
+                            .show();
 
-              } else {
-                  // TODO: 2017/8/28  取消重复发布
-                  textView.setText("仅一次");
-              }
-          }
-      });
+                } else {
+                    // TODO: 2017/8/28  取消重复发布
+                    textView.setText("仅一次");
+                }
+            }
+        });
     }
 
     private void initToolbar() {
@@ -299,8 +301,8 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
         }
-        mToolbar.setTitle("发布车位");
-        mToolbar.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
+        mToolbar.setTitle("");
+        mTvTitleToolbar.setText("发布车位");
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -363,18 +365,19 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                             ArrayAdapter<String> endAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, endData);
                             endAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                             endSpinner.setAdapter(endAdapter);
-                            for (int j = 0; j < i; j++){
+                            for (int j = 0; j < i; j++) {
                                 endData.remove(0);
                             }
                             endAdapter.notifyDataSetChanged();
                             endSpinner.setSelection(0);
                         }
+
                         @Override
                         public void onNothingSelected(AdapterView<?> adapterView) {
 
                         }
                     });
-                    if (++ mPeriodTimes == Constant.TIME_PERIOD_LIMIT) {
+                    if (++mPeriodTimes == Constant.TIME_PERIOD_LIMIT) {
                         addBtn.setVisibility(View.GONE);
                     }
                 }
@@ -413,7 +416,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
         publishparkRequest.setParkingId(parkingId);
         publishparkRequest.setPassword(EncryptUtil.encrypt(Constant.DEFAULT_PASSWORD, EncryptUtil.ALGO.SHA_256));
         List<PublishparkRequest.ShareBean> share = new ArrayList<>();
-        for (TimePeriod timePeriod: mTimePeriods) {
+        for (TimePeriod timePeriod : mTimePeriods) {
             PublishparkRequest.ShareBean shareBean = new PublishparkRequest.ShareBean();
             long startTime = timePeriod.getStartTime();
             long endTime = timePeriod.getEndTime();
@@ -428,7 +431,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
         Call<PublishparkResponse> call = publishParkService.publish(publishparkRequest);
         call.enqueue(new Callback<PublishparkResponse>() {
             @Override
-            public void onResponse(@NonNull  Call<PublishparkResponse> call, @NonNull  Response<PublishparkResponse> response) {
+            public void onResponse(@NonNull Call<PublishparkResponse> call, @NonNull Response<PublishparkResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     // get sharedId
                     List<Integer> shareIdList = response.body().getData().getShareId();
@@ -444,8 +447,9 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                     ToastUtil.showToast(mContext, "请勿重复发布同一时间段");
                 }
             }
+
             @Override
-            public void onFailure(@NonNull Call<PublishparkResponse> call,@NonNull Throwable t) {
+            public void onFailure(@NonNull Call<PublishparkResponse> call, @NonNull Throwable t) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -474,6 +478,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
     private class TimePeriod {
         private long startTime;
         private long endTime;
+
         private TimePeriod(long startTime, long endTime) {
             this.startTime = startTime;
             this.endTime = endTime;

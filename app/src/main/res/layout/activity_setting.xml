@@ -20,8 +20,7 @@
             <!--android:theme="?attr/actionBarTheme"/>-->
         <include layout="@layout/layout_toolbar_centertitle"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:id="@+id/layout_setting_top">
+            android:layout_height="?attr/actionBarSize">
         </include>
 
     </android.support.design.widget.AppBarLayout>
