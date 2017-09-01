@@ -306,32 +306,40 @@ public class PayActivity extends AppCompatActivity {
             case R.id.btn_add_balance_1:
                 if (mButtonClicked != 1) {
                     mBtnList.get(mButtonClicked - 1).setTextColor(ContextCompat.getColor(mContext, R.color.black));
+                    mBtnList.get(mButtonClicked - 1).setBackground(ContextCompat.getDrawable(mContext, R.drawable.pay_button));
                     mButtonClicked = 1;
                     mBtnAddBalance1.setTextColor(ContextCompat.getColor(mContext, R.color.white));
+                    mBtnAddBalance1.setBackground(ContextCompat.getDrawable(mContext, R.drawable.pay_button_selected));
                     mBtnPay.setText("确认支付：" + mPriceList[mButtonClicked - 1] + "元");
                 }
                 break;
             case R.id.btn_add_balance_2:
                 if (mButtonClicked != 2) {
                     mBtnList.get(mButtonClicked - 1).setTextColor(ContextCompat.getColor(mContext, R.color.black));
+                    mBtnList.get(mButtonClicked - 1).setBackground(ContextCompat.getDrawable(mContext, R.drawable.pay_button));
                     mButtonClicked = 2;
                     mBtnAddBalance2.setTextColor(ContextCompat.getColor(mContext, R.color.white));
+                    mBtnAddBalance2.setBackground(ContextCompat.getDrawable(mContext, R.drawable.pay_button_selected));
                     mBtnPay.setText("确认支付：" + mPriceList[mButtonClicked - 1] + "元");
                 }
                 break;
             case R.id.btn_add_balance_3:
                 if (mButtonClicked != 3) {
                     mBtnList.get(mButtonClicked - 1).setTextColor(ContextCompat.getColor(mContext, R.color.black));
+                    mBtnList.get(mButtonClicked - 1).setBackground(ContextCompat.getDrawable(mContext, R.drawable.pay_button));
                     mButtonClicked = 3;
                     mBtnAddBalance3.setTextColor(ContextCompat.getColor(mContext, R.color.white));
+                    mBtnAddBalance3.setBackground(ContextCompat.getDrawable(mContext, R.drawable.pay_button_selected));
                     mBtnPay.setText("确认支付：" + mPriceList[mButtonClicked - 1] + "元");
                 }
                 break;
             case R.id.btn_add_balance_4:
                 if (mButtonClicked != 4) {
                     mBtnList.get(mButtonClicked - 1).setTextColor(ContextCompat.getColor(mContext, R.color.black));
+                    mBtnList.get(mButtonClicked - 1).setBackground(ContextCompat.getDrawable(mContext, R.drawable.pay_button));
                     mButtonClicked = 4;
                     mBtnAddBalance4.setTextColor(ContextCompat.getColor(mContext, R.color.white));
+                    mBtnAddBalance4.setBackground(ContextCompat.getDrawable(mContext, R.drawable.pay_button_selected));
                     mBtnPay.setText("确认支付：" + mPriceList[mButtonClicked - 1] + "元");
                 }
                 break;

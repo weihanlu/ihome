@@ -66,7 +66,7 @@
         android:layout_gravity="center_vertical"
         android:padding="8dp"
         android:layout_marginEnd="12dp"
-        android:src="@drawable/img_arrow"/>
+        android:src="@drawable/img_down_arrow"/>
 
 
 </LinearLayout>

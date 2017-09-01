@@ -29,7 +29,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:background="@color/white">
+        android:background="@color/bg_activity">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/rv_setting"
@@ -39,18 +39,16 @@
         <Button
             android:id="@+id/btn_switch_account"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:text="切换账号"
-            android:textSize="18sp"
+            android:textSize="16sp"
             android:textColor="@color/white"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
             android:background="@drawable/bg_btn_switch_account"
-            android:paddingTop="16dp"
-            android:paddingBottom="16dp"
             android:layout_marginBottom="64dp"
-            android:layout_marginStart="32dp"
-            android:layout_marginEnd="32dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
             />
 
     </RelativeLayout>
