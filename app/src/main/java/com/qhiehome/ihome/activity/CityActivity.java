@@ -2,24 +2,23 @@ package com.qhiehome.ihome.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.adapter.CityAdapter;
 import com.qhiehome.ihome.util.CommonUtil;
 
 import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class CityActivity extends AppCompatActivity {
 
@@ -32,8 +31,9 @@ public class CityActivity extends AppCompatActivity {
     Toolbar mTbCity;
     @BindView(R.id.tv_title_toolbar)
     TextView mTvTitleToolbar;
+    @BindView(R.id.tv_select_city_current)
+    TextView mTvCurrentCity;
 
-    //    private List<String> mCities = new ArrayList<>();
     private String mCurrentCity;
 
     @Override
@@ -45,18 +45,11 @@ public class CityActivity extends AppCompatActivity {
         Intent intent = this.getIntent();
         Bundle bundle = intent.getExtras();
         mCurrentCity = bundle.getString("city");
-//        initCities();
+        mTvCurrentCity.setText(mCurrentCity);
         initToolbar();
         initRecyclerView();
     }
 
-//    private void initCities(){
-//        mCities.add("北京市");
-//        mCities.add("上海市");
-//        mCities.add("广州市");
-//        mCities.add("深圳市");
-//        mCities.add("杭州市");
-//    }
 
     private void initToolbar() {
         setSupportActionBar(mTbCity);
@@ -77,85 +70,29 @@ public class CityActivity extends AppCompatActivity {
 
     private void initRecyclerView() {
         mRvCity.setLayoutManager(new LinearLayoutManager(this));
-        CityAdapter adapter = new CityAdapter();
-        adapter.setOnItemClickListener(new OnClickListener() {
+        CityAdapter adapter = new CityAdapter(this, mCities);
+        adapter.setOnItemClickListener(new CityAdapter.OnClickListener() {
             @Override
             public void onClick(View view, int i) {
-                String city_selected;
-                if (i == 0) {
-                    city_selected = mCurrentCity;
-                } else {
-                    city_selected = mCities[i - 1];
-//                    city_selected = mCities.get(i-1);
-                }
-
-                Bundle bundle = new Bundle();
-                bundle.putString("city", city_selected);
-                Intent backIntent = new Intent();
-                backIntent.putExtras(bundle);
-                setResult(RESULT_OK, backIntent);
-                finish();
+                SelectCity(mCities[i]);
             }
         });
         mRvCity.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
         mRvCity.setAdapter(adapter);
     }
 
-    class CityAdapter extends RecyclerView.Adapter<CityAdapter.MyViewHolder> {
-
-        @Override
-        public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            return new MyViewHolder(LayoutInflater.from(CityActivity.this).inflate(R.layout.item_city_select, parent, false));
-        }
-
-        @Override
-        public void onBindViewHolder(final MyViewHolder holder, int position) {
-            if (position == 0) {
-                holder.tv_city.setText(mCurrentCity);
-                holder.tv_hint.setText("当前城市");
-            } else {
-                holder.tv_city.setText(mCities[position - 1]);
-//                holder.tv_city.setText(mCities.get(position-1));
-                holder.tv_hint.setText("");
-            }
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (onClickListener != null) {
-                        onClickListener.onClick(holder.itemView, holder.getLayoutPosition());
-                    }
-                }
-            });
-        }
-
-
-        @Override
-        public int getItemCount() {
-            return mCities.length + 1;
-        }
-
-        class MyViewHolder extends RecyclerView.ViewHolder {
-            TextView tv_city;
-            TextView tv_hint;
-
-
-            private MyViewHolder(View view) {
-                super(view);
-                tv_city = (TextView) view.findViewById(R.id.tv_city);
-                tv_hint = (TextView) view.findViewById(R.id.tv_city_hint);
-            }
-
-        }
-
-        public void setOnItemClickListener(OnClickListener listener) {
-            this.onClickListener = listener;
-        }
-
-        private OnClickListener onClickListener;
-
+    @OnClick(R.id.layout_select_city_current)
+    public void onViewClicked() {
+        SelectCity(mCurrentCity);
     }
 
-    public interface OnClickListener {
-        void onClick(View view, int i);
+
+    private void SelectCity(String cityName){
+        Bundle bundle = new Bundle();
+        bundle.putString("city", cityName);
+        Intent backIntent = new Intent();
+        backIntent.putExtras(bundle);
+        setResult(RESULT_OK, backIntent);
+        finish();
     }
 }

@@ -32,6 +32,10 @@
     <color name="hint_text">#999999</color>
     <color name="white">#FFF</color>
     <color name="black">#000</color>
+    <color name="button_bord">#c8c7cc</color>
+    <color name="subtitle">#6d6d72</color>
+    <color name="bg_activity">#eeeeee</color>
+    <color name="rv_divider">#c8c7cc</color>
     
     
 </resources>

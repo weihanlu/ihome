@@ -153,6 +153,7 @@ public class ParkFragment extends Fragment {
 
     private boolean mMapStateParkingNum = true;
     private String mCity;
+    private String mCurrentCity;
 
     private NaviUtil mNavi;
 
@@ -304,6 +305,7 @@ public class ParkFragment extends Fragment {
                     public void run() {
                         if (!isGetCurrentCity) {
                             mCity = bdLocation.getCity();
+                            mCurrentCity = bdLocation.getCity();
                             mTvCurrentCity.setText(mCity);
                             isGetCurrentCity = true;
                         }
@@ -533,6 +535,7 @@ public class ParkFragment extends Fragment {
                 .build();
         MapStatusUpdate mMapStatusUpdate = MapStatusUpdateFactory.newMapStatus(mMapStatus);
         mBaiduMap.setMapStatus(mMapStatusUpdate);
+        mTvCurrentCity.setText(mCurrentCity);
         updateMapState(mMyPt);
     }
 
@@ -567,7 +570,7 @@ public class ParkFragment extends Fragment {
     public void onSelectCity() {
         Intent intent = new Intent(getActivity(), CityActivity.class);
         Bundle bundle = new Bundle();
-        bundle.putString("city", mCity);
+        bundle.putString("city", mCurrentCity);
         intent.putExtras(bundle);
         getActivity().startActivityForResult(intent, REQUEST_CODE_CITY);
     }

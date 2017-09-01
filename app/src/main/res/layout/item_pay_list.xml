@@ -2,44 +2,53 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="80dp"
+    android:layout_height="75dp"
     android:background="@color/white"
     xmlns:tools="http://schemas.android.com/tools">
 
 
     <ImageView
         android:id="@+id/iv_pay"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginStart="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
         android:layout_centerVertical="true"
         android:layout_alignParentStart="true" />
 
-    <TextView
-        android:id="@+id/tv_pay"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/iv_pay"
-        android:layout_marginStart="26dp"
+        android:orientation="vertical"
+        android:layout_marginStart="15dp"
         android:layout_toEndOf="@+id/iv_pay"
-        tools:text="支付宝"
-        android:textSize="20sp" />
+        android:layout_centerVertical="true">
 
-    <TextView
-        android:id="@+id/tv_pay_info"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/tv_pay"
-        android:layout_below="@+id/tv_pay"
-        android:textSize="14sp"
-        tools:text="数亿用户都在用，安全可托付" />
+        <TextView
+            android:id="@+id/tv_pay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="支付宝"
+            android:textSize="15.5sp"
+            android:textColor="@color/major_text"/>
+
+        <TextView
+            android:id="@+id/tv_pay_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="@color/minor_text"
+            tools:text="数亿用户都在用，安全可托付" />
+
+    </LinearLayout>
+
+
 
     <ImageView
         android:id="@+id/iv_pay_select"
-        android:layout_width="28dp"
-        android:layout_height="28dp"
-        android:layout_marginEnd="19dp"
-        android:background="@drawable/ic_pay_check"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="22dp"
+        android:background="@drawable/ic_pay_select"
         android:layout_centerVertical="true"
         android:layout_alignParentEnd="true" />
 </RelativeLayout>
