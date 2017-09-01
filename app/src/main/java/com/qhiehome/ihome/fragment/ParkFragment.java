@@ -2,6 +2,7 @@ package com.qhiehome.ihome.fragment;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -46,10 +47,14 @@ import com.qhiehome.ihome.activity.MapSearchActivity;
 import com.qhiehome.ihome.activity.ParkingListActivity;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.baiduMap.BaiduMapResponse;
+import com.qhiehome.ihome.network.model.base.ParkingResponse;
+import com.qhiehome.ihome.network.model.configuration.city.CityConfigRequest;
+import com.qhiehome.ihome.network.model.configuration.city.CityConfigResponse;
 import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyRequest;
 import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyResponse;
 import com.qhiehome.ihome.network.service.baiduMap.BaiduMapService;
 import com.qhiehome.ihome.network.service.baiduMap.BaiduMapServiceGenerator;
+import com.qhiehome.ihome.network.service.configuration.CityConfigService;
 import com.qhiehome.ihome.network.service.inquiry.ParkingEmptyService;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.LogUtil;
@@ -424,12 +429,7 @@ public class ParkFragment extends Fragment {
             @Override
             public boolean onMarkerClick(Marker marker1) {
                 mClickedMarker = marker1;
-                Intent intent = new Intent(getActivity(), ParkingListActivity.class);
-//                Intent intent = new Intent(getActivity(), ParkingTimelineActivity.class);
-                Bundle bundle = marker1.getExtraInfo();
-                intent.putExtras(bundle);
-                startActivity(intent);
-                //showParkingDialog();
+                getCityConfig(marker1);
                 return false;
             }
         };
@@ -443,16 +443,6 @@ public class ParkFragment extends Fragment {
         if (mIsSearch) {
             //添加图标
             Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.img_pin);
-//            int width = bm.getWidth();
-//            int height = bm.getHeight();
-//            int newWidth = 60;
-//            int newHeight = 60;
-//            float scaleWidth = ((float) newWidth) / width;
-//            float scaleHeight = ((float) newHeight) / height;
-//            Matrix matrix = new Matrix();
-//            matrix.postScale(scaleWidth, scaleHeight);
-//            Bitmap newbm = Bitmap.createBitmap(bm, 0, 0, width, height, matrix,
-//                    true);
             BitmapDescriptor flag = BitmapDescriptorFactory.fromBitmap(bm);
             MarkerOptions searchOptions = new MarkerOptions()
                     .position(mMyPt)//设置位置
@@ -691,6 +681,40 @@ public class ParkFragment extends Fragment {
             mNavi.routeplanToNavi(mCoordinateType);
         }
 
+    }
+
+    private void getCityConfig(final Marker marker1){
+        ParkingEmptyResponse.DataBean.EstateBean estateBean =(ParkingEmptyResponse.DataBean.EstateBean) marker1.getExtraInfo().getSerializable("estate");
+        CityConfigService cityConfigService = ServiceGenerator.createService(CityConfigService.class);
+        CityConfigRequest cityConfigRequest = new CityConfigRequest(estateBean.getId());
+        Call<CityConfigResponse> call = cityConfigService.queryCityConfig(cityConfigRequest);
+        call.enqueue(new Callback<CityConfigResponse>() {
+            @Override
+            public void onResponse(Call<CityConfigResponse> call, Response<CityConfigResponse> response) {
+                try {
+                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
+                        Intent intent = new Intent(getActivity(), ParkingListActivity.class);
+                        Bundle bundle = marker1.getExtraInfo();
+                        bundle.putInt(Constant.MIN_SHARING_PERIOD, response.body().getData().getMinSharingPeriod());
+                        bundle.putInt(Constant.MIN_CHARGING_PERIOD, response.body().getData().getMinChargingPeriod());
+                        bundle.putInt(Constant.FREE_CANCELLATION_TIME, response.body().getData().getFreeCancellationTime());
+                        intent.putExtras(bundle);
+                        startActivity(intent);
+                    }else {
+                        ToastUtil.showToast(mContext, "服务器繁忙，请稍后再试");
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                    ToastUtil.showToast(mContext, "服务器错误，请稍后再试");
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<CityConfigResponse> call, Throwable t) {
+                ToastUtil.showToast(mContext, "网络连接异常");
+            }
+        });
     }
 
 

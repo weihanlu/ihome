@@ -142,6 +142,7 @@ public class CrashHandler implements UncaughtExceptionHandler{
         pw.close();// remember close
         String result = writer.toString();
         sb.append(result);
+        LogUtil.e(TAG, result);
         sb.append("-------------------------- log end --------------------------");
         // save to file or send to server
         sendToServer(sb.toString());
