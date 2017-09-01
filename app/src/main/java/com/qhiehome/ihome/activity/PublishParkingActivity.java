@@ -48,6 +48,7 @@ import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.TimeUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 import com.qhiehome.ihome.view.QhDeleteItemDialog;
+import com.qhiehome.ihome.view.QhPublishParkingDialog;
 import com.qhiehome.ihome.view.RecyclerViewEmptySupport;
 import com.qhiehome.ihome.view.WeekPickView;
 
@@ -216,7 +217,6 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
             public void onCallbackPublish(View view, final int position) {
                 final PublishBean publishBean = mPublishList.get(position);
                 final int shareId = publishBean.getShareId();
-                int red = ContextCompat.getColor(mContext, android.R.color.holo_red_light);
                 QhDeleteItemDialog dialog = new QhDeleteItemDialog(mContext);
                 dialog.setOnSureCallbackListener(new QhDeleteItemDialog.OnSureCallbackListener() {
                     @Override
@@ -245,42 +245,6 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                     }
                 });
                 dialog.show();
-//                new MaterialDialog.Builder(mContext)
-//                        .title("警告")
-//                        .titleColor(red)
-//                        .content("确定取消发布吗？")
-//                        .contentColor(red)
-//                        .positiveText("确定")
-//                        .positiveColor(red)
-//                        .negativeText("取消")
-//                        .canceledOnTouchOutside(false)
-//                        .onPositive(new MaterialDialog.SingleButtonCallback() {
-//                            @Override
-//                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-//                                PublishCallbackService publishCallbackService = ServiceGenerator.createService(PublishCallbackService.class);
-//                                PublishCancelRequest publishCancelRequest = new PublishCancelRequest(shareId, Constant.DEFAULT_PASSWORD);
-//                                Call<PublishCancelResponse> call = publishCallbackService.callback(publishCancelRequest);
-//                                call.enqueue(new Callback<PublishCancelResponse>() {
-//                                    @Override
-//                                    public void onResponse(@NonNull Call<PublishCancelResponse> call, @NonNull Response<PublishCancelResponse> response) {
-//                                        if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-//                                            mPublishAdapter.removeItem(position);
-//                                            if (mPublishList.size() == 0) {
-//                                                mPublishAdapter.notifyDataSetChanged();
-//                                            }
-//                                        } else {
-//                                            ToastUtil.showToast(mContext, "取消失败");
-//                                        }
-//                                    }
-//
-//                                    @Override
-//                                    public void onFailure(@NonNull Call<PublishCancelResponse> call, @NonNull Throwable t) {
-//
-//                                    }
-//                                });
-//                            }
-//                        })
-//                        .show();
             }
 
             @Override
@@ -351,10 +315,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
             mSelected.set(i, false);
         }
         mPeriodTimes = 0;
-        MaterialDialog.Builder dialogBuilder = new MaterialDialog.Builder(this);
-        dialogBuilder.title("已有车位").customView(R.layout.dialog_publish_parking, true)
-                .positiveText("发布").negativeText("取消");
-        MaterialDialog dialog = dialogBuilder.build();
+        QhPublishParkingDialog dialog = new QhPublishParkingDialog(mContext);
         View customView = dialog.getCustomView();
         if (customView != null) {
             mRvPark = (RecyclerView) customView.findViewById(R.id.rv_dialog);
@@ -412,13 +373,14 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
             });
             addBtn.callOnClick();
         }
-        dialog.getBuilder().onPositive(new MaterialDialog.SingleButtonCallback() {
+        dialog.setOnSurePublishListener(new QhPublishParkingDialog.OnSurePublishListener() {
             @Override
-            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+            public void onSure(View view) {
                 getSelectedPeriod();
                 publishParking();
             }
-        }).canceledOnTouchOutside(false).show();
+        });
+        dialog.show();
     }
 
     private void getSelectedPeriod() {
