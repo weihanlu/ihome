@@ -7,38 +7,38 @@
     android:orientation="vertical"
     android:focusableInTouchMode="true">
 
-    <android.support.constraint.ConstraintLayout
-        android:layout_width="fill_parent"
-        android:layout_height="70dp"
-        android:orientation="horizontal"
-        android:paddingRight="16dp">
+    <!--<android.support.constraint.ConstraintLayout-->
+        <!--android:layout_width="fill_parent"-->
+        <!--android:layout_height="70dp"-->
+        <!--android:orientation="horizontal"-->
+        <!--android:paddingRight="16dp">-->
 
-        <com.arlib.floatingsearchview.FloatingSearchView
-            android:id="@+id/floating_search_view"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginRight="8dp"
-            app:layout_constraintRight_toRightOf="parent"
-            android:layout_marginLeft="8dp"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginTop="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginBottom="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"></com.arlib.floatingsearchview.FloatingSearchView>
+        <!--<com.arlib.floatingsearchview.FloatingSearchView-->
+            <!--android:id="@+id/floating_search_view"-->
+            <!--android:layout_width="0dp"-->
+            <!--android:layout_height="0dp"-->
+            <!--android:layout_marginRight="8dp"-->
+            <!--app:layout_constraintRight_toRightOf="parent"-->
+            <!--android:layout_marginLeft="8dp"-->
+            <!--app:layout_constraintLeft_toLeftOf="parent"-->
+            <!--app:layout_constraintTop_toTopOf="parent"-->
+            <!--android:layout_marginTop="8dp"-->
+            <!--app:layout_constraintBottom_toBottomOf="parent"-->
+            <!--android:layout_marginBottom="8dp"-->
+            <!--android:layout_marginStart="8dp"-->
+            <!--android:layout_marginEnd="8dp"></com.arlib.floatingsearchview.FloatingSearchView>-->
 
 
-    </android.support.constraint.ConstraintLayout>
+    <!--</android.support.constraint.ConstraintLayout>-->
 
-    <!--<include layout="@layout/layout_top_search"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="?attr/actionBarSize"/>-->
+    <include layout="@layout/layout_top_search"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"/>
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/white">
+        android:background="@color/bg_activity">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -47,51 +47,50 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingLeft="20dp"
+                android:layout_height="42dp"
+                android:orientation="horizontal"
+                android:paddingLeft="15dp"
                 >
 
                 <TextView
                     android:id="@+id/tv_search_tip"
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:gravity="left|center_vertical"
-                    android:text="搜索历史" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="#EEEEEE"/>
-
-                <com.qhiehome.ihome.view.Search_ListView
-                    android:id="@+id/lv_search"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                </com.qhiehome.ihome.view.Search_ListView>
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text="搜索历史"
+                    android:textSize="16sp"
+                    android:textColor="@color/subtitle"
+                    />
 
 
             </LinearLayout>
 
-            <View
+            <com.qhiehome.ihome.view.SearchRecyclerView
+                android:id="@+id/rv_search"
                 android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="#EEEEEE"/>
+                android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/tv_search_clear"
+            </com.qhiehome.ihome.view.SearchRecyclerView>
+            
+            
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:background="#F6F6F6"
-                android:gravity="center"
-                android:text="清除搜索历史" />
+                android:layout_height="43dp"
+                android:background="@color/bg_clear_history">
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginBottom="20dp"
-                android:background="#EEEEEE"/>
+                <TextView
+                    android:id="@+id/tv_search_clear"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:gravity="center"
+                    android:text="清除搜索历史"
+                    android:textSize="16sp"
+                    android:textColor="@color/minor_text"/>
+
+            </LinearLayout>
+
+
+            
         </LinearLayout>
 
     </ScrollView>
