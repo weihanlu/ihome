@@ -5,15 +5,20 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
-import com.arlib.floatingsearchview.FloatingSearchView;
-import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion;
 import com.baidu.mapapi.search.core.SearchResult;
 import com.baidu.mapapi.search.sug.OnGetSuggestionResultListener;
 import com.baidu.mapapi.search.sug.SuggestionResult;
@@ -21,12 +26,13 @@ import com.baidu.mapapi.search.sug.SuggestionSearch;
 import com.baidu.mapapi.search.sug.SuggestionSearchOption;
 import com.qhiehome.ihome.R;
 
+import com.qhiehome.ihome.adapter.SearchMapAdapter;
 import com.qhiehome.ihome.application.IhomeApplication;
 import com.qhiehome.ihome.persistence.MapSearch;
 import com.qhiehome.ihome.persistence.MapSearchDao;
 import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.LogUtil;
-import com.qhiehome.ihome.view.Search_ListView;
+import com.qhiehome.ihome.view.SearchRecyclerView;
 
 import org.greenrobot.greendao.query.Query;
 
@@ -45,21 +51,21 @@ public class MapSearchActivity extends BaseActivity {
 
     private static final String TAG = MapSearchActivity.class.getSimpleName();
 
-//    @BindView(R.id.et_search)
-//    EditText mEtSearch;
-//    @BindView(R.id.iv_search)
-//    ImageView mIvSearch;
+    @BindView(R.id.et_search)
+    EditText mEtSearch;
+    @BindView(R.id.iv_search)
+    ImageView mIvSearch;
     @BindView(R.id.tv_search_tip)
     TextView mTvSearchTip;
     @BindView(R.id.tv_search_clear)
     TextView mTvSearchClear;
-    @BindView(R.id.lv_search)
-    Search_ListView mLvSearch;
-    @BindView(R.id.floating_search_view)
-    FloatingSearchView mFloatingSearchView;
+    @BindView(R.id.rv_search)
+    SearchRecyclerView mRvSearch;
+//    @BindView(R.id.floating_search_view)
+//    FloatingSearchView mFloatingSearchView;
 
     private Context mContext;
-    private BaseAdapter mAdapter;
+    private SearchMapAdapter mAdapter;
     private SuggestionSearch mSuggestionSearch = SuggestionSearch.newInstance();
     private SuggestionResult mSuggestionResult;
     private String mCity;
@@ -86,7 +92,7 @@ public class MapSearchActivity extends BaseActivity {
                 switch (msg.what) {
                     case BACK_MSG:
                         mapSearchActivity.deliverData(mapSearchActivity.mPosition);
-                        mapSearchActivity.mFloatingSearchView.setSearchFocused(false);
+//                        mapSearchActivity.mFloatingSearchView.setSearchFocused(false);
                         mapSearchActivity.finish();
                         break;
                     default:
@@ -112,9 +118,9 @@ public class MapSearchActivity extends BaseActivity {
 
         mSearchDao = ((IhomeApplication)getApplication()).getDaoSession().getMapSearchDao();
 
-        mFloatingSearchView.setSearchFocused(true);
-        queryData("");
         init();
+        queryData("");
+
         OnGetSuggestionResultListener listener = new OnGetSuggestionResultListener() {
             @Override
             public void onGetSuggestionResult(SuggestionResult suggestionResult) {
@@ -123,14 +129,11 @@ public class MapSearchActivity extends BaseActivity {
                 }
                 if (suggestionResult.error == SearchResult.ERRORNO.NO_ERROR) {
                     mSuggestionResult = suggestionResult;
-                    List<Map<String, String>> list = new ArrayList<Map<String, String>>();
+                    List<String> list = new ArrayList<>();
                     for (int i = 0; i < suggestionResult.getAllSuggestions().size(); i++) {
-                        Map<String, String> item = new HashMap<String, String>();
-                        item.put("result", suggestionResult.getAllSuggestions().get(i).key);
-                        list.add(item);
+                        list.add(suggestionResult.getAllSuggestions().get(i).key);
                     }
-                    mAdapter = new SimpleAdapter(mContext, list, android.R.layout.simple_list_item_1, new String[]{"result"}, new int[]{android.R.id.text1});
-                    mLvSearch.setAdapter(mAdapter);
+                    mAdapter.setmSearchResults(list);
                     mAdapter.notifyDataSetChanged();
                     if (mPosition >= 0) {
                         mHandler.sendEmptyMessage(BACK_MSG);
@@ -142,44 +145,71 @@ public class MapSearchActivity extends BaseActivity {
     }
 
     private void init() {
-        mFloatingSearchView.setOnQueryChangeListener(new FloatingSearchView.OnQueryChangeListener() {
-            @Override
-            public void onSearchTextChanged(String oldQuery, String newQuery) {
 
-                if (newQuery.length() == 0) {
-                    mTvSearchTip.setText("搜索历史");
-                    isHistory = true;
+        mRvSearch.setLayoutManager(new LinearLayoutManager(this));
+        mRvSearch.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
+        List<String> initList = new ArrayList<>();
+        mAdapter = new SearchMapAdapter(mContext, initList);
+        mAdapter.setOnItemClickListener(new SearchMapAdapter.OnClickListener() {
+            @Override
+            public void onClick(View view, int i, String name) {
+                boolean tmp;
+                if (isHistory) {
+                    tmp = true;
                 } else {
-                    mTvSearchTip.setText("搜索结果");
-                    isHistory = false;
-                    mPosition = -1;
-                    suggestionSearch(newQuery);
+                    tmp = false;
                 }
+                mEtSearch.setText(name);
+                isHistory = tmp;        //改变et内容
+                if (!hasData(name)) {
+                    insertData(name);
+                }                       //添加到数据库
+                if (isHistory) {
+                    mPosition = i;
+                } else {
+                    mPosition = 0;
+                }
+                //判断历史还是联想
+                suggestionSearch(name);
             }
         });
-        mFloatingSearchView.setOnSearchListener(new FloatingSearchView.OnSearchListener() {
-            @Override
-            public void onSuggestionClicked(SearchSuggestion searchSuggestion) {
+        mRvSearch.setAdapter(mAdapter);
+//        mFloatingSearchView.setOnQueryChangeListener(new FloatingSearchView.OnQueryChangeListener() {
+//            @Override
+//            public void onSearchTextChanged(String oldQuery, String newQuery) {
+//
+//                if (newQuery.length() == 0) {
+//                    mTvSearchTip.setText("搜索历史");
+//                    isHistory = true;
+//                } else {
+//                    mTvSearchTip.setText("搜索结果");
+//                    isHistory = false;
+//                    mPosition = -1;
+//                    suggestionSearch(newQuery);
+//                }
+//            }
+//        });
+//        mFloatingSearchView.setOnSearchListener(new FloatingSearchView.OnSearchListener() {
+//            @Override
+//            public void onSuggestionClicked(SearchSuggestion searchSuggestion) {
+//
+//            }
+//
+//            @Override
+//            public void onSearchAction(String currentQuery) {
+//                if (TextUtils.isEmpty(currentQuery)){
+//                    return;
+//                }
+//                boolean hasData = hasData(mFloatingSearchView.getQuery());
+//                if (!hasData) {
+//                    insertData(mFloatingSearchView.getQuery());
+//                    queryData("");
+//                }
+//                mPosition = 0;
+//                suggestionSearch(mFloatingSearchView.getQuery());
+//            }
+//        });
 
-            }
-
-            @Override
-            public void onSearchAction(String currentQuery) {
-                if (TextUtils.isEmpty(currentQuery)){
-                    return;
-                }
-                boolean hasData = hasData(mFloatingSearchView.getQuery());
-                if (!hasData) {
-                    insertData(mFloatingSearchView.getQuery());
-                    queryData("");
-                }
-                mPosition = 0;
-                suggestionSearch(mFloatingSearchView.getQuery());
-            }
-        });
-
-
-        /*
         mEtSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -205,12 +235,16 @@ public class MapSearchActivity extends BaseActivity {
                     suggestionSearch(mEtSearch.getText().toString().trim());
                 }
 
+
             }
         });
         mEtSearch.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
+                    if (TextUtils.isEmpty(mEtSearch.getText().toString().trim())){
+                        return false;
+                    }
                     boolean hasData = hasData(mEtSearch.getText().toString().trim());
                     if (!hasData) {
                         insertData(mEtSearch.getText().toString().trim());
@@ -218,48 +252,49 @@ public class MapSearchActivity extends BaseActivity {
                     }
                     mPosition = 0;
                     suggestionSearch(mEtSearch.getText().toString().trim());
+
                 }
                 return false;
             }
-        });*/
-        /*********列表点击**********/
-        mLvSearch.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                TextView textView = (TextView) view.findViewById(android.R.id.text1);
-                String name = textView.getText().toString();
-                boolean tmp;
-                if (isHistory) {
-                    tmp = true;
-                } else {
-                    tmp = false;
-                }
-                mFloatingSearchView.setSearchText(name);
-                //mEtSearch.setText(name);
-                isHistory = tmp;
-                if (!hasData(name)) {
-                    insertData(name);
-                }
-                if (isHistory) {
-                    mPosition = position;
-                } else {
-                    mPosition = 0;
-                }
-                //判断历史还是联想
-                suggestionSearch(name);
-            }
         });
-        /*********按钮点击**********/
-//        mIvSearch.setOnClickListener(new View.OnClickListener() {
+        /*********列表点击**********/
+//        mRvSearch.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 //            @Override
-//            public void onClick(View v) {
-//                if (!hasData(mEtSearch.getText().toString().trim())) {
-//                    insertData(mEtSearch.getText().toString().trim());
+//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                TextView textView = (TextView) view.findViewById(android.R.id.text1);
+//                String name = textView.getText().toString();
+//                boolean tmp;
+//                if (isHistory) {
+//                    tmp = true;
+//                } else {
+//                    tmp = false;
 //                }
-//                mPosition = 0;
-//                suggestionSearch(mEtSearch.getText().toString().trim());
+////                mFloatingSearchView.setSearchText(name);
+//                //mEtSearch.setText(name);
+//                isHistory = tmp;
+//                if (!hasData(name)) {
+//                    insertData(name);
+//                }
+//                if (isHistory) {
+//                    mPosition = position;
+//                } else {
+//                    mPosition = 0;
+//                }
+//                //判断历史还是联想
+//                suggestionSearch(name);
 //            }
 //        });
+        /*********按钮点击**********/
+        mIvSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!hasData(mEtSearch.getText().toString().trim())) {
+                    insertData(mEtSearch.getText().toString().trim());
+                }
+                mPosition = 0;
+                suggestionSearch(mEtSearch.getText().toString().trim());
+            }
+        });
     }
 
     @OnClick(R.id.tv_search_clear)
@@ -280,7 +315,7 @@ public class MapSearchActivity extends BaseActivity {
 //        mAdapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1, cursor, new String[]{"name"},
 //                new int[]{android.R.id.text1}, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
 //        // 设置适配器
-//        mLvSearch.setAdapter(mAdapter);
+//        mRvSearch.setAdapter(mAdapter);
 //        mAdapter.notifyDataSetChanged();
 //    }
     private void queryData(String search){
@@ -288,14 +323,12 @@ public class MapSearchActivity extends BaseActivity {
             mSearchQuery = mSearchDao.queryBuilder().orderDesc(MapSearchDao.Properties.Id).build();
         }
         List<MapSearch> searchList = mSearchQuery.list();
-        List<Map<String, String>> list = new ArrayList<Map<String, String>>();
+        List<String> list = new ArrayList<>();
         for (int i = 0; i < searchList.size(); i++) {
-            Map<String, String> item = new HashMap<String, String>();
-            item.put("result", searchList.get(i).getName());
-            list.add(item);
+            list.add(searchList.get(i).getName());
         }
-        mAdapter = new SimpleAdapter(mContext, list, android.R.layout.simple_list_item_1, new String[]{"result"}, new int[]{android.R.id.text1});
-        mLvSearch.setAdapter(mAdapter);
+        mAdapter.setmSearchResults(list);
+        mAdapter.notifyDataSetChanged();
 
     }
 

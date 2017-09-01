@@ -442,21 +442,22 @@ public class ParkFragment extends Fragment {
         mBaiduMap.clear();
         if (mIsSearch) {
             //添加图标
-            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.ic_marker);
-            int width = bm.getWidth();
-            int height = bm.getHeight();
-            int newWidth = 60;
-            int newHeight = 60;
-            float scaleWidth = ((float) newWidth) / width;
-            float scaleHeight = ((float) newHeight) / height;
-            Matrix matrix = new Matrix();
-            matrix.postScale(scaleWidth, scaleHeight);
-            Bitmap newbm = Bitmap.createBitmap(bm, 0, 0, width, height, matrix,
-                    true);
-            BitmapDescriptor flag = BitmapDescriptorFactory.fromBitmap(newbm);
+            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.img_pin);
+//            int width = bm.getWidth();
+//            int height = bm.getHeight();
+//            int newWidth = 60;
+//            int newHeight = 60;
+//            float scaleWidth = ((float) newWidth) / width;
+//            float scaleHeight = ((float) newHeight) / height;
+//            Matrix matrix = new Matrix();
+//            matrix.postScale(scaleWidth, scaleHeight);
+//            Bitmap newbm = Bitmap.createBitmap(bm, 0, 0, width, height, matrix,
+//                    true);
+            BitmapDescriptor flag = BitmapDescriptorFactory.fromBitmap(bm);
             MarkerOptions searchOptions = new MarkerOptions()
                     .position(mMyPt)//设置位置
-                    .icon(flag);//设置图标样式
+                    .icon(flag)
+                    .zIndex(9);//设置图标样式
             mMarker = (Marker) mBaiduMap.addOverlay(searchOptions);
         }
         for (int i = 0; i < mEstateBeanList.size(); i++) {
@@ -501,7 +502,8 @@ public class ParkFragment extends Fragment {
                 options = new MarkerOptions()
                         .position(newPT)//设置位置
                         .animateType(MarkerOptions.MarkerAnimateType.grow)
-                        .icon(bitmapDescriptor);//设置图标样式
+                        .icon(bitmapDescriptor)
+                        .zIndex(5);//设置图标样式
                 Bundle bundle = new Bundle();
                 bundle.putSerializable("estate", mEstateBeanList.get(i));
                 //bundle.putString("name", mEstateBeanList.get(i).getName());

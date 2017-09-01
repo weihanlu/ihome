@@ -1,6 +1,7 @@
 package com.qhiehome.ihome.view;
 
 import android.content.Context;
+import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.widget.ListView;
 
@@ -8,16 +9,16 @@ import android.widget.ListView;
  * Created by YueMa on 2017/8/7.
  */
 
-public class Search_ListView extends ListView {
-    public Search_ListView(Context context) {
+public class SearchRecyclerView extends RecyclerView {
+    public SearchRecyclerView(Context context) {
         super(context);
     }
 
-    public Search_ListView(Context context, AttributeSet attrs) {
+    public SearchRecyclerView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public Search_ListView(Context context, AttributeSet attrs, int defStyle) {
+    public SearchRecyclerView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 

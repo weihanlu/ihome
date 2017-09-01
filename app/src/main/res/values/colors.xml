@@ -36,6 +36,7 @@
     <color name="subtitle">#6d6d72</color>
     <color name="bg_activity">#eeeeee</color>
     <color name="rv_divider">#c8c7cc</color>
+    <color name="bg_clear_history">#e2e2e2</color>
     
     
 </resources>
