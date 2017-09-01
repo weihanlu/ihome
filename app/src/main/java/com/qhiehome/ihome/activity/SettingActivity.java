@@ -104,7 +104,7 @@ public class SettingActivity extends BaseActivity {
         if (canUpdate) {
             mSettingMenu[0] = mSettingMenu[0] + ";可更新";
         } else {
-            mSettingMenu[0] = mSettingMenu[0] + ";" + CommonUtil.getVersionCode();
+            mSettingMenu[0] = mSettingMenu[0] + ";已是最新版本";
         }
         SettingMenuAdapter settingMenuAdapter = new SettingMenuAdapter(this, mSettingMenu);
         initListener(settingMenuAdapter);
@@ -236,7 +236,7 @@ public class SettingActivity extends BaseActivity {
                 finish();
             }
         });
-        mTvTitleToolbar.setText("设置");
+        mTvTitleToolbar.setText("系统设置");
     }
 
     public static void start(Context context) {

@@ -4,20 +4,20 @@ public class CrashLogRequest {
 
 
     /**
-     * advice : advice
+     * crashlog : xxx
      */
 
-    private String crashLog;
+    private String crashlog;
 
-    public CrashLogRequest(String crashLog) {
-        this.crashLog = crashLog;
+    public CrashLogRequest(String crashlog) {
+        this.crashlog = crashlog;
     }
 
-    public String getCrashLog() {
-        return crashLog;
+    public String getCrashlog() {
+        return crashlog;
     }
 
-    public void setCrashLog(String crashLog) {
-        this.crashLog = crashLog;
+    public void setCrashlog(String crashlog) {
+        this.crashlog = crashlog;
     }
 }

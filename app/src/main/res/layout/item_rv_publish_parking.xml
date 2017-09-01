@@ -1,54 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item_layout"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="60dp"
     android:background="@drawable/selector_item"
     android:orientation="horizontal">
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp">
+        android:layout_height="match_parent">
 
         <TextView
             android:id="@+id/tv_parking_id"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:text="1"
+            android:textSize="12sp"
+            tools:text="1"
             android:textColor="@color/white"
-            android:textStyle="bold"
             android:layout_centerVertical="true"
-            android:layout_marginStart="16dp"
-            android:background="@drawable/round_button_blue"
+            android:layout_marginStart="20dp"
+            android:background="@drawable/bg_rectangle_blue"
             />
 
-        <TextView
-            android:id="@+id/tv_parking_period"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:text="12:00 - 13:00"
-            android:textColor="@color/colorAccent"
+            android:orientation="vertical"
             android:layout_toEndOf="@id/tv_parking_id"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
-            />
+            android:layout_marginStart="20dp"
+            android:layout_centerVertical="true">
 
-        <TextView
-            android:id="@+id/tv_date_selected"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="仅一次"
-            android:textSize="16sp"
-            android:textColor="@color/dark_gray"
-            android:layout_below="@id/tv_parking_period"
-            android:layout_alignStart="@id/tv_parking_period"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            />
+            <TextView
+                android:id="@+id/tv_parking_period"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                tools:text="12:00 - 13:00"
+                android:textColor="@color/major_text"
+                />
+
+            <TextView
+                android:id="@+id/tv_date_selected"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="仅一次"
+                android:textSize="12sp"
+                android:textColor="@color/minor_text"
+                android:layout_marginTop="6dp"
+                />
+
+        </LinearLayout>
 
         <android.support.v7.widget.SwitchCompat
             android:id="@+id/sc_republish"
@@ -56,7 +58,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:layout_marginEnd="16dp"
+            android:layout_marginEnd="20dp"
             android:clickable="false"
             />
 
@@ -64,13 +66,13 @@
 
     <TextView
         android:id="@+id/tv_item_delete"
-        android:layout_width="120dp"
+        android:layout_width="100dp"
         android:layout_height="match_parent"
-        android:background="@color/light_red"
+        android:background="@color/delete_publish_item"
         android:gravity="center"
-        android:text="取消"
+        android:text="删除"
         android:textColor="@color/white"
-        android:textSize="20sp"
+        android:textSize="16sp"
         />
 
 </LinearLayout>

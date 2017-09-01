@@ -124,7 +124,7 @@ public class CrashHandler implements UncaughtExceptionHandler{
 
     private String saveCrashLog(Throwable ex) {
         StringBuilder sb = new StringBuilder();
-        sb.append("-------------------------- log start --------------------------");
+        sb.append("-------------------------- log start --------------------------\r\n");
         for (Map.Entry<String, String> entry : deviceInfo.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();

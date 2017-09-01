@@ -23,6 +23,7 @@
     <color name="theme_start_color">#4c98d5</color>
     <color name="theme_end_color">#9b6de3</color>
     <color name="light_red">#fd5a5e</color>
+    <color name="delete_publish_item">#fd5b5f</color>
     <color name="light_green">#0fc88b</color>
     <color name="press_red">#ca484b</color>
     <color name="press_blue">#3d7aaa</color>
