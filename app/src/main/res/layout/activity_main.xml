@@ -28,6 +28,7 @@
             android:id="@+id/rl_avatar"
             android:layout_width="match_parent"
             android:layout_height="230dp"
+            android:layout_marginBottom="20dp"
             android:background="@drawable/bg_theme_gradient">
 
             <de.hdodenhof.circleimageview.CircleImageView
@@ -107,7 +108,6 @@
             android:layout_height="60dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:layout_marginTop="20dp"
             android:background="@drawable/selector_item">
 
             <ImageView

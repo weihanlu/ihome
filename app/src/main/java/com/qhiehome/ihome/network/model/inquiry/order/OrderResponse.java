@@ -66,10 +66,10 @@ public class OrderResponse extends Response{
             private long leaveTime;
             private long paymentTime;
             private long closeTime;
-            private int payFee;
-            private int ownerFee;
-            private int estateFee;
-            private int platformFee;
+            private double payFee;
+            private double ownerFee;
+            private double estateFee;
+            private double platformFee;
             private int state;
 
             public int getId() {
@@ -160,35 +160,35 @@ public class OrderResponse extends Response{
                 this.closeTime = closeTime;
             }
 
-            public int getPayFee() {
+            public double getPayFee() {
                 return payFee;
             }
 
-            public void setPayFee(int payFee) {
+            public void setPayFee(double payFee) {
                 this.payFee = payFee;
             }
 
-            public int getOwnerFee() {
+            public double getOwnerFee() {
                 return ownerFee;
             }
 
-            public void setOwnerFee(int ownerFee) {
+            public void setOwnerFee(double ownerFee) {
                 this.ownerFee = ownerFee;
             }
 
-            public int getEstateFee() {
+            public double getEstateFee() {
                 return estateFee;
             }
 
-            public void setEstateFee(int estateFee) {
+            public void setEstateFee(double estateFee) {
                 this.estateFee = estateFee;
             }
 
-            public int getPlatformFee() {
+            public double getPlatformFee() {
                 return platformFee;
             }
 
-            public void setPlatformFee(int platformFee) {
+            public void setPlatformFee(double platformFee) {
                 this.platformFee = platformFee;
             }
 

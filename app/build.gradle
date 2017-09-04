@@ -75,4 +75,5 @@ dependencies {
     apt 'com.jakewharton:butterknife-compiler:8.7.0'
     compile 'com.tencent.mm.opensdk:wechat-sdk-android-without-mta:+'
     compile 'com.github.arcadefire:nice-spinner:1.2'
+    compile files('libs/alipaySdk-20170725.jar')
 }

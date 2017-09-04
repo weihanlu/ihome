@@ -38,6 +38,8 @@
     <color name="bg_activity">#eeeeee</color>
     <color name="rv_divider">#c8c7cc</color>
     <color name="bg_clear_history">#e2e2e2</color>
+    <color name="sub_text">#666666</color>
+    <color name="submit_feedback">#fefefe</color>
     
     
 </resources>

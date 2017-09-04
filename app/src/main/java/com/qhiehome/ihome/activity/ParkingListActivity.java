@@ -106,8 +106,10 @@ public class ParkingListActivity extends BaseActivity {
 
 
     //configuration parameter
-    public int MIN_SHARING_PERIOD = 30;
-    public int MIN_CHARGING_PERIOD = 15;
+    private int MIN_SHARING_PERIOD;
+    private int MIN_CHARGING_PERIOD;
+    private int FREE_CANCELLATION_TIME;
+
 
 
     @Override
@@ -120,6 +122,9 @@ public class ParkingListActivity extends BaseActivity {
         Intent intent = this.getIntent();
         Bundle bundle = intent.getExtras();
         mEstateBean = (ParkingEmptyResponse.DataBean.EstateBean) bundle.getSerializable("estate");
+        MIN_SHARING_PERIOD = bundle.getInt(Constant.MIN_SHARING_PERIOD);
+        MIN_CHARGING_PERIOD = bundle.getInt(Constant.MIN_CHARGING_PERIOD);
+        FREE_CANCELLATION_TIME = bundle.getInt(Constant.FREE_CANCELLATION_TIME);
         initToolbar();
 //        initData();
         initTimePickerData();
@@ -396,6 +401,7 @@ public class ParkingListActivity extends BaseActivity {
                         intent.putExtra("payState", Constant.PAY_STATE_GUARANTEE);
                         intent.putExtra("orderId", response.body().getData().getOrder().getId());
                         SharedPreferenceUtil.setLong(mContext, Constant.ORDER_CREATE_TIME, System.currentTimeMillis());
+                        SharedPreferenceUtil.setInt(mContext, Constant.FREE_CANCELLATION_TIME, FREE_CANCELLATION_TIME);
                         startActivity(intent);
                         ToastUtil.showToast(mContext, "预约成功");
                     } else if (response.body().getErrcode() == UNPAY_ORDER) {

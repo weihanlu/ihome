@@ -273,6 +273,7 @@ public class SettingActivity extends BaseActivity {
                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                         ActivityManager.finishAll();
                         SharedPreferenceUtil.setString(mContext, Constant.PHONE_KEY, "");
+                        SharedPreferenceUtil.setInt(mContext, Constant.USER_TYPE, Constant.USER_TYPE_TEMP);
                         LoginActivity.start(mContext);
                     }
                 }).show();

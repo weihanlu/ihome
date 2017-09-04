@@ -10,8 +10,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="哈哈哈哈哈哈哈哈"
-        android:textSize="16sp"
-        android:textColor="@color/black"
+        android:textSize="12sp"
+        android:textColor="@color/major_text"
         android:layout_centerHorizontal="true"
         />
     <TextView
@@ -20,8 +20,9 @@
         android:layout_height="wrap_content"
         android:text="哈哈哈哈哈哈哈哈"
         android:textSize="12sp"
-        android:textColor="@color/black"
+        android:textColor="@color/sub_text"
         android:layout_below="@+id/tv_parking_timeline_time"
+        android:layout_marginTop="10dp"
         android:layout_centerHorizontal="true" />
 
 

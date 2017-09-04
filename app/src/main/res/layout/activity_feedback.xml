@@ -22,13 +22,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:padding="4dp"
-        android:background="@color/white">
+        android:background="@color/bg_activity">
 
         <FrameLayout
             android:id="@+id/fl_feedback"
             android:layout_width="match_parent"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
             android:layout_height="200dp"
             android:background="@drawable/bg_et_feedback">
 
@@ -36,23 +37,38 @@
                 android:id="@+id/et_feedback"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
+                android:textSize="12sp"
                 android:maxLength="120"
-                android:hint="请留下您的宝贵意见(最多120字)"
+                android:hint="请留下您的宝贵意见"
+                android:layout_marginTop="20dp"
+                android:layout_marginStart="20dp"
                 android:textColorHint="@android:color/darker_gray"
                 android:backgroundTint="@color/white"
                 />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|right"
+                android:layout_marginBottom="10dp"
+                android:layout_marginEnd="10dp"
+                android:text="120"
+                android:textColor="@color/hint_color"
+                android:textSize="12sp" />
 
         </FrameLayout>
 
         <Button
             android:id="@+id/btn_feedback"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_width="320dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="30dp"
             android:text="提交"
+            android:textColor="@color/submit_feedback"
+            android:textSize="16sp"
             android:layout_below="@id/fl_feedback"
-            android:background="@drawable/round_button_red"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/round_long_button_blue"
             />
 
     </RelativeLayout>

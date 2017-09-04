@@ -11,29 +11,10 @@
         android:layout_height="wrap_content"
         android:theme="@style/toolbar_theme">
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/tb_parking_timeline"
+        <include layout="@layout/layout_toolbar_subtitle"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@drawable/bg_theme_gradient"
-            android:minHeight="?attr/actionBarSize"
-            android:theme="?attr/actionBarTheme">
-
-            <TextView
-                android:id="@+id/tv_parking_name"
-                android:layout_width="240dp"
-                android:layout_height="wrap_content"
-                android:textColor="@color/white"
-                android:marqueeRepeatLimit="-1"
-                android:textSize="18sp"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:singleLine="true"
-                android:ellipsize="marquee"/>
-
-
-        </android.support.v7.widget.Toolbar>
-
+            android:layout_height="?attr/actionBarSize">
+        </include>
 
     </android.support.design.widget.AppBarLayout>
 
@@ -56,7 +37,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:background="@drawable/bg_purple">
+            android:background="@color/bg_activity">
 
         </in.myinnos.alphabetsindexfastscrollrecycler.IndexFastScrollRecyclerView>
 
