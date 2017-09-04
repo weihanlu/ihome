@@ -27,16 +27,14 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.PopupWindow;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.baidu.mapapi.SDKInitializer;
 import com.qhiehome.ihome.R;
-import com.qhiehome.ihome.adapter.UserLockAdapter;
 import com.qhiehome.ihome.fragment.ParkFragment;
-import com.qhiehome.ihome.manager.ActivityManager;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.avatar.UploadAvatarResponse;
 import com.qhiehome.ihome.network.model.pay.accountbalance.AccountBalanceRequest;
@@ -54,7 +52,6 @@ import com.qhiehome.ihome.util.FileUtils;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
-import com.qhiehome.ihome.view.SharePopupWindow;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -102,6 +99,10 @@ public class MainActivity extends BaseActivity {
     TextView mTvBalanceLabel;
     @BindView(R.id.drawer)
     DrawerLayout drawer;
+    @BindView(R.id.ll_my_lock)
+    LinearLayout mLlMyLock;
+    @BindView(R.id.ll_my_publish)
+    LinearLayout mLlMyPublish;
 
     private Context mContext;
 
@@ -145,6 +146,7 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        checkUserType();
         checkLogin();
     }
 
@@ -156,9 +158,9 @@ public class MainActivity extends BaseActivity {
         mIvAvatar.setVisibility(isLogin ? View.VISIBLE : View.INVISIBLE);
         mTvUserBalance.setVisibility(isLogin ? View.VISIBLE : View.INVISIBLE);
         btLogin.setVisibility(isLogin ? View.INVISIBLE : View.VISIBLE);
-        mTvAddBalance.setVisibility(isLogin? View.VISIBLE: View.INVISIBLE);
-        mTvUserAccount.setVisibility(isLogin? View.VISIBLE: View.INVISIBLE);
-        mTvBalanceLabel.setVisibility(isLogin? View.VISIBLE: View.INVISIBLE);
+        mTvAddBalance.setVisibility(isLogin ? View.VISIBLE : View.INVISIBLE);
+        mTvUserAccount.setVisibility(isLogin ? View.VISIBLE : View.INVISIBLE);
+        mTvBalanceLabel.setVisibility(isLogin ? View.VISIBLE : View.INVISIBLE);
         if (isLogin) {
             initBalance();
             if (isFirst) {
@@ -733,6 +735,14 @@ public class MainActivity extends BaseActivity {
             });
             uploadAvatar();
             return null;
+        }
+    }
+
+    private void checkUserType() {
+        int userType = SharedPreferenceUtil.getInt(mContext, Constant.USER_TYPE, Constant.USER_TYPE_TEMP);
+        if (userType == Constant.USER_TYPE_TEMP) {
+            mLlMyLock.setVisibility(View.GONE);
+            mLlMyPublish.setVisibility(View.GONE);
         }
     }
 }

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/slight_gray"
+    android:background="@color/bg_activity"
     tools:context="com.qhiehome.ihome.activity.UserLockActivity">
 
     <android.support.design.widget.AppBarLayout
@@ -28,11 +28,12 @@
         <android.support.design.widget.TabLayout
             android:id="@+id/tl_user_lock"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="48dp"
             app:tabIndicatorHeight="2dp"
-            app:tabSelectedTextColor="@color/colorPrimaryDark"
+            app:tabSelectedTextColor="@color/theme_start_color"
             app:tabTextAppearance="@style/MyTabLayoutTextAppearance"
-            />
+            android:background="@color/white"/>
+
 
         <android.support.v4.view.ViewPager
             android:id="@+id/vp_user_lock"

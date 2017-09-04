@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -14,57 +13,41 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.SectionIndexer;
 import android.widget.TextView;
 
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.MaterialDialog;
-import com.bigkoo.pickerview.OptionsPickerView;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.indexable_recyclerview.AlphabetItem;
-import com.qhiehome.ihome.network.ServiceGenerator;
-import com.qhiehome.ihome.network.model.base.ParkingResponse;
 import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyResponse;
-import com.qhiehome.ihome.network.model.park.reserve.ReserveRequest;
-import com.qhiehome.ihome.network.model.park.reserve.ReserveResponse;
-import com.qhiehome.ihome.network.service.park.ReserveService;
 import com.qhiehome.ihome.util.CommonUtil;
-import com.qhiehome.ihome.util.Constant;
-import com.qhiehome.ihome.util.EncryptUtil;
-import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.TimeUtil;
-import com.qhiehome.ihome.util.ToastUtil;
 import com.vivian.timelineitemdecoration.itemdecoration.DotItemDecoration;
 import com.vivian.timelineitemdecoration.itemdecoration.SpanIndexListener;
 
-import org.w3c.dom.Text;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import in.myinnos.alphabetsindexfastscrollrecycler.IndexFastScrollRecyclerView;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class ParkingTimelineActivity extends AppCompatActivity {
 
-//    @BindView(R.id.rv_parking_timeline)
+    //    @BindView(R.id.rv_parking_timeline)
 //    RecyclerView mRvParkingTimeline;
     @BindView(R.id.rv_parking_timeline)
     IndexFastScrollRecyclerView mRvParkingTimeline;
-    @BindView(R.id.tb_parking_timeline)
-    Toolbar mTbParkingTimeline;
-    @BindView(R.id.tv_parking_name)
-    TextView mTvParkingName;
+    @BindView(R.id.toolbar_center)
+    Toolbar mTbParkingTimeLine;
+    @BindView(R.id.tv_title_toolbar)
+    TextView mTvTitleToolbar;
+    @BindView(R.id.tv_subtitle_toolbar)
+    TextView mTvSubtitleToolbar;
+
 //    @BindView(R.id.tv_parking_timeline_guaranteeFee_num)
 //    TextView mTvGuaranteeFee;
 //    @BindView(R.id.btn_parking_timeline_reserve)
@@ -97,7 +80,7 @@ public class ParkingTimelineActivity extends AppCompatActivity {
     private static final SimpleDateFormat HOUR_FORMAT = new SimpleDateFormat("HH");
     private static final int[] COLORS = {0xffFFAD6C, 0xff62f434, 0xffdeda78, 0xff7EDCFF, 0xff58fdea, 0xfffdc75f};//颜色组
     private static final String DECIMAL_2 = "%.2f";
-    private static final long SELECT_MIN_INTERVAL = 15*60*1000; //用户可选时间最短间隔，服务端可配置
+    private static final long SELECT_MIN_INTERVAL = 15 * 60 * 1000; //用户可选时间最短间隔，服务端可配置
 
     private static final int ERROR_CODE_UNPAY = 300;
     private static final int ERROR_CODE_RESERVED = 301;
@@ -121,16 +104,16 @@ public class ParkingTimelineActivity extends AppCompatActivity {
     }
 
 
-
     private void initToolbar() {
-        setSupportActionBar(mTbParkingTimeline);
+        setSupportActionBar(mTbParkingTimeLine);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
         }
-        mTvParkingName.setText(mEstateBean.getName() + "：" + String.format(DECIMAL_2, (float) mEstateBean.getUnitPrice()) + "元/小时");
-        mTbParkingTimeline.setNavigationOnClickListener(new View.OnClickListener() {
+        mTvTitleToolbar.setText(mEstateBean.getName());
+        mTvSubtitleToolbar.setText(String.format(Locale.CHINA, DECIMAL_2, (float) mEstateBean.getUnitPrice()) + "元/小时");
+        mTbParkingTimeLine.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
@@ -149,10 +132,10 @@ public class ParkingTimelineActivity extends AppCompatActivity {
                 .setItemPaddingLeft(20)//default value equals to item interval value
                 .setItemPaddingRight(20)//default value equals to item interval value
                 .setDotColor(Color.WHITE)
-                .setDotRadius(2)//dp
+                .setDotRadius(5)//dp
                 .setDotPaddingTop(0)
                 .setDotInItemOrientationCenter(false)//set true if you want the dot align center
-                .setLineColor(Color.BLACK)
+                .setLineColor(ContextCompat.getColor(mContext, R.color.rv_divider))
                 .setLineWidth(4)//dp
                 .setEndText("")
                 .setTextColor(Color.WHITE)
@@ -270,10 +253,10 @@ public class ParkingTimelineActivity extends AppCompatActivity {
         //Alphabet fast scroller data
         mAlphabetItems = new ArrayList<>();
         List<String> strAlphabets = new ArrayList<>();
-        for (int i = 0; i<mShareBeanList.size(); i++){
+        for (int i = 0; i < mShareBeanList.size(); i++) {
             Date date = TimeUtil.getInstance().millis2Date(mShareBeanList.get(i).getStartTime());
             String hour = HOUR_FORMAT.format(date);
-            if (!strAlphabets.contains(hour)){
+            if (!strAlphabets.contains(hour)) {
                 strAlphabets.add(hour);
                 mAlphabetItems.add(new AlphabetItem(i, hour, false));
             }
@@ -311,11 +294,11 @@ public class ParkingTimelineActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(final ParkingViewHolder holder, int position) {
-            if (mShareBeanList.size() == 1 && position == 1){//防崩溃
+            if (mShareBeanList.size() == 1 && position == 1) {//防崩溃
                 holder.tv_time.setText("");
                 holder.tv_info.setText("");
                 holder.itemView.setVisibility(View.INVISIBLE);
-            }else {
+            } else {
                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -330,16 +313,16 @@ public class ParkingTimelineActivity extends AppCompatActivity {
                 String endTime = TIME_FORMAT.format(endDate);
                 holder.tv_time.setText(startTime + " - " + endTime);
                 long timePeriod = mShareBeanList.get(position).getEndTime() - mShareBeanList.get(position).getStartTime();
-                int minutes_total = (int) timePeriod/1000/60;
-                int hours = minutes_total/60;
-                int minutes = minutes_total%60;
+                int minutes_total = (int) timePeriod / 1000 / 60;
+                int hours = minutes_total / 60;
+                int minutes = minutes_total % 60;
                 String time_length = "";
-                if (hours == 0){
+                if (hours == 0) {
                     time_length = minutes + "分";
-                }else {
-                    if (minutes == 0){
+                } else {
+                    if (minutes == 0) {
                         time_length = hours + "小时";
-                    }else {
+                    } else {
                         time_length = hours + "小时" + minutes + "分";
                     }
                 }
@@ -360,9 +343,9 @@ public class ParkingTimelineActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            if (mShareBeanList.size() == 1){
+            if (mShareBeanList.size() == 1) {
                 return 2;
-            }else {
+            } else {
                 return mShareBeanList.size();
             }
         }
@@ -370,6 +353,7 @@ public class ParkingTimelineActivity extends AppCompatActivity {
         class ParkingViewHolder extends RecyclerView.ViewHolder {
             TextView tv_time;
             TextView tv_info;
+
             public ParkingViewHolder(View itemView) {
                 super(itemView);
                 tv_time = (TextView) itemView.findViewById(R.id.tv_parking_timeline_time);
@@ -392,9 +376,9 @@ public class ParkingTimelineActivity extends AppCompatActivity {
         public Object[] getSections() {
             List<String> sections = new ArrayList<>(24);
             mSectionPositions = new ArrayList<>(24);
-            for (int i = 0, size = mShareBeanList.size(); i<size; i++){
+            for (int i = 0, size = mShareBeanList.size(); i < size; i++) {
                 String section = String.format(HOUR_FORMAT.format(mShareBeanList.get(i).getStartTime()));
-                if (!sections.contains(section)){
+                if (!sections.contains(section)) {
                     sections.add(section);
                     mSectionPositions.add(i);
                 }

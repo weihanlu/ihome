@@ -32,6 +32,10 @@ public class Constant {
 
     public static final String CONTRACT_URL = "http://39.108.77.50:3389/api/service_contract.html";
 
+    public static final String USER_TYPE = "USER_TYPE";
+    public static final int USER_TYPE_OWNER = 1;    //业主
+    public static final int USER_TYPE_TEMP = 0;     //临时用户
+
     /*******persistence data********/
     //navigation
     public static final String CURRENT_LONGITUDE = "CURRENT_LONGITUDE";
@@ -76,6 +80,12 @@ public class Constant {
     public static final String APK_UPDATE_PAGE_NUM = "1";
 
     public static final String APK_UPDATE_URL_PATTERN = "http://www.pgyer.com/apiv1/app/install?aKey=%s&_api_key=61bb58e6d87d6d2d6b84c7a44c237a7e&password=ihome";
+
+    //city configurations
+    public static final String MIN_SHARING_PERIOD = "minSharingPeriod";
+    public static final String MIN_CHARGING_PERIOD = "minChargingPeriod";
+    public static final String FREE_CANCELLATION_TIME = "freeCancellationTime";
+
 
 
 }

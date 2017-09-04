@@ -18,12 +18,15 @@ import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.SMS.SMSResponse;
 import com.qhiehome.ihome.network.model.inquiry.orderusing.OrderUsingRequest;
 import com.qhiehome.ihome.network.model.inquiry.orderusing.OrderUsingResponse;
+import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedRequest;
+import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedResponse;
 import com.qhiehome.ihome.network.model.park.reserve.ReserveResponse;
 import com.qhiehome.ihome.network.model.signin.SigninRequest;
 import com.qhiehome.ihome.network.model.signin.SigninResponse;
 import com.qhiehome.ihome.network.service.SMS.SMSService;
 import com.qhiehome.ihome.network.service.SMS.SMSServiceGenerator;
 import com.qhiehome.ihome.network.service.inquiry.OrderUsingService;
+import com.qhiehome.ihome.network.service.inquiry.ParkingOwnedService;
 import com.qhiehome.ihome.network.service.signin.SigninService;
 import com.qhiehome.ihome.observer.SMSContentObserver;
 import com.qhiehome.ihome.util.CommonUtil;
@@ -148,7 +151,7 @@ public class LoginActivity extends BaseActivity {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
 //                    MainActivity.start(LoginActivity.this);
                     SharedPreferenceUtil.setString(LoginActivity.this, Constant.PHONE_KEY, mPhoneNum);
-                    getOrderInfo();
+                    getOwnerParking();
                 }
             }
             @Override
@@ -310,6 +313,37 @@ public class LoginActivity extends BaseActivity {
 
             @Override
             public void onFailure(Call<OrderUsingResponse> call, Throwable t) {
+                ToastUtil.showToast(LoginActivity.this, "网络连接异常");
+            }
+        });
+    }
+
+
+    /********检查用户类型：临时/业主********/
+    private void getOwnerParking(){
+        ParkingOwnedService parkingOwnedService = ServiceGenerator.createService(ParkingOwnedService.class);
+        ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.SHA_256));
+        Call<ParkingOwnedResponse> call = parkingOwnedService.parkingOwned(parkingOwnedRequest);
+        call.enqueue(new Callback<ParkingOwnedResponse>() {
+            @Override
+            public void onResponse(Call<ParkingOwnedResponse> call, Response<ParkingOwnedResponse> response) {
+                try {
+                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
+                        if (response.body().getData() == null){
+                            SharedPreferenceUtil.setInt(LoginActivity.this, Constant.USER_TYPE, Constant.USER_TYPE_TEMP);
+                        }else {
+                            SharedPreferenceUtil.setInt(LoginActivity.this, Constant.USER_TYPE, Constant.USER_TYPE_OWNER);
+                        }
+                        getOrderInfo();
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                    ToastUtil.showToast(LoginActivity.this, "服务器错误，请稍后再试");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ParkingOwnedResponse> call, Throwable t) {
                 ToastUtil.showToast(LoginActivity.this, "网络连接异常");
             }
         });

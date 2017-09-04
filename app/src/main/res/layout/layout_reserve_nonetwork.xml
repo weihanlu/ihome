@@ -29,7 +29,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/round_button_red"
-        tools:text="升车位锁"
+        android:text="控制车位锁"
         android:layout_below="@+id/tv_reserve_nonetwork"
         android:layout_alignEnd="@+id/iv_reserve_nonetwork"
         android:layout_marginTop="25dp" />
@@ -39,7 +39,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/round_button_red"
-        tools:text="暂离"
+        android:text="开始停车"
         android:layout_below="@+id/btn_reserve_nonetwork"
         android:layout_alignEnd="@+id/iv_reserve_nonetwork"
         android:layout_marginTop="25dp" />

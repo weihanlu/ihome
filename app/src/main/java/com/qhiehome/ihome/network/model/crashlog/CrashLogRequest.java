@@ -2,9 +2,8 @@ package com.qhiehome.ihome.network.model.crashlog;
 
 public class CrashLogRequest {
 
-
     /**
-     * crashlog : xxx
+     * crashlog : xxxxxxxxx
      */
 
     private String crashlog;

@@ -7,6 +7,7 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Headers;
+import retrofit2.http.POST;
 
 /**
  * Created by YueMa on 2017/9/1.
@@ -18,6 +19,6 @@ public interface CityConfigService {
             "Accept: application/json"
     })
 
-    @GET("configuration/city")
+    @POST("configuration/city")
     Call<CityConfigResponse> queryCityConfig(@Body CityConfigRequest cityConfigRequest);
 }

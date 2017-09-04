@@ -48,12 +48,15 @@ import com.qhiehome.ihome.network.model.inquiry.order.OrderRequest;
 import com.qhiehome.ihome.network.model.inquiry.order.OrderResponse;
 import com.qhiehome.ihome.network.model.inquiry.parkingusing.ParkingUsingRequest;
 import com.qhiehome.ihome.network.model.inquiry.parkingusing.ParkingUsingResponse;
+import com.qhiehome.ihome.network.model.park.charge.ChargeRequest;
+import com.qhiehome.ihome.network.model.park.charge.ChargeResponse;
 import com.qhiehome.ihome.network.model.park.enter.EnterParkingRequest;
 import com.qhiehome.ihome.network.model.park.enter.EnterParkingResponse;
 import com.qhiehome.ihome.network.model.park.reservecancel.ReserveCancelRequest;
 import com.qhiehome.ihome.network.model.park.reservecancel.ReserveCancelResponse;
 import com.qhiehome.ihome.network.service.inquiry.OrderService;
 import com.qhiehome.ihome.network.service.inquiry.ParkingUsingService;
+import com.qhiehome.ihome.network.service.park.ChargeService;
 import com.qhiehome.ihome.network.service.park.EnterParkingService;
 import com.qhiehome.ihome.network.service.park.ReserveCancelService;
 import com.qhiehome.ihome.util.CommonUtil;
@@ -320,7 +323,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                     info += END_TIME_FORMAT.format(mOrderBeanList.get(0).getStartTime() + QUARTER);
                     detailItemHolder.getTvDetailInfo().setText(info);
 
-                    if (mOrderBeanList.get(0).getStartTime() - System.currentTimeMillis() <= 30 * 60 * 1000 && mOrderBeanList.get(0).getStartTime() - System.currentTimeMillis() >= 0) {
+                    if (mOrderBeanList.get(0).getStartTime() - System.currentTimeMillis() <= 30 * 60 * 1000 && mOrderBeanList.get(0).getStartTime() - System.currentTimeMillis() > 0) {
                         detailItemHolder.getBtnFunction().setText("查询可否提前使用");
                         detailItemHolder.getBtnFunction().setVisibility(View.VISIBLE);
                         detailItemHolder.getBtnFunction().setOnClickListener(new View.OnClickListener() {
@@ -329,7 +332,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                                 QueryParkingUsing(detailItemHolder.getBtnFunction());
                             }
                         });
-                    } else {
+                    } else if (mOrderBeanList.get(0).getStartTime() - System.currentTimeMillis() <= 0){
                         detailItemHolder.getBtnFunction().setText("开始停车");
                         detailItemHolder.getBtnFunction().setVisibility(View.VISIBLE);
                         detailItemHolder.getBtnFunction().setOnClickListener(new View.OnClickListener() {
@@ -338,6 +341,8 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                                 LockControl(groupOrdinal, true);
                             }
                         });
+                    } else {
+                        detailItemHolder.getBtnFunction().setVisibility(View.INVISIBLE);
                     }
 
 
@@ -401,9 +406,9 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                         }
                     });
 
-                    detailItemHolder.btnCancel.setVisibility(View.VISIBLE);
-                    detailItemHolder.btnCancel.setText("暂离");
-                    detailItemHolder.btnCancel.setOnClickListener(new View.OnClickListener() {
+                    detailItemHolder.getBtnCancel().setVisibility(View.VISIBLE);
+                    detailItemHolder.getBtnCancel().setText("暂离");
+                    detailItemHolder.getBtnCancel().setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             LockControlSelf();
@@ -873,7 +878,7 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
             SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_PARKED);
             if (NetworkUtils.isConnected(mContext)) {
                 EnterParkingService enterParkingService = ServiceGenerator.createService(EnterParkingService.class);
-                EnterParkingRequest enterParkingRequest = new EnterParkingRequest(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), currentTime);
+                EnterParkingRequest enterParkingRequest = new EnterParkingRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256), currentTime);
                 Call<EnterParkingResponse> call = enterParkingService.enterParking(enterParkingRequest);
                 call.enqueue(new Callback<EnterParkingResponse>() {
                     @Override
@@ -898,10 +903,34 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
             updateData();
         }
         if (!downLock) {  //++升车位锁消息发送成功
-            SharedPreferenceUtil.setLong(mContext, Constant.PARKING_LEAVE_TIME, System.currentTimeMillis());
+            Long currentTime = System.currentTimeMillis();
+            SharedPreferenceUtil.setLong(mContext, Constant.PARKING_LEAVE_TIME, currentTime);
             SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_NOT_PAID);
+            if (NetworkUtils.isConnected(mContext)) {
+                ChargeService chargeService = ServiceGenerator.createService(ChargeService.class);
+                ChargeRequest chargeRequest = new ChargeRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256), currentTime);
+                Call<ChargeResponse> call = chargeService.charge(chargeRequest);
+                call.enqueue(new Callback<ChargeResponse>() {
+                    @Override
+                    public void onResponse(Call<ChargeResponse> call, Response<ChargeResponse> response) {
+                        if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                            SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_LEAVE_TIME, false);
+                        } else {
+                            ToastUtil.showToast(mContext, "发送请求失败");
+                            SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_LEAVE_TIME, true);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ChargeResponse> call, Throwable t) {
+                        ToastUtil.showToast(mContext, "网络连接异常");
+                        SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_LEAVE_TIME, true);
+                    }
+                });
+            } else {
+                SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_LEAVE_TIME, true);
+            }
             updateData();
-            // TODO: 2017/8/28 增加停车离开计费接口
         }
     }
 

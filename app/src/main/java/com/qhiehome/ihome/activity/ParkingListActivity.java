@@ -74,6 +74,8 @@ public class ParkingListActivity extends BaseActivity {
     private ParkingEmptyResponse.DataBean.EstateBean mEstateBean;
     private Context mContext;
 
+    private static final SimpleDateFormat HOUR_FORMAT = new SimpleDateFormat("HH", Locale.CHINA);
+    private static final SimpleDateFormat MIN_FORMAT = new SimpleDateFormat("mm", Locale.CHINA);
     private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm", Locale.CHINA);
     private static final String INTEGER_2 = "%02d";
     private static final String DECIMAL_2 = "%.2f";
@@ -86,25 +88,17 @@ public class ParkingListActivity extends BaseActivity {
     private float mPrice = 0;
     private float mUnitPrice = 0;
     private float mGuaranteeFee = 0;
-    private String mStartTime;
-    private String mEndTime;
-    private int mStartHourSelection = 0;
-    private int mStartMinSelection = 0;
-    private int mEndHourSelection = 0;
-    private int mEndMinSelection = 0;
-    private long mStartTimeMillis = 0;
-    private long mEndTimeMillis = 0;
-    private ArrayList<ArrayList<String>> mStartMinites = new ArrayList<>();
-    private ArrayList<String> mStartHours = new ArrayList<>();
-    private ArrayList<String> mMinute = new ArrayList<>();
 
-    private ArrayList<ArrayList<String>> mEndMinites = new ArrayList<>();
-    private ArrayList<String> mEndHours = new ArrayList<>();
+    private ArrayList<String> mStartSelectionStr = new ArrayList<>();  //起始时间轴 显示
+    private ArrayList<String> mEndSelectionStr = new ArrayList<>();    //终止时间轴 显示
 
-    private ArrayList<String> mStartTimes = new ArrayList<>();
-    private ArrayList<ArrayList<String>> mEndTimes = new ArrayList<>();
-    private ArrayList<Long> mStartTimeMillisList = new ArrayList<>();
-    private ArrayList<ArrayList<Long>> mEndTimeMillisList = new ArrayList<>();
+    private ArrayList<Long> mStartSelectionMillis = new ArrayList<>();  //起始时间轴 时间戳
+    private ArrayList<Long> mEndSelectionMillis = new ArrayList<>();     //终止时间轴 时间戳
+
+    private int mStartSelectIndex = 0;
+    private int mEndSelectIndex = 0;
+
+
 
     private final static int UNPAY_ORDER = 300;
     private final static int RESERVED_ORDER = 301;
@@ -112,8 +106,10 @@ public class ParkingListActivity extends BaseActivity {
 
 
     //configuration parameter
-    public int MIN_SHARING_PERIOD = 30;
-    public int MIN_CHARGING_PERIOD = 15;
+    private int MIN_SHARING_PERIOD;
+    private int MIN_CHARGING_PERIOD;
+    private int FREE_CANCELLATION_TIME;
+
 
 
     @Override
@@ -126,6 +122,9 @@ public class ParkingListActivity extends BaseActivity {
         Intent intent = this.getIntent();
         Bundle bundle = intent.getExtras();
         mEstateBean = (ParkingEmptyResponse.DataBean.EstateBean) bundle.getSerializable("estate");
+        MIN_SHARING_PERIOD = bundle.getInt(Constant.MIN_SHARING_PERIOD);
+        MIN_CHARGING_PERIOD = bundle.getInt(Constant.MIN_CHARGING_PERIOD);
+        FREE_CANCELLATION_TIME = bundle.getInt(Constant.FREE_CANCELLATION_TIME);
         initToolbar();
 //        initData();
         initTimePickerData();
@@ -176,138 +175,52 @@ public class ParkingListActivity extends BaseActivity {
     }
 
     private void initTimePickerData() {
-        Calendar startCalendar = Calendar.getInstance();
-        int currentMin = startCalendar.get(Calendar.MINUTE);
-        int period = (int) Math.ceil(currentMin / MIN_CHARGING_PERIOD);
-        startCalendar.set(Calendar.MINUTE, period * MIN_CHARGING_PERIOD);
-        startCalendar.add(Calendar.MINUTE, MIN_CHARGING_PERIOD);
-        startCalendar.set(Calendar.SECOND, 0);
-        startCalendar.set(Calendar.MILLISECOND, 0);
 
-        Calendar finalStartCalendar = Calendar.getInstance();
-        finalStartCalendar.set(Calendar.HOUR_OF_DAY, 24);
-        finalStartCalendar.set(Calendar.MINUTE, 0);
-        finalStartCalendar.set(Calendar.SECOND, 0);
-        finalStartCalendar.set(Calendar.MILLISECOND, 0);
-        finalStartCalendar.add(Calendar.MINUTE, -MIN_SHARING_PERIOD);
+        mStartSelectionStr.clear();
+        mEndSelectionStr.clear();
+        mStartSelectionMillis.clear();
+        mEndSelectionMillis.clear();
 
-        long startTime = startCalendar.getTimeInMillis();
-        long startFinalTime = finalStartCalendar.getTimeInMillis();
-        long endTime = startTime + MIN_SHARING_PERIOD * 60 * 1000;
-        long endFinalTime = startFinalTime + MIN_SHARING_PERIOD * 60 * 1000;
-        mStartTime = TIME_FORMAT.format(startTime);
-        mEndTime = TIME_FORMAT.format(endTime);
-
-        while (startTime <= startFinalTime) {
-            mStartTimes.add(TIME_FORMAT.format(startTime));
-            mStartTimeMillisList.add(startTime);
-            endTime = startTime + MIN_SHARING_PERIOD * 60 * 1000;
-            ArrayList<String> tmpList = new ArrayList<>();
-            ArrayList<Long> tmpMillisList = new ArrayList<>();
-            while (endTime <= endFinalTime) {
-                tmpList.add(TIME_FORMAT.format(endTime));
-                tmpMillisList.add(endTime);
-                endTime += MIN_CHARGING_PERIOD * 60 * 1000;
-            }
-            mEndTimes.add(tmpList);
-            mEndTimeMillisList.add(tmpMillisList);
-            startTime += MIN_CHARGING_PERIOD * 60 * 1000;
-        }
-
-        mStartTimeMillis = mStartTimeMillisList.get(0);
-        mEndTimeMillis = mEndTimeMillisList.get(0).get(0);
-
-
-    }
-
-
-    private void initData() {
-        mStartTime = TIME_FORMAT.format(TimeUtil.getInstance().millis2Date(System.currentTimeMillis() + QUARTER_TIME));
-        //初始化开始时间数据源
         Calendar calendar = Calendar.getInstance();
-        //calendar.setTime(TimeUtil.getInstance().millis2Date(System.currentTimeMillis() + QUARTER_TIME));
-        calendar.add(Calendar.MINUTE, 15);
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
-        mStartTimeMillis = calendar.getTimeInMillis();
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int min = calendar.get(Calendar.MINUTE);
-        ArrayList<String> minute = new ArrayList<>();
+        int m = calendar.get(Calendar.MINUTE);
+        int h = calendar.get(Calendar.HOUR_OF_DAY);
+        int m_total = m+h*60;
+        int m_start = m_total - (m_total%MIN_CHARGING_PERIOD) + MIN_CHARGING_PERIOD;
+        int m_end = m_start + MIN_SHARING_PERIOD;
+        while (m_start <= 24*60-MIN_SHARING_PERIOD){
 
-        minute.add(String.format(INTEGER_2, min));
+            m = m_start%60;
+            h = m_start/60;
+            calendar.set(Calendar.HOUR_OF_DAY, h);
+            calendar.set(Calendar.MINUTE, m);
+            mStartSelectionMillis.add(calendar.getTimeInMillis());
+            mStartSelectionStr.add(TIME_FORMAT.format(calendar.getTimeInMillis()));
 
-        if (min > 0 && min < 15) {
-            minute.add("15");
-            minute.add("30");
-            minute.add("45");
-        } else if (min >= 15 && min < 30) {
-            minute.add("30");
-            minute.add("45");
-        } else if (min >= 30 && min < 45) {
-            minute.add("45");
-        } else if (min >= 45 && min < 60) {
+            m_start += MIN_CHARGING_PERIOD;
         }
-        mStartMinites.add(minute);
-        mStartHours.add(String.valueOf(hour));
-        hour++;
-        mMinute.add("00");
-        mMinute.add("15");
-        mMinute.add("30");
-        mMinute.add("45");
-        for (int h = hour; h < 24; h++) {
-            mStartMinites.add(mMinute);
-            mStartHours.add(String.valueOf(h));
+
+        while (m_end <= 24*60){
+
+            m = m_end%60;
+            h = m_end/60;
+            calendar.set(Calendar.HOUR_OF_DAY, h);
+            calendar.set(Calendar.MINUTE, m);
+            mEndSelectionMillis.add(calendar.getTimeInMillis());
+            mEndSelectionStr.add(TIME_FORMAT.format(calendar.getTimeInMillis()));
+
+            m_end += MIN_CHARGING_PERIOD;
         }
-        //初始化结束时间数据源
-        initEndTimeDataSourse(-1, -1, true);
+
+        for (int i = 0; i<mStartSelectIndex; i++){
+            mEndSelectionStr.remove(0);
+            mEndSelectionMillis.remove(0);
+            mEndSelectIndex = 0;
+        }
 
     }
 
-    private void initEndTimeDataSourse(int startHour, int startMin, boolean needChange) {
-        Calendar calendar = Calendar.getInstance();
-        if (startHour == -1) {
-            calendar.setTime(TimeUtil.getInstance().millis2Date(System.currentTimeMillis() + QUARTER_TIME * 2));
-        } else {
-            calendar.set(Calendar.HOUR_OF_DAY, startHour);
-            calendar.set(Calendar.MINUTE, startMin);
-            calendar.set(Calendar.SECOND, 0);
-            calendar.set(Calendar.MILLISECOND, 0);
-            calendar.add(Calendar.MINUTE, 15);
-            mEndMinites.clear();
-            mEndHours.clear();
-        }
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int min = calendar.get(Calendar.MINUTE);
-        if (needChange) {
-            mEndTimeMillis = calendar.getTimeInMillis();
-            mEndTime = TIME_FORMAT.format(calendar.getTimeInMillis());
-        }
-        ArrayList<String> end_minute = new ArrayList<>();
-
-        end_minute.add(String.format(INTEGER_2, min));
-
-        if (min > 0 && min < 15) {
-            end_minute.add("15");
-            end_minute.add("30");
-            end_minute.add("45");
-        } else if (min >= 15 && min < 30) {
-            end_minute.add("30");
-            end_minute.add("45");
-        } else if (min >= 30 && min < 45) {
-            end_minute.add("45");
-        }
-        mEndMinites.add(end_minute);
-        mEndHours.add(String.valueOf(hour));
-        hour++;
-        for (int h = hour; h < 24; h++) {
-            mEndMinites.add(mMinute);
-            mEndHours.add(String.valueOf(h));
-        }
-        mEndHours.add("24");
-        ArrayList<String> lastMinute = new ArrayList<>();
-        lastMinute.add("00");
-        mEndMinites.add(lastMinute);
-    }
 
     public void onItemClick(View view) {
         int position = mRvParking.getChildAdapterPosition(view);
@@ -315,32 +228,16 @@ public class ParkingListActivity extends BaseActivity {
             OptionsPickerView pvOptions = new OptionsPickerView.Builder(this, new OptionsPickerView.OnOptionsSelectListener() {
                 @Override
                 public void onOptionsSelect(int options1, int options2, int options3, View v) {
-                    //返回的分别是三个级别的选中位置
-//                    mStartHourSelection = options1;
-//                    mStartMinSelection = options2;
-//                    mStartTime = mStartHours.get(options1) + ":" + mStartMinites.get(options1).get(options2);
-//                    Calendar calendar = Calendar.getInstance();
-//                    calendar.set(Calendar.HOUR_OF_DAY, Integer.valueOf(mStartHours.get(options1)));
-//                    calendar.set(Calendar.MINUTE, Integer.valueOf(mStartMinites.get(options1).get(options2)));
-//                    calendar.set(Calendar.SECOND, 0);
-//                    calendar.set(Calendar.MILLISECOND, 0);
-//                    mStartTimeMillis = calendar.getTimeInMillis();
-//                    initEndTimeDataSourse(Integer.valueOf(mStartHours.get(options1)), Integer.valueOf(mStartMinites.get(options1).get(options2)), mEndTimeMillis <= mStartTimeMillis);
-//                    float mills = mEndTimeMillis - mStartTimeMillis;
-//                    float hours = mills/1000/3600;
-                    mStartTime = TIME_FORMAT.format(mStartTimeMillisList.get(options1));
-                    mEndTime = TIME_FORMAT.format(mEndTimeMillisList.get(options1).get(options2));
-                    mStartTimeMillis = mStartTimeMillisList.get(options1);
-                    mEndTimeMillis = mEndTimeMillisList.get(options1).get(options2);
-                    float hours = (float) (mEndTimeMillisList.get(options1).get(options2) - mStartTimeMillisList.get(options1)) / 60 / 60 / 1000;
-                    mPrice = hours * mUnitPrice;
+                    mStartSelectIndex = options1;
+                    initTimePickerData();
+                    mPrice = mUnitPrice * (mEndSelectionMillis.get(mEndSelectIndex) - mStartSelectionMillis.get(mStartSelectIndex))/1000/60/60;
                     mAdapter.notifyDataSetChanged();
                 }
             })
                     .setTitleText("选择时间")
                     .setContentTextSize(20)//设置滚轮文字大小
                     .setDividerColor(Color.GREEN)//设置分割线的颜色
-                    .setSelectOptions(mStartHourSelection, mStartMinSelection)//默认选中项
+                    .setSelectOptions(mStartSelectIndex)//默认选中项
                     .setBgColor(Color.BLACK)
                     .setTitleBgColor(Color.DKGRAY)
                     .setTitleColor(Color.LTGRAY)
@@ -352,7 +249,7 @@ public class ParkingListActivity extends BaseActivity {
                     .setBackgroundId(0x66000000) //设置外部遮罩颜色
                     .build();
             //pvOptions.setSelectOptions(1,1);
-            pvOptions.setPicker(mStartTimes, mEndTimes);//二级选择器
+            pvOptions.setPicker(mStartSelectionStr);//二级选择器
             pvOptions.show();
         }
         if (position == 2) {
@@ -360,30 +257,15 @@ public class ParkingListActivity extends BaseActivity {
                 @Override
                 public void onOptionsSelect(int options1, int options2, int options3, View v) {
                     //返回的分别是三个级别的选中位置
-//                    mEndHourSelection = options1;
-//                    mEndMinSelection = options2;
-//                    mEndTime = mEndHours.get(options1) + ":" + mEndMinites.get(options1).get(options2);
-//                    Calendar calendar = Calendar.getInstance();
-//                    calendar.set(Calendar.HOUR_OF_DAY, Integer.valueOf(mEndHours.get(options1)));
-//                    calendar.set(Calendar.MINUTE, Integer.valueOf(mEndMinites.get(options1).get(options2)));
-//                    calendar.set(Calendar.SECOND, 0);
-//                    calendar.set(Calendar.MILLISECOND, 0);
-//                    mEndTimeMillis = calendar.getTimeInMillis();
-//                    float mills = mEndTimeMillis - mStartTimeMillis;
-//                    float hours = mills/1000/3600;
-                    mStartTime = TIME_FORMAT.format(mStartTimeMillisList.get(options1));
-                    mEndTime = TIME_FORMAT.format(mEndTimeMillisList.get(options1).get(options2));
-                    mStartTimeMillis = mStartTimeMillisList.get(options1);
-                    mEndTimeMillis = mEndTimeMillisList.get(options1).get(options2);
-                    float hours = (float) (mEndTimeMillisList.get(options1).get(options2) - mStartTimeMillisList.get(options1)) / 60 / 60 / 1000;
-                    mPrice = hours * mUnitPrice;
+                    mEndSelectIndex = options1;
+                    mPrice = mUnitPrice * (mEndSelectionMillis.get(mEndSelectIndex) - mStartSelectionMillis.get(mStartSelectIndex))/1000/60/60;
                     mAdapter.notifyDataSetChanged();
                 }
             })
                     .setTitleText("选择时间")
                     .setContentTextSize(20)//设置滚轮文字大小
                     .setDividerColor(Color.GREEN)//设置分割线的颜色
-                    .setSelectOptions(mEndHourSelection, mEndMinSelection)//默认选中项
+                    .setSelectOptions(mEndSelectIndex)//默认选中项
                     .setBgColor(Color.BLACK)
                     .setTitleBgColor(Color.DKGRAY)
                     .setTitleColor(Color.LTGRAY)
@@ -395,7 +277,7 @@ public class ParkingListActivity extends BaseActivity {
                     .setBackgroundId(0x66000000) //设置外部遮罩颜色
                     .build();
             //pvOptions.setSelectOptions(1,1);
-            pvOptions.setPicker(mStartTimes, mEndTimes);//二级选择器
+            pvOptions.setPicker(mEndSelectionStr);//二级选择器
             pvOptions.show();
         }
     }
@@ -450,11 +332,11 @@ public class ParkingListActivity extends BaseActivity {
             } else if (holder instanceof ParkingHolder) {
                 if (position == LIST_START_TIME) {
                     ((ParkingHolder) holder).tv_title.setText("开始时间");
-                    ((ParkingHolder) holder).tv_content.setText(mStartTime);
+                    ((ParkingHolder) holder).tv_content.setText(mStartSelectionStr.get(mStartSelectIndex));
                 }
                 if (position == LIST_END_TIME) {
                     ((ParkingHolder) holder).tv_title.setText("结束时间");
-                    ((ParkingHolder) holder).tv_content.setText(mEndTime);
+                    ((ParkingHolder) holder).tv_content.setText(mEndSelectionStr.get(mEndSelectIndex));
                 }
             }
         }
@@ -508,7 +390,7 @@ public class ParkingListActivity extends BaseActivity {
                     .show();
         } else {
             ReserveService reserveService = ServiceGenerator.createService(ReserveService.class);
-            final ReserveRequest reserveRequest = new ReserveRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, Constant.TEST_PHONE_NUM), EncryptUtil.ALGO.SHA_256), mEstateBean.getId(), mStartTimeMillis, mEndTimeMillis);
+            final ReserveRequest reserveRequest = new ReserveRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, Constant.TEST_PHONE_NUM), EncryptUtil.ALGO.SHA_256), mEstateBean.getId(), mStartSelectionMillis.get(mStartSelectIndex), mEndSelectionMillis.get(mEndSelectIndex));
             Call<ReserveResponse> call = reserveService.reserve(reserveRequest);
             call.enqueue(new Callback<ReserveResponse>() {
                 @Override
@@ -519,6 +401,7 @@ public class ParkingListActivity extends BaseActivity {
                         intent.putExtra("payState", Constant.PAY_STATE_GUARANTEE);
                         intent.putExtra("orderId", response.body().getData().getOrder().getId());
                         SharedPreferenceUtil.setLong(mContext, Constant.ORDER_CREATE_TIME, System.currentTimeMillis());
+                        SharedPreferenceUtil.setInt(mContext, Constant.FREE_CANCELLATION_TIME, FREE_CANCELLATION_TIME);
                         startActivity(intent);
                         ToastUtil.showToast(mContext, "预约成功");
                     } else if (response.body().getErrcode() == UNPAY_ORDER) {
