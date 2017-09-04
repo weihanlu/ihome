@@ -13,6 +13,7 @@
         android:layout_gravity="center_vertical"
         android:layout_marginStart="20dp"
         />
+
     <RelativeLayout
         android:id="@+id/rl_input_location"
         android:layout_marginStart="20dp"

@@ -35,7 +35,7 @@ public class SettingMenuAdapter extends RecyclerView.Adapter<SettingMenuAdapter.
             holder.mTvVersion.setVisibility(View.VISIBLE);
             String[] firstLine = mTitles[position].split(";");
             holder.mTvItem.setText(firstLine[0]);
-            holder.mTvVersion.setText("V " + firstLine[1]);
+            holder.mTvVersion.setText(firstLine[1]);
         }  else {
             holder.mTvItem.setText(mTitles[position]);
         }

@@ -43,8 +43,6 @@ public class UserLockAdapter extends RecyclerView.Adapter<UserLockAdapter.UserLo
                 if (onItemClickListener != null) {
                     if (!isRented) {
                         onItemClickListener.onClick(holder.itemView, holder.getLayoutPosition());
-                    } else {
-                        ToastUtil.showToast(mContext, "正在有人使用");
                     }
                 }
             }

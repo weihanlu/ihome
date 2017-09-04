@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
@@ -17,10 +16,10 @@ import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewParent;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -48,6 +47,7 @@ import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.TimeUtil;
 import com.qhiehome.ihome.util.ToastUtil;
+import com.qhiehome.ihome.view.QhDeleteItemDialog;
 import com.qhiehome.ihome.view.RecyclerViewEmptySupport;
 import com.qhiehome.ihome.view.WeekPickView;
 
@@ -69,8 +69,8 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
     private static final String TAG = PublishParkingActivity.class.getSimpleName();
 
 
-    @BindView(R.id.fab)
-    FloatingActionButton mFab;
+    @BindView(R.id.iv_fab)
+    ImageView mFab;
 
     @BindView(R.id.srf_publish)
     SwipeRefreshLayout mSrfPublish;
@@ -78,6 +78,8 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
     Toolbar mToolbar;
     @BindView(R.id.tv_title_toolbar)
     TextView mTvTitleToolbar;
+    @BindView(R.id.ll_publish_empty)
+    LinearLayout mLlPublishEmpty;
 
     private ArrayList<String> mParkingIdList;
     private ArrayList<Boolean> mSelected;
@@ -193,8 +195,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
 
     private void initRecyclerView() {
         RecyclerViewEmptySupport rv = (RecyclerViewEmptySupport) findViewById(R.id.rv_publish);
-        TextView tvListEmpty = (TextView) findViewById(R.id.tv_publish_empty);
-        rv.setEmptyView(tvListEmpty);
+        rv.setEmptyView(mLlPublishEmpty);
         rv.setHasFixedSize(true);
         rv.setLayoutManager(new LinearLayoutManager(this));
         rv.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
@@ -216,19 +217,11 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                 final PublishBean publishBean = mPublishList.get(position);
                 final int shareId = publishBean.getShareId();
                 int red = ContextCompat.getColor(mContext, android.R.color.holo_red_light);
-                new MaterialDialog.Builder(mContext)
-                        .title("警告")
-                        .titleColor(red)
-                        .content("确定取消发布吗？")
-                        .contentColor(red)
-                        .positiveText("确定")
-                        .positiveColor(red)
-                        .negativeText("取消")
-                        .canceledOnTouchOutside(false)
-                        .onPositive(new MaterialDialog.SingleButtonCallback() {
-                            @Override
-                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                PublishCallbackService publishCallbackService = ServiceGenerator.createService(PublishCallbackService.class);
+                QhDeleteItemDialog dialog = new QhDeleteItemDialog(mContext);
+                dialog.setOnSureCallbackListener(new QhDeleteItemDialog.OnSureCallbackListener() {
+                    @Override
+                    public void onSure(View view) {
+                        PublishCallbackService publishCallbackService = ServiceGenerator.createService(PublishCallbackService.class);
                                 PublishCancelRequest publishCancelRequest = new PublishCancelRequest(shareId, Constant.DEFAULT_PASSWORD);
                                 Call<PublishCancelResponse> call = publishCallbackService.callback(publishCancelRequest);
                                 call.enqueue(new Callback<PublishCancelResponse>() {
@@ -249,9 +242,45 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
 
                                     }
                                 });
-                            }
-                        })
-                        .show();
+                    }
+                });
+                dialog.show();
+//                new MaterialDialog.Builder(mContext)
+//                        .title("警告")
+//                        .titleColor(red)
+//                        .content("确定取消发布吗？")
+//                        .contentColor(red)
+//                        .positiveText("确定")
+//                        .positiveColor(red)
+//                        .negativeText("取消")
+//                        .canceledOnTouchOutside(false)
+//                        .onPositive(new MaterialDialog.SingleButtonCallback() {
+//                            @Override
+//                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+//                                PublishCallbackService publishCallbackService = ServiceGenerator.createService(PublishCallbackService.class);
+//                                PublishCancelRequest publishCancelRequest = new PublishCancelRequest(shareId, Constant.DEFAULT_PASSWORD);
+//                                Call<PublishCancelResponse> call = publishCallbackService.callback(publishCancelRequest);
+//                                call.enqueue(new Callback<PublishCancelResponse>() {
+//                                    @Override
+//                                    public void onResponse(@NonNull Call<PublishCancelResponse> call, @NonNull Response<PublishCancelResponse> response) {
+//                                        if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+//                                            mPublishAdapter.removeItem(position);
+//                                            if (mPublishList.size() == 0) {
+//                                                mPublishAdapter.notifyDataSetChanged();
+//                                            }
+//                                        } else {
+//                                            ToastUtil.showToast(mContext, "取消失败");
+//                                        }
+//                                    }
+//
+//                                    @Override
+//                                    public void onFailure(@NonNull Call<PublishCancelResponse> call, @NonNull Throwable t) {
+//
+//                                    }
+//                                });
+//                            }
+//                        })
+//                        .show();
             }
 
             @Override
@@ -310,7 +339,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
         });
     }
 
-    @OnClick(R.id.fab)
+    @OnClick(R.id.iv_fab)
     public void addPublish() {
         showPublishDialog();
     }

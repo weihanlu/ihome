@@ -40,5 +40,11 @@
         <item name="android:textColor">#ced0d3</item>
     </style>
 
+    <style name="QhDialog.Theme" parent="android:Theme.Dialog">
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
 
 </resources>
