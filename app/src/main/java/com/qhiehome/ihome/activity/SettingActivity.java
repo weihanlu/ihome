@@ -126,11 +126,12 @@ public class SettingActivity extends BaseActivity {
                         ServiceContractActivity.start(mContext);
                         break;
                     case 3:
-                        View aboutApp = LayoutInflater.from(mContext).inflate(R.layout.dialog_about_app, null);
-                        new MaterialDialog.Builder(mContext)
-                                .title("关于Ihome")
-                                .customView(aboutApp, false)
-                                .show();
+                        AboutActivity.start(mContext);
+//                        View aboutApp = LayoutInflater.from(mContext).inflate(R.layout.dialog_about_app, null);
+//                        new MaterialDialog.Builder(mContext)
+//                                .title("关于Ihome")
+//                                .customView(aboutApp, false)
+//                                .show();
                         break;
                     default:
                         break;

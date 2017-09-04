@@ -59,7 +59,7 @@ public class CityActivity extends AppCompatActivity {
             actionBar.setDisplayShowTitleEnabled(false);
         }
         mTbCity.setTitle("");
-        mTvTitleToolbar.setText("选择城市");
+        mTvTitleToolbar.setText("切换城市");
         mTbCity.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

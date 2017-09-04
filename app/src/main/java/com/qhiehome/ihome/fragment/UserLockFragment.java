@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -43,6 +44,8 @@ import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.NetworkUtils;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
+import com.qhiehome.ihome.view.QhLockConnectDialog;
+import com.qhiehome.ihome.view.QhModifyPasswordDialog;
 
 import org.greenrobot.greendao.query.Query;
 
@@ -68,13 +71,9 @@ public class UserLockFragment extends Fragment {
 
     private ConnectLockReceiver mReceiver;
 
-    EditText mEtOldPwd;
-    EditText mEtNewPwd;
-    EditText mEtReassurePwd;
-
     MaterialDialog mProgressDialog;
 
-    MaterialDialog mControlLockDialog;
+    QhLockConnectDialog mControlLockDialog;
 
     private UserLockBeanDao mUserLockBeanDao;
 
@@ -244,85 +243,56 @@ public class UserLockFragment extends Fragment {
                 }
                 mProgressDialog.show();
 
-
-                View controlLock = LayoutInflater.from(mActivity).inflate(R.layout.dialog_control_lock, null);
-                ImageView imgUpLock = (ImageView) controlLock.findViewById(R.id.img_up_lock);
-                ImageView imgDownLock = (ImageView) controlLock.findViewById(R.id.img_down_Lock);
-                imgUpLock.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent upLock = new Intent(mActivity, ConnectLockService.class);
-                        upLock.setAction(ConnectLockService.ACTION_UP_LOCK);
-                        mActivity.startService(upLock);
-                    }
-                });
-                imgDownLock.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent downLock = new Intent(mActivity, ConnectLockService.class);
-                        downLock.setAction(ConnectLockService.ACTION_DOWN_LOCK);
-                        mActivity.startService(downLock);
-                    }
-                });
                 if (mControlLockDialog == null) {
-                    mControlLockDialog = new MaterialDialog.Builder(mActivity)
-                            .title("已连接").titleGravity(GravityEnum.CENTER)
-                            .customView(controlLock, false)
-                            .dismissListener(new DialogInterface.OnDismissListener() {
-                                @Override
-                                public void onDismiss(DialogInterface dialog) {
-                                    Intent disconnect = new Intent(mActivity, ConnectLockService.class);
-                                    disconnect.setAction(ConnectLockService.ACTION_DISCONNECT);
-                                    mActivity.startService(disconnect);
-                                }
-                            })
-                            .build();
+                    mControlLockDialog = new QhLockConnectDialog(getActivity());
+                    mControlLockDialog.setOnItemClickListener(new QhLockConnectDialog.OnItemClickListener() {
+                        @Override
+                        public void onLockUp(View view) {
+                            Intent upLock = new Intent(mActivity, ConnectLockService.class);
+                            upLock.setAction(ConnectLockService.ACTION_UP_LOCK);
+                            mActivity.startService(upLock);
+                        }
+
+                        @Override
+                        public void onLockDown(View view) {
+                            Intent downLock = new Intent(mActivity, ConnectLockService.class);
+                            downLock.setAction(ConnectLockService.ACTION_DOWN_LOCK);
+                            mActivity.startService(downLock);
+                        }
+                    });
                 }
             }
 
             @Override
             public void onButtonClick(View view, int i) {
                 final UserLockBean userLockBean = mUserLocks.get(i);
-                MaterialDialog dialog = new MaterialDialog.Builder(mActivity)
-                        .customView(R.layout.dialog_modify_pwd, false)
-                        .positiveText("确定")
-                        .negativeText("取消")
-                        .build();
+                QhModifyPasswordDialog dialog = new QhModifyPasswordDialog(mActivity);
                 View customView = dialog.getCustomView();
-                if (customView != null) {
-                    mEtOldPwd = (EditText) customView.findViewById(R.id.et_old_pwd);
-                    mEtNewPwd = (EditText) customView.findViewById(R.id.et_new_pwd);
-                    mEtReassurePwd = (EditText) customView.findViewById(R.id.et_reassure_new_pwd);
-                }
-                dialog.getBuilder()
-                        .showListener(new DialogInterface.OnShowListener() {
-                            @Override
-                            public void onShow(DialogInterface dialog) {
-                                CommonUtil.showSoftKeyboard(mEtOldPwd, mActivity);
-                            }
-                        })
-                        .onPositive(new MaterialDialog.SingleButtonCallback() {
-                            @Override
-                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                int parkingId = userLockBean.getParkingId();
-                                String oldPwd = mEtOldPwd.getText().toString();
-                                String newPwd = mEtNewPwd.getText().toString();
-                                String reAssurePwd = mEtReassurePwd.getText().toString();
-                                if (TextUtils.isEmpty(oldPwd) || TextUtils.isEmpty(newPwd) || TextUtils.isEmpty(reAssurePwd)) {
-                                    ToastUtil.showToast(mActivity, "密码输入框不能为空");
-                                } else if (newPwd.equals(oldPwd)) {
-                                    ToastUtil.showToast(mActivity, "新密码与旧密码不能相同");
-                                } else if (newPwd.length() != 6 || oldPwd.length() != 6) {
-                                    ToastUtil.showToast(mActivity, "新密码或旧密码不是6位");
-                                } else if (!newPwd.equals(reAssurePwd)) {
-                                    ToastUtil.showToast(mActivity, "确认密码与新密码不一致");
-                                } else {
-                                    modifyLockPwd(parkingId, mEtOldPwd.getText().toString(), mEtNewPwd.getText().toString());
-                                }
-                            }
-                        })
-                        .canceledOnTouchOutside(false)
-                        .show();
+                final EditText oldPassoword = (EditText) customView.findViewById(R.id.et_old_password);
+                dialog.setOnItemClickListener(new QhModifyPasswordDialog.OnItemClickListener() {
+                    @Override
+                    public void onCofirm(String oldPassword, String newPassword, String confirmPassword) {
+                        int parkingId = userLockBean.getParkingId();
+                        if (TextUtils.isEmpty(oldPassword) || TextUtils.isEmpty(newPassword) || TextUtils.isEmpty(confirmPassword)) {
+                            ToastUtil.showToast(mActivity, "密码输入框不能为空");
+                        } else if (newPassword.equals(oldPassword)) {
+                            ToastUtil.showToast(mActivity, "新密码与旧密码不能相同");
+                        } else if (newPassword.length() != 6 || oldPassword.length() != 6) {
+                            ToastUtil.showToast(mActivity, "新密码或旧密码不是6位");
+                        } else if (!newPassword.equals(confirmPassword)) {
+                            ToastUtil.showToast(mActivity, "确认密码与新密码不一致");
+                        } else {
+                            modifyLockPwd(parkingId, oldPassword, newPassword);
+                        }
+                    }
+                });
+                dialog.show();
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        CommonUtil.showSoftKeyboard(oldPassoword, getActivity());
+                    }
+                }, 100);
             }
         });
     }

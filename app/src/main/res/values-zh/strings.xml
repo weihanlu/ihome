@@ -5,7 +5,7 @@
     <string name="left_second">( %ds )</string>
     <string name="lock_prefix">CrAM</string>
 
-    <string name="device_connected">连接成功</string>
+    <string name="device_connected">已连接</string>
     <string name="device_connecting">连接中</string>
     <string name="device_disconnected">断开连接</string>
 
@@ -25,4 +25,19 @@
 
     <!-- PublishParkingActivity -->
     <string name="republish_format">重复发布 %s</string>
+
+    <!-- Avatar -->
+    <string name="avatar_photo">拍照</string>
+    <string name="avatar_gallery">相册</string>
+
+    <!-- Common -->
+    <string name="cancel">取消</string>
+    <string name="confirm">确定</string>
+
+    <!-- UserLockFragment -->
+    <string name="modify_password">修改密码</string>
+    <string name="old_password">旧密码</string>
+    <string name="new_password">新密码</string>
+    <string name="confirm_password">请确认</string>
+
 </resources>

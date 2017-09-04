@@ -52,6 +52,8 @@ import com.qhiehome.ihome.util.FileUtils;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
+import com.qhiehome.ihome.view.QhAvatarSelectDialog;
+import com.qhiehome.ihome.view.SharePopupWindow;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -437,29 +439,23 @@ public class MainActivity extends BaseActivity {
                 }
                 break;
             case R.id.iv_avatar:
-                new MaterialDialog.Builder(this)
-                        .title("请选择")
-                        .items(R.array.avatar_items)
-                        .itemsCallback(new MaterialDialog.ListCallback() {
-                            @Override
-                            public void onSelection(MaterialDialog dialog, View itemView, int position, CharSequence text) {
-                                switch (position) {
-                                    case 0:
-                                        if (CommonUtil.checkCameraHardware(mContext)) {
-                                            openCamera();
-                                        } else {
-                                            ToastUtil.showToast(mContext, "没有检测到相机");
-                                        }
-                                        break;
-                                    case 1:
-                                        openLocalFolder();
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            }
-                        })
-                        .show();
+                QhAvatarSelectDialog dialog = new QhAvatarSelectDialog(mContext);
+                dialog.setOnItemClickListener(new QhAvatarSelectDialog.OnItemClickListener() {
+                    @Override
+                    public void onTakePhoto(View view) {
+                        if (CommonUtil.checkCameraHardware(mContext)) {
+                            openCamera();
+                        } else {
+                            ToastUtil.showToast(mContext, "没有检测到相机");
+                        }
+                    }
+
+                    @Override
+                    public void onGallery(View view) {
+                        openLocalFolder();
+                    }
+                });
+                dialog.show();
                 break;
             case R.id.bt_login:
                 LoginActivity.start(mContext);
@@ -740,9 +736,7 @@ public class MainActivity extends BaseActivity {
 
     private void checkUserType() {
         int userType = SharedPreferenceUtil.getInt(mContext, Constant.USER_TYPE, Constant.USER_TYPE_TEMP);
-        if (userType == Constant.USER_TYPE_TEMP) {
-            mLlMyLock.setVisibility(View.GONE);
-            mLlMyPublish.setVisibility(View.GONE);
-        }
+        mLlMyLock.setVisibility(userType == Constant.USER_TYPE_TEMP? View.GONE: View.VISIBLE);
+        mLlMyPublish.setVisibility(userType == Constant.USER_TYPE_TEMP? View.GONE: View.VISIBLE);
     }
 }

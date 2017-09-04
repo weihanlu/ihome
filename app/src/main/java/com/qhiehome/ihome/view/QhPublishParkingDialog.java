@@ -20,7 +20,7 @@ public class QhPublishParkingDialog extends Dialog{
     public QhPublishParkingDialog(@NonNull Context context) {
         super(context, R.style.qh_dialog_Theme);
         mContext = context;
-        mView = LayoutInflater.from(mContext).inflate(R.layout.dialog_publish, null);
+        mView = LayoutInflater.from(mContext).inflate(R.layout.dialog_publish_parking, null);
     }
 
     public QhPublishParkingDialog(@NonNull Context context, @StyleRes int themeResId) {

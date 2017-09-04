@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
@@ -37,6 +38,9 @@ public class DialogParkAdapter extends RecyclerView.Adapter<DialogParkAdapter.Di
         int white = ContextCompat.getColor(mContext, R.color.white);
         int gray = ContextCompat.getColor(mContext, R.color.gray);
         holder.mTvParkingId.setTextColor(mSelected.get(position)? white: gray);
+        holder.mTvLabelParkingId.setTextColor(mSelected.get(position)? white: gray);
+        holder.mRlItemParking.setBackground(mSelected.get(position)?
+                ContextCompat.getDrawable(mContext, R.drawable.bg_dialog_select_park): ContextCompat.getDrawable(mContext, R.drawable.bg_dialog_unselect_park));
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,11 +64,15 @@ public class DialogParkAdapter extends RecyclerView.Adapter<DialogParkAdapter.Di
 
     public static class DialogParkHolder extends RecyclerView.ViewHolder {
 
+        RelativeLayout mRlItemParking;
         TextView mTvParkingId;
+        TextView mTvLabelParkingId;
 
         private DialogParkHolder(View itemView) {
             super(itemView);
+            mRlItemParking = (RelativeLayout) itemView.findViewById(R.id.ll_item_parking);
             mTvParkingId = (TextView) itemView.findViewById(R.id.tv_parking_id);
+            mTvLabelParkingId = (TextView) itemView.findViewById(R.id.label_parking_id);
         }
     }
 

@@ -144,6 +144,7 @@
             android:screenOrientation="behind"
             android:windowSoftInputMode="adjustResize|stateHidden" >
         </activity>
+        <activity android:name=".activity.AboutActivity"/>
     </application>
 
 </manifest>
