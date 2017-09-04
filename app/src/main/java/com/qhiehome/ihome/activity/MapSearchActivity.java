@@ -12,11 +12,8 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import com.baidu.mapapi.search.core.SearchResult;
@@ -25,7 +22,6 @@ import com.baidu.mapapi.search.sug.SuggestionResult;
 import com.baidu.mapapi.search.sug.SuggestionSearch;
 import com.baidu.mapapi.search.sug.SuggestionSearchOption;
 import com.qhiehome.ihome.R;
-
 import com.qhiehome.ihome.adapter.SearchMapAdapter;
 import com.qhiehome.ihome.application.IhomeApplication;
 import com.qhiehome.ihome.persistence.MapSearch;
@@ -38,9 +34,7 @@ import org.greenrobot.greendao.query.Query;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -77,6 +71,11 @@ public class MapSearchActivity extends BaseActivity {
     private Query<MapSearch> mSearchQuery;
 
     private static final int BACK_MSG = 1;
+
+    @OnClick(R.id.iv_finish)
+    public void onClickFinish() {
+        this.finish();
+    }
 
     private static class SearchHandler extends Handler {
         private final WeakReference<MapSearchActivity> mActivity;
@@ -116,7 +115,7 @@ public class MapSearchActivity extends BaseActivity {
         Bundle bundle = intent.getExtras();
         mCity = bundle.getString("city");
 
-        mSearchDao = ((IhomeApplication)getApplication()).getDaoSession().getMapSearchDao();
+        mSearchDao = ((IhomeApplication) getApplication()).getDaoSession().getMapSearchDao();
 
         init();
         queryData("");
@@ -242,7 +241,7 @@ public class MapSearchActivity extends BaseActivity {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
-                    if (TextUtils.isEmpty(mEtSearch.getText().toString().trim())){
+                    if (TextUtils.isEmpty(mEtSearch.getText().toString().trim())) {
                         return false;
                     }
                     boolean hasData = hasData(mEtSearch.getText().toString().trim());
@@ -318,8 +317,8 @@ public class MapSearchActivity extends BaseActivity {
 //        mRvSearch.setAdapter(mAdapter);
 //        mAdapter.notifyDataSetChanged();
 //    }
-    private void queryData(String search){
-        if (TextUtils.isEmpty(search)){
+    private void queryData(String search) {
+        if (TextUtils.isEmpty(search)) {
             mSearchQuery = mSearchDao.queryBuilder().orderDesc(MapSearchDao.Properties.Id).build();
         }
         List<MapSearch> searchList = mSearchQuery.list();
@@ -338,7 +337,7 @@ public class MapSearchActivity extends BaseActivity {
 //        mDB.close();
 //    }
 
-    private void deleteData(){
+    private void deleteData() {
         mSearchDao.deleteAll();
     }
 
@@ -350,7 +349,7 @@ public class MapSearchActivity extends BaseActivity {
 //        return cursor.moveToNext();
 //    }
 
-    private boolean hasData(String search){
+    private boolean hasData(String search) {
         mSearchQuery = mSearchDao.queryBuilder().where(MapSearchDao.Properties.Name.eq(search)).build();
         return mSearchQuery.list().size() > 0;
     }
@@ -374,10 +373,10 @@ public class MapSearchActivity extends BaseActivity {
     private void deliverData(int position) {
         Bundle data = new Bundle();
         data.putString("name", mSuggestionResult.getAllSuggestions().get(position).key);
-        try{
+        try {
             data.putDouble("latitude", mSuggestionResult.getAllSuggestions().get(position).pt.latitude);
             data.putDouble("longitude", mSuggestionResult.getAllSuggestions().get(position).pt.longitude);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

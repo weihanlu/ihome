@@ -11,16 +11,19 @@ import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
 
-public class QhDeleteItemDialog extends Dialog{
+public class QhPublishParkingDialog extends Dialog{
 
     private Context mContext;
 
-    public QhDeleteItemDialog(@NonNull Context context) {
+    private View mView;
+
+    public QhPublishParkingDialog(@NonNull Context context) {
         super(context, R.style.qh_dialog_Theme);
         mContext = context;
+        mView = LayoutInflater.from(mContext).inflate(R.layout.dialog_publish, null);
     }
 
-    public QhDeleteItemDialog(@NonNull Context context, @StyleRes int themeResId) {
+    public QhPublishParkingDialog(@NonNull Context context, @StyleRes int themeResId) {
         super(context, themeResId);
         mContext = context;
     }
@@ -29,37 +32,39 @@ public class QhDeleteItemDialog extends Dialog{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        View view = LayoutInflater.from(mContext).inflate(R.layout.dialog_delete_item, null);
+        setContentView(mView);
 
-        setContentView(view);
-
-        TextView mTvQuitCallback = (TextView) view.findViewById(R.id.tv_quit_callback);
-        mTvQuitCallback.setOnClickListener(new View.OnClickListener() {
+        TextView mTvQuitPublish = (TextView) mView.findViewById(R.id.tv_quit_publish);
+        mTvQuitPublish.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                QhDeleteItemDialog.this.dismiss();
+                QhPublishParkingDialog.this.dismiss();
             }
         });
 
-        TextView mTvSureCallback = (TextView) view.findViewById(R.id.tv_sure_callback);
-        mTvSureCallback.setOnClickListener(new View.OnClickListener() {
+        TextView mTvSurePublish = (TextView) mView.findViewById(R.id.tv_sure_publish);
+        mTvSurePublish.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mListener != null) {
                     mListener.onSure(v);
                 }
-                QhDeleteItemDialog.this.dismiss();
+                QhPublishParkingDialog.this.dismiss();
             }
         });
     }
 
-    public interface OnSureCallbackListener {
+    public interface OnSurePublishListener {
         void onSure(View view);
     }
 
-    private OnSureCallbackListener mListener;
+    private OnSurePublishListener mListener;
 
-    public void setOnSureCallbackListener(OnSureCallbackListener listener) {
+    public void setOnSurePublishListener(OnSurePublishListener listener) {
         this.mListener = listener;
+    }
+
+    public View getCustomView() {
+        return mView;
     }
 }

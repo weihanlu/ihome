@@ -35,8 +35,8 @@ public class DialogParkAdapter extends RecyclerView.Adapter<DialogParkAdapter.Di
     public void onBindViewHolder(final DialogParkHolder holder, final int position) {
         holder.mTvParkingId.setText(mParkingIds.get(position));
         int white = ContextCompat.getColor(mContext, R.color.white);
-        int green = ContextCompat.getColor(mContext, R.color.colorPrimary);
-        holder.mTvParkingId.setTextColor(mSelected.get(position)? green: white);
+        int gray = ContextCompat.getColor(mContext, R.color.gray);
+        holder.mTvParkingId.setTextColor(mSelected.get(position)? white: gray);
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override

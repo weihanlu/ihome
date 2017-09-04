@@ -1,43 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
-    android:paddingBottom="24dp">
+    android:layout_marginTop="10dp"
+    android:layout_marginBottom="10dp"
+    >
 
-    <TextView
-        android:id="@+id/tv_start"
+    <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="开始"
-        android:textSize="14sp"
-        android:layout_gravity="center"
-        />
+        android:layout_height="40dp"
+        android:orientation="horizontal"
+        android:layout_gravity="center">
 
-    <android.support.v7.widget.AppCompatSpinner
-        android:id="@+id/spinner_start"
-        android:layout_width="120dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginStart="2dp"
-        />
+        <android.support.v7.widget.AppCompatSpinner
+            android:id="@+id/spinner_start"
+            android:layout_width="120dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            />
 
-    <TextView
-        android:id="@+id/tv_end"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="结束"
-        android:textSize="14sp"
-        android:layout_gravity="center"
-        android:layout_marginStart="2dp"
-        />
+        <android.support.v7.widget.AppCompatSpinner
+            android:id="@+id/spinner_end"
+            android:layout_width="120dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_marginStart="50dp"
+            />
 
-    <android.support.v7.widget.AppCompatSpinner
-        android:id="@+id/spinner_end"
-        android:layout_width="120dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginStart="2dp"
-        />
+    </LinearLayout>
 
-</LinearLayout>
+</FrameLayout>
