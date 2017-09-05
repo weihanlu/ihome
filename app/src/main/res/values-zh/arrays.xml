@@ -14,4 +14,17 @@
         <item>服务条款</item>
         <item>关于应用</item>
     </string-array>
+
+    <string-array name="about_menu_title">
+        <item>微信公众号</item>
+        <item>官方网站</item>
+        <item>客服热线</item>
+    </string-array>
+
+    <string-array name="about_menu_info">
+        <item>爱车位</item>
+        <item>www.qhiehome.com</item>
+        <item>8888-8888</item>
+    </string-array>
+
 </resources>

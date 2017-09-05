@@ -113,20 +113,8 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
 
     /********BaiduNavi********/
     private BNRoutePlanNode.CoordinateType mCoordinateType;
-    private String mSDCardPath = null;
-    private static final String APP_FOLDER_NAME = "ihome";
-    private final static String authBaseArr[] =
-            {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_FINE_LOCATION};
-    private final static String authComArr[] = {Manifest.permission.READ_PHONE_STATE};
     private final static int authBaseRequestCode = 1;
     private final static int authComRequestCode = 2;
-    private boolean hasInitSuccess = false;
-    private boolean hasRequestComAuth = false;
-    public static final String ROUTE_PLAN_NODE = "routePlanNode";
-    public static List<Activity> activityList = new LinkedList<Activity>();
-    public static final String RESET_END_NODE = "resetEndNode";
-    private static final String APP_ID = "9901662";
-
 
     private static final int PARKING_USING = 201;
 
@@ -783,7 +771,11 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
     }
 
     /***********按钮功能*************/
-    private void CancelReserve(final int index) {        //取消预约
+    /**
+     * 取消预约
+     * @param index 列表位置，目前仅为0
+     */
+    private void CancelReserve(final int index) {
         int orderId = mOrderBeanList.get(index).getId();
         ReserveCancelService reserveCancelService = ServiceGenerator.createService(ReserveCancelService.class);
         Call<ReserveCancelResponse> call = reserveCancelService.reserve(new ReserveCancelRequest(orderId));
@@ -803,7 +795,11 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
         });
     }
 
-    public void Navigation(final int index) {       //导航
+    /**
+     * 导航
+     * @param index 列表位置，目前仅为0
+     */
+    public void Navigation(final int index) {
         if (BaiduNaviManager.isNaviInited()) {
             mNavi.setsNodeLocation(new LatLng((double) SharedPreferenceUtil.getFloat(mContext, Constant.CURRENT_LATITUDE, 0), (double) SharedPreferenceUtil.getFloat(mContext, Constant.CURRENT_LONGITUDE, 0)));
             mNavi.setsNodeName("我的位置");
@@ -813,6 +809,11 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
         }
     }
 
+    /**
+     * 支付担保费与停车费
+     * @param index 列表位置，目前仅为0
+     * @param state 支付状态码{@link Constant}
+     */
     private void Pay(final int index, int state) {              //支付
         Intent intent = new Intent(ReserveActivity.this, PayActivity.class);
         intent.putExtra("fee", (float) mOrderBeanList.get(index).getPayFee());
@@ -823,7 +824,12 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
         startActivity(intent);
     }
 
-    private void LockControl(int index, final boolean downLock) {      //控制车位锁
+    /**
+     * 开始停车&确认离开
+     * @param index 列表位置，目前仅为0
+     * @param downLock true-降车位锁
+     */
+    private void LockControl(int index, final boolean downLock) {
         if (!downLock) {
             Log.e("downLock", "升车位锁");
         }
@@ -939,6 +945,10 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
         // TODO: 2017/8/24 增加用户自己控制车位锁界面
     }
 
+    /**
+     * 查询车位是否可以提前使用
+     * @param btn 查询按钮，如成功则改变为开始停车
+     */
     private void QueryParkingUsing(final Button btn) {
         ParkingUsingService parkingUsingService = ServiceGenerator.createService(ParkingUsingService.class);
         ParkingUsingRequest parkingUsingRequest = new ParkingUsingRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256));

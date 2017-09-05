@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.qhiehome.ihome.activity.SettingActivity">
+    tools:context="com.qhiehome.ihome.activity.AboutActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -18,21 +18,11 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <RelativeLayout
+    <com.qhiehome.ihome.view.ProgressWebView
+        android:id="@+id/pwv_web_official"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:background="@color/bg_activity">
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/rv_about"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-        </android.support.v7.widget.RecyclerView>
-
-    </RelativeLayout>
-
-
+        />
 
 </android.support.design.widget.CoordinatorLayout>

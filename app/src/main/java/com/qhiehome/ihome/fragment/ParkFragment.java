@@ -2,6 +2,9 @@ package com.qhiehome.ihome.fragment;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -10,6 +13,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.Gravity;
@@ -45,6 +49,7 @@ import com.qhiehome.ihome.activity.CityActivity;
 import com.qhiehome.ihome.activity.MainActivity;
 import com.qhiehome.ihome.activity.MapSearchActivity;
 import com.qhiehome.ihome.activity.ParkingListActivity;
+import com.qhiehome.ihome.activity.ReserveActivity;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.baiduMap.BaiduMapResponse;
 import com.qhiehome.ihome.network.model.base.ParkingResponse;
@@ -77,6 +82,9 @@ import butterknife.Unbinder;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+import static android.R.attr.id;
+import static android.content.Context.NOTIFICATION_SERVICE;
 
 
 /**
@@ -122,39 +130,27 @@ public class ParkFragment extends Fragment {
     private LocationClient mLocationClient;
     private BDLocationListener mBDLocationListener;
     private boolean mHasInit = false;
+    private boolean mHasRemindLeave = false;
 
     /******百度地图导航******/
-    private String mSDCardPath = null;
-    private static final String APP_FOLDER_NAME = "ihome";
-    private final static String authBaseArr[] =
-            {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_FINE_LOCATION};
-    private final static String authComArr[] = {Manifest.permission.READ_PHONE_STATE};
+
     private final static int authBaseRequestCode = 1;
     private final static int authComRequestCode = 2;
-    private boolean hasInitSuccess = false;
-    private boolean hasRequestComAuth = false;
     public static final String ROUTE_PLAN_NODE = "routePlanNode";
-    public static List<Activity> activityList = new LinkedList<Activity>();
-    public static final String RESET_END_NODE = "resetEndNode";
     private CoordinateType mCoordinateType;
 
     private static final float MAP_ZOOM_LEVEL = 15f;
     private static final String LOCATE_RESULT_TYPE = "bd09ll";
     private static final int LOCATE_INTERVAL = 5000;
-    private static final String APP_ID = "9901662";
     private static final int RADIUS = 5000;
 
     private static final double REFRESH_DISTANCE = 1000;
-    private static final SimpleDateFormat START_DATE_FORMATE = new SimpleDateFormat("MM-dd HH:mm");
-    private static final SimpleDateFormat END_DATE_FORMATE = new SimpleDateFormat("HH:mm");
+    private static final int REMIND_DISTANCE = 1000;
+
 
     private List<ParkingEmptyResponse.DataBean.EstateBean> mEstateBeanList = new ArrayList<>();
     private List<ParkingEmptyResponse.DataBean.EstateBean.ParkingListBean> mParkingBeanList = new ArrayList<>();
 
-    //private ParkingSQLHelper mParkingSQLHelper;
-    //private SQLiteDatabase mParkingReadDB;
-    //private SQLiteDatabase mParkingWriteDB;
-    private int mChosenCount;
 
     private boolean mMapStateParkingNum = true;
     private String mCity;
@@ -224,9 +220,9 @@ public class ParkFragment extends Fragment {
     public void onPause() {
         mMapView.onPause();
         super.onPause();
-        if (mLocationClient.isStarted()) {
-            mLocationClient.stop();
-        }
+//        if (mLocationClient.isStarted()) {
+//            mLocationClient.stop();
+//        }
 
     }
 
@@ -340,6 +336,19 @@ public class ParkFragment extends Fragment {
                         mRefreshEstate = true;
                     }
                 }
+                if (!mHasRemindLeave && SharedPreferenceUtil.getInt(mContext, Constant.ORDER_STATE, 0) == Constant.ORDER_STATE_PARKED){  //提醒用户确认离开
+                    double distance = DistanceUtil.getDistance(xy, new LatLng((double) SharedPreferenceUtil.getFloat(mContext, Constant.ESTATE_LATITUDE, 0), (double) SharedPreferenceUtil.getFloat(mContext, Constant.ESTATE_LONGITUDE, 0)));
+                    if (distance >= REMIND_DISTANCE) {
+                        mHasRemindLeave = true;
+                        sendNotification();
+                    }
+                }else {
+                    double distance = DistanceUtil.getDistance(xy, new LatLng((double) SharedPreferenceUtil.getFloat(mContext, Constant.ESTATE_LATITUDE, 0), (double) SharedPreferenceUtil.getFloat(mContext, Constant.ESTATE_LONGITUDE, 0)));
+                    if (distance < REMIND_DISTANCE){
+                        mHasRemindLeave = false;
+                    }
+                }
+
             }
 
             @Override
@@ -567,6 +576,12 @@ public class ParkFragment extends Fragment {
         getActivity().startActivityForResult(intent, REQUEST_CODE_CITY);
     }
 
+    /**
+     * 从搜索、城市选择Activity返回时调用
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -683,6 +698,10 @@ public class ParkFragment extends Fragment {
 
     }
 
+    /**
+     * 获取城市配置参数
+     * @param marker1 地图上点击的marker
+     */
     private void getCityConfig(final Marker marker1){
         ParkingEmptyResponse.DataBean.EstateBean estateBean =(ParkingEmptyResponse.DataBean.EstateBean) marker1.getExtraInfo().getSerializable("estate");
         CityConfigService cityConfigService = ServiceGenerator.createService(CityConfigService.class);
@@ -716,6 +735,37 @@ public class ParkFragment extends Fragment {
             }
         });
     }
+
+    private void sendNotification(){
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext);
+
+        // 设置通知的基本信息：icon、标题、内容
+        builder.setSmallIcon(R.drawable.ic_logo);
+        builder.setContentTitle("爱车位");
+        builder.setContentText("您已离开车位1km，是否忘记确认离开");
+
+
+        // 设置通知的点击行为：这里启动一个 Activity
+        Intent intent = new Intent(getActivity(), ReserveActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(pendingIntent);
+        builder.setPriority(Notification.PRIORITY_HIGH);
+        builder.setDefaults(Notification.DEFAULT_ALL);
+
+        Notification notification = builder.build();
+
+        int notificationId = 1;
+
+        // Gets an instance of the NotificationManager service
+        NotificationManager mNotifyMgr =
+                (NotificationManager) getActivity().getSystemService(NOTIFICATION_SERVICE);
+
+        // Builds the notification and issues it.
+        mNotifyMgr.notify(notificationId, notification);
+
+    }
+
+
 
 
 }
