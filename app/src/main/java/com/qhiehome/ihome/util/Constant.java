@@ -32,6 +32,8 @@ public class Constant {
 
     public static final String CONTRACT_URL = "http://39.108.77.50:3389/api/service_contract.html";
 
+    public static final String OFFICIAL_WEB_URL = "http://www.qhiehome.com";
+
     public static final String USER_TYPE = "USER_TYPE";
     public static final int USER_TYPE_OWNER = 1;    //业主
     public static final int USER_TYPE_TEMP = 0;     //临时用户

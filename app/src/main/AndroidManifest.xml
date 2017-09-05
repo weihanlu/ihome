@@ -42,6 +42,7 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <!-- install permission -->
     <application
@@ -90,10 +91,10 @@
                 <action android:name="TIMER_ACTION" />
             </intent-filter>
         </receiver>
-
         <receiver android:name=".observer.NetworkStateReceiver">
             <intent-filter>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
@@ -128,23 +129,22 @@
 
         <activity android:name=".activity.PayActivity" />
         <activity android:name=".activity.ParkingTimelineActivity" />
-        <activity android:name=".activity.ReserveActivity"/>
-        <activity android:name=".activity.UserLockActivity"/>
+        <activity android:name=".activity.ReserveActivity" />
+        <activity android:name=".activity.UserLockActivity" />
         <activity
             android:name="com.alipay.sdk.app.H5PayActivity"
             android:configChanges="orientation|keyboardHidden|navigation|screenSize"
             android:exported="false"
             android:screenOrientation="behind"
-            android:windowSoftInputMode="adjustResize|stateHidden" >
-        </activity>
+            android:windowSoftInputMode="adjustResize|stateHidden"></activity>
         <activity
             android:name="com.alipay.sdk.app.H5AuthActivity"
             android:configChanges="orientation|keyboardHidden|navigation"
             android:exported="false"
             android:screenOrientation="behind"
-            android:windowSoftInputMode="adjustResize|stateHidden" >
-        </activity>
-        <activity android:name=".activity.AboutActivity"/>
+            android:windowSoftInputMode="adjustResize|stateHidden"></activity>
+        <activity android:name=".activity.AboutActivity" />
+        <activity android:name=".activity.OfficialWebActivity"></activity>
     </application>
 
 </manifest>

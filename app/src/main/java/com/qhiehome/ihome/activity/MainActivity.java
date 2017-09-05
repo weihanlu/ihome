@@ -1,6 +1,9 @@
 package com.qhiehome.ihome.activity;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -19,6 +22,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v4.widget.DrawerLayout;
@@ -739,4 +743,7 @@ public class MainActivity extends BaseActivity {
         mLlMyLock.setVisibility(userType == Constant.USER_TYPE_TEMP? View.GONE: View.VISIBLE);
         mLlMyPublish.setVisibility(userType == Constant.USER_TYPE_TEMP? View.GONE: View.VISIBLE);
     }
+
+
+
 }

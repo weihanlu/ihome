@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
@@ -34,7 +35,6 @@ import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
-import com.qhiehome.ihome.util.TimeUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
 import java.text.SimpleDateFormat;
@@ -59,6 +59,10 @@ public class ParkingListActivity extends BaseActivity {
     Button mBtnParkingReserve;
     @BindView(R.id.tv_parking_name_parkinglist)
     TextView mTvParkingName;
+    @BindView(R.id.ll_parking_list)
+    LinearLayout ll_pay_introduction;
+
+
 
     private static enum ITEM_TYPE {
         ITEM_TYPE_BTN,
@@ -99,7 +103,6 @@ public class ParkingListActivity extends BaseActivity {
     private int mEndSelectIndex = 0;
 
 
-
     private final static int UNPAY_ORDER = 300;
     private final static int RESERVED_ORDER = 301;
     private final static int RESERVE_ERROR = 203;
@@ -109,7 +112,6 @@ public class ParkingListActivity extends BaseActivity {
     private int MIN_SHARING_PERIOD;
     private int MIN_CHARGING_PERIOD;
     private int FREE_CANCELLATION_TIME;
-
 
 
     @Override
@@ -186,13 +188,13 @@ public class ParkingListActivity extends BaseActivity {
         calendar.set(Calendar.MILLISECOND, 0);
         int m = calendar.get(Calendar.MINUTE);
         int h = calendar.get(Calendar.HOUR_OF_DAY);
-        int m_total = m+h*60;
-        int m_start = m_total - (m_total%MIN_CHARGING_PERIOD) + MIN_CHARGING_PERIOD;
+        int m_total = m + h * 60;
+        int m_start = m_total - (m_total % MIN_CHARGING_PERIOD) + MIN_CHARGING_PERIOD;
         int m_end = m_start + MIN_SHARING_PERIOD;
-        while (m_start <= 24*60-MIN_SHARING_PERIOD){
+        while (m_start <= 24 * 60 - MIN_SHARING_PERIOD) {
 
-            m = m_start%60;
-            h = m_start/60;
+            m = m_start % 60;
+            h = m_start / 60;
             calendar.set(Calendar.HOUR_OF_DAY, h);
             calendar.set(Calendar.MINUTE, m);
             mStartSelectionMillis.add(calendar.getTimeInMillis());
@@ -201,10 +203,10 @@ public class ParkingListActivity extends BaseActivity {
             m_start += MIN_CHARGING_PERIOD;
         }
 
-        while (m_end <= 24*60){
+        while (m_end <= 24 * 60) {
 
-            m = m_end%60;
-            h = m_end/60;
+            m = m_end % 60;
+            h = m_end / 60;
             calendar.set(Calendar.HOUR_OF_DAY, h);
             calendar.set(Calendar.MINUTE, m);
             mEndSelectionMillis.add(calendar.getTimeInMillis());
@@ -213,7 +215,7 @@ public class ParkingListActivity extends BaseActivity {
             m_end += MIN_CHARGING_PERIOD;
         }
 
-        for (int i = 0; i<mStartSelectIndex; i++){
+        for (int i = 0; i < mStartSelectIndex; i++) {
             mEndSelectionStr.remove(0);
             mEndSelectionMillis.remove(0);
             mEndSelectIndex = 0;
@@ -230,7 +232,7 @@ public class ParkingListActivity extends BaseActivity {
                 public void onOptionsSelect(int options1, int options2, int options3, View v) {
                     mStartSelectIndex = options1;
                     initTimePickerData();
-                    mPrice = mUnitPrice * (mEndSelectionMillis.get(mEndSelectIndex) - mStartSelectionMillis.get(mStartSelectIndex))/1000/60/60;
+                    mPrice = mUnitPrice * (mEndSelectionMillis.get(mEndSelectIndex) - mStartSelectionMillis.get(mStartSelectIndex)) / 1000 / 60 / 60;
                     mAdapter.notifyDataSetChanged();
                 }
             })
@@ -258,7 +260,7 @@ public class ParkingListActivity extends BaseActivity {
                 public void onOptionsSelect(int options1, int options2, int options3, View v) {
                     //返回的分别是三个级别的选中位置
                     mEndSelectIndex = options1;
-                    mPrice = mUnitPrice * (mEndSelectionMillis.get(mEndSelectIndex) - mStartSelectionMillis.get(mStartSelectIndex))/1000/60/60;
+                    mPrice = mUnitPrice * (mEndSelectionMillis.get(mEndSelectIndex) - mStartSelectionMillis.get(mStartSelectIndex)) / 1000 / 60 / 60;
                     mAdapter.notifyDataSetChanged();
                 }
             })
@@ -468,5 +470,9 @@ public class ParkingListActivity extends BaseActivity {
         startActivity(intent);
     }
 
+    @OnClick(R.id.ll_parking_list)
+    public void onIntroClicked() {
+        // TODO: 2017/9/5 增加计费说明
+    }
 
 }

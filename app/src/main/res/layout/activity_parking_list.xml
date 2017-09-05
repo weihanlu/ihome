@@ -50,7 +50,57 @@
             android:layout_height="wrap_content"
             />
 
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_below="@id/rv_parking"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="温馨提示:"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1.xxxxxxxxxxx"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2.xxxxxxxxxxxxxx"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_parking_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/rl_parking_list"
+            android:layout_marginBottom="20dp"
+            android:layout_marginStart="20dp">
+
+            <ImageView
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:background="@color/pale_green"
+                android:layout_gravity="center_vertical"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="担保费与计费说明"
+                android:textSize="16sp"
+                android:gravity="center_vertical"
+                android:layout_gravity="center_vertical"/>
+
+        </LinearLayout>
+
         <RelativeLayout
+            android:id="@+id/rl_parking_list"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:layout_alignParentBottom="true"

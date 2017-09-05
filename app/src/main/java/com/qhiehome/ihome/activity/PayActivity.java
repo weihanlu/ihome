@@ -194,7 +194,7 @@ public class PayActivity extends AppCompatActivity {
                         mSelectedNum[1] = false;
                         mSelectedNum[2] = true;
                     }
-                    if (i == 2 && mAccountBalance < mFee) {//账户余额不够支付，选择是否要使用余额
+                    if (i == 2 && mAccountBalance < mFee && mAccountBalance != 0) {//账户余额不为0且不够支付，选择是否要使用余额
                         mSelectedNum[2] = !mSelectedNum[2];
                     }
                     if (i != 2 && mAccountBalance >= mFee) {//账户余额足够支付，选择支付宝或微信支付
@@ -311,13 +311,10 @@ public class PayActivity extends AppCompatActivity {
 //                    .show();
 //        }
 
+        // TODO: 2017/9/5 私钥加签和订单信息从服务端获取
         /** 支付宝支付业务：入参app_id */
-        String APPID = "2017090308536656";
+        String APPID = "2017082508375687";
 
-        /** 支付宝账户登录授权业务：入参pid值 */
-        String PID = "";
-        /** 支付宝账户登录授权业务：入参target_id值 */
-        String TARGET_ID = "";
 
         /** 商户私钥，pkcs8格式 */
         /** 如下私钥，RSA2_PRIVATE 或者 RSA_PRIVATE 只需要填入一个 */
@@ -325,7 +322,7 @@ public class PayActivity extends AppCompatActivity {
         /** RSA2_PRIVATE 可以保证商户交易在更加安全的环境下进行，建议使用 RSA2_PRIVATE */
         /** 获取 RSA2_PRIVATE，建议使用支付宝提供的公私钥生成工具生成， */
         /** 工具地址：https://doc.open.alipay.com/docs/doc.htm?treeId=291&articleId=106097&docType=1 */
-        String RSA2_PRIVATE = "";
+        String RSA2_PRIVATE = "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCA+d0SUdqKkBDn0MvkLvEekmQf/4EtTDZmdJG+qcDDypo5tNwuUUcmXwEB3mpEIH2/vj/T6yOU10r5elhcRgh7iOqCWmZHTdoX+kcw2GZnrtrHfR/1k58xeMVOYAX505KohFJnDQ3r5t3tFZw9rfyY4WmqHIBW3jd2/IU3mhimp7Ns/sAqh4bvM6/uMDaoTEptSEVGrE3VugO8Tzh1rb7a8seURT1p4V4fuoZT5V2VJi7x7qfdWf+0EhuTcg4DmfG82llKzinow1SJsOaLKlUIBa9Kvra6GO1oXEp3JPfjxqPJMcJ2Xh6VICLXLTzbeFNzb5lDWfWEc++wkQ0qE1PHAgMBAAECggEAL16VqVLS1y1OaDWxjN8Iw9e0WmQ3B3IEUODjXoluOPrCZgtdCs3jOd6Ouib8FIVyaefv/V9RNCtWaAZdSZaXKvgAWVvmUK3xOfk8CF6STeZUiAwWntVXFI5suPpfd4ATTz06HosW39ttCtRzC9xI98ViT44kPMNkz5izPNal0x8jJvunewGF0/k3/fbaE2uDILbWThZgPu9Sj+WtwERmVkr+Ek6jpVB95vJc5Ey9SbACk8UdHHwMhDS9VA6ZdkS4TNmVELOISB+NrxlrR9wkZ3lSL7qy5lpgoNNUsumgvxs9qHMre7UyyWa94FDp77wlz4NWML/mqZmKZrz3n1FAMQKBgQC7b1BZw8Nnf3ag3iweWMTX1J5QqlhwSQYRp52BKAxY+k8Z56UsUzdqkrj9bYEVMcbyqqJ+UnuNpce3gZZVe5WATTkCsAI2f7h7tEPh8u95wEqYOV5fdHa3NufJEr1tf0cAXsfeAN3UI5dqIubEFmlZrrXeydfrVfQAyDQ+mA9wNQKBgQCwKBD8zcBDigo7QHEWsO9Jy6w98bl/AYz7YnsS5eOGI4COPifn3YGmjgC/26HjiVPUy8dFaYDR5sw27HFelknYZMh6dw33abmM2H+a4k18xqNlwq81SmKD14VAQcV0/GAw9Uj8h1ydE3o43658ViC4gwGbdc5IRyE2T/tRFoariwKBgQCSx7cKtK0/Tagejh3KngV4Z36a+OtM80KXbMWBMVWKEGsFhEvrDDfnc4L+o1RkvphnzIx3lCxBXsOpxwdtZdxLny24FxGEkDxuU1qdhNtYYueHkdV/tvqIu6yD3/ML3pJBjffCuLb+u+iFK1O/1zUlEBZIo5Q9LRBp1F5lbjsYyQKBgHKiICvjWPKaqf3U+cLicVV8jSHiY+wafjw44g5yO5XXFJl8KUviAbT5Q9OWgcsoWr1nvs2U0pfFsa8sPrpm4rdHHo9TWmtfCbh2StPn4LUKLtrRzmLHfUR+w+AE7RIsCgzSEiUDkWlGe4r3RPz0r2ZjGnCoQQ0X/Kzzb4BdQFXxAoGBAJzhU5YkISiyAPxhWLKCr6U2AR+JDwEz5e/NgoiKlb1Q/uionylRBIlnFPwd+v+DQ3xM11HQzoMmB09g1j408IZdMhDxSWgAifVAykTLcSzKGiu78ikYOjt+2JXERzzr9vBUmXYs2hLuchTPZ1w/udsCAXXLw669ce3ZDmlzHfLt";
         String RSA_PRIVATE = "";
 
         if (TextUtils.isEmpty(APPID) || (TextUtils.isEmpty(RSA2_PRIVATE) && TextUtils.isEmpty(RSA_PRIVATE))) {
@@ -537,24 +534,6 @@ public class PayActivity extends AppCompatActivity {
         });
     }
 
-    private static class PayHandler extends Handler {
-        private final WeakReference<PayActivity> mActivity;
-        private PayHandler(PayActivity payActivity){
-            mActivity = new WeakReference<PayActivity>(payActivity);
-        }
-        @Override
-        public void handleMessage(android.os.Message msg)
-        {
-            PayActivity payActivity = mActivity.get();
-            switch (msg.what)
-            {
-                case MSG_ALIPAY:
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
 
     @SuppressLint("HandlerLeak")
     private Handler mHandler = new Handler() {
