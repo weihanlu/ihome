@@ -11,18 +11,19 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.bean.ParkingItem;
 
 import java.util.ArrayList;
 
 public class DialogParkAdapter extends RecyclerView.Adapter<DialogParkAdapter.DialogParkHolder>{
 
     private Context mContext;
-    private ArrayList<String> mParkingIds;
+    private ArrayList<ParkingItem> mParkingItems;
     private ArrayList<Boolean> mSelected;
 
-    public DialogParkAdapter(Context context, ArrayList<String> parkingIds, ArrayList<Boolean> selects) {
+    public DialogParkAdapter(Context context, ArrayList<ParkingItem> parkingItems, ArrayList<Boolean> selects) {
         mContext = context;
-        mParkingIds = parkingIds;
+        mParkingItems = parkingItems;
         mSelected = selects;
     }
 
@@ -33,8 +34,8 @@ public class DialogParkAdapter extends RecyclerView.Adapter<DialogParkAdapter.Di
     }
 
     @Override
-    public void onBindViewHolder(final DialogParkHolder holder, final int position) {
-        holder.mTvParkingId.setText(mParkingIds.get(position));
+    public void onBindViewHolder(final DialogParkHolder holder, int position) {
+        holder.mTvParkingId.setText(mParkingItems.get(position).getParkingId());
         int white = ContextCompat.getColor(mContext, R.color.white);
         int gray = ContextCompat.getColor(mContext, R.color.gray);
         holder.mTvParkingId.setTextColor(mSelected.get(position)? white: gray);
@@ -46,7 +47,7 @@ public class DialogParkAdapter extends RecyclerView.Adapter<DialogParkAdapter.Di
             @Override
             public void onClick(View v) {
                 if (onClickListener != null) {
-                    onClickListener.onClick(holder.itemView, position);
+                    onClickListener.onClick(holder.itemView, holder.getLayoutPosition());
                 }
                 for (int i = 0; i < mSelected.size(); i++) {
                     mSelected.set(i, false);
@@ -59,7 +60,7 @@ public class DialogParkAdapter extends RecyclerView.Adapter<DialogParkAdapter.Di
 
     @Override
     public int getItemCount() {
-        return mParkingIds == null? 0: mParkingIds.size();
+        return mParkingItems == null? 0: mParkingItems.size();
     }
 
     public static class DialogParkHolder extends RecyclerView.ViewHolder {

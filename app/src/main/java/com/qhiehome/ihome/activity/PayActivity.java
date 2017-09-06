@@ -32,10 +32,13 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.alipay.sdk.app.PayTask;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.network.ServiceGenerator;
+import com.qhiehome.ihome.network.model.alipay.AliPayRequest;
+import com.qhiehome.ihome.network.model.alipay.AliPayResponse;
 import com.qhiehome.ihome.network.model.pay.accountbalance.AccountBalanceRequest;
 import com.qhiehome.ihome.network.model.pay.accountbalance.AccountBalanceResponse;
 import com.qhiehome.ihome.network.model.pay.guarantee.PayGuaranteeRequest;
 import com.qhiehome.ihome.network.model.pay.guarantee.PayGuaranteeResponse;
+import com.qhiehome.ihome.network.service.alipay.AliPayService;
 import com.qhiehome.ihome.network.service.pay.AccountBalanceService;
 import com.qhiehome.ihome.network.service.pay.PayGuaranteeService;
 import com.qhiehome.ihome.pay.AliPay.PayResult;
@@ -51,6 +54,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 
 import butterknife.BindArray;
 import butterknife.BindView;
@@ -245,7 +249,7 @@ public class PayActivity extends AppCompatActivity {
 //                            Call<AccountBalanceResponse> call = accountBalanceService.account(accountBalanceRequest);
 //                            call.enqueue(new Callback<AccountBalanceResponse>() {
 //                                @Override
-//                                public void onResponse(Call<AccountBalanceResponse> call, Response<AccountBalanceResponse> response) {
+//                                public void onResponse(@NonNull Call<AccountBalanceResponse> call, @NonNull Response<AccountBalanceResponse> response) {
 //                                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
 //                                        ToastUtil.showToast(mContext, "充值成功");
 //                                        PayActivity.this.finish();
@@ -253,7 +257,7 @@ public class PayActivity extends AppCompatActivity {
 //                                }
 //
 //                                @Override
-//                                public void onFailure(Call<AccountBalanceResponse> call, Throwable t) {
+//                                public void onFailure(@NCall<AccountBalanceResponse> call, Throwable t) {
 //                                    ToastUtil.showToast(mContext, "网络连接异常");
 //                                }
 //                            });
@@ -313,7 +317,7 @@ public class PayActivity extends AppCompatActivity {
 
         // TODO: 2017/9/5 私钥加签和订单信息从服务端获取
         /** 支付宝支付业务：入参app_id */
-        String APPID = "2017082508375687";
+//        String APPID = "2017082508375687";
 
 
         /** 商户私钥，pkcs8格式 */
@@ -322,19 +326,19 @@ public class PayActivity extends AppCompatActivity {
         /** RSA2_PRIVATE 可以保证商户交易在更加安全的环境下进行，建议使用 RSA2_PRIVATE */
         /** 获取 RSA2_PRIVATE，建议使用支付宝提供的公私钥生成工具生成， */
         /** 工具地址：https://doc.open.alipay.com/docs/doc.htm?treeId=291&articleId=106097&docType=1 */
-        String RSA2_PRIVATE = "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCA+d0SUdqKkBDn0MvkLvEekmQf/4EtTDZmdJG+qcDDypo5tNwuUUcmXwEB3mpEIH2/vj/T6yOU10r5elhcRgh7iOqCWmZHTdoX+kcw2GZnrtrHfR/1k58xeMVOYAX505KohFJnDQ3r5t3tFZw9rfyY4WmqHIBW3jd2/IU3mhimp7Ns/sAqh4bvM6/uMDaoTEptSEVGrE3VugO8Tzh1rb7a8seURT1p4V4fuoZT5V2VJi7x7qfdWf+0EhuTcg4DmfG82llKzinow1SJsOaLKlUIBa9Kvra6GO1oXEp3JPfjxqPJMcJ2Xh6VICLXLTzbeFNzb5lDWfWEc++wkQ0qE1PHAgMBAAECggEAL16VqVLS1y1OaDWxjN8Iw9e0WmQ3B3IEUODjXoluOPrCZgtdCs3jOd6Ouib8FIVyaefv/V9RNCtWaAZdSZaXKvgAWVvmUK3xOfk8CF6STeZUiAwWntVXFI5suPpfd4ATTz06HosW39ttCtRzC9xI98ViT44kPMNkz5izPNal0x8jJvunewGF0/k3/fbaE2uDILbWThZgPu9Sj+WtwERmVkr+Ek6jpVB95vJc5Ey9SbACk8UdHHwMhDS9VA6ZdkS4TNmVELOISB+NrxlrR9wkZ3lSL7qy5lpgoNNUsumgvxs9qHMre7UyyWa94FDp77wlz4NWML/mqZmKZrz3n1FAMQKBgQC7b1BZw8Nnf3ag3iweWMTX1J5QqlhwSQYRp52BKAxY+k8Z56UsUzdqkrj9bYEVMcbyqqJ+UnuNpce3gZZVe5WATTkCsAI2f7h7tEPh8u95wEqYOV5fdHa3NufJEr1tf0cAXsfeAN3UI5dqIubEFmlZrrXeydfrVfQAyDQ+mA9wNQKBgQCwKBD8zcBDigo7QHEWsO9Jy6w98bl/AYz7YnsS5eOGI4COPifn3YGmjgC/26HjiVPUy8dFaYDR5sw27HFelknYZMh6dw33abmM2H+a4k18xqNlwq81SmKD14VAQcV0/GAw9Uj8h1ydE3o43658ViC4gwGbdc5IRyE2T/tRFoariwKBgQCSx7cKtK0/Tagejh3KngV4Z36a+OtM80KXbMWBMVWKEGsFhEvrDDfnc4L+o1RkvphnzIx3lCxBXsOpxwdtZdxLny24FxGEkDxuU1qdhNtYYueHkdV/tvqIu6yD3/ML3pJBjffCuLb+u+iFK1O/1zUlEBZIo5Q9LRBp1F5lbjsYyQKBgHKiICvjWPKaqf3U+cLicVV8jSHiY+wafjw44g5yO5XXFJl8KUviAbT5Q9OWgcsoWr1nvs2U0pfFsa8sPrpm4rdHHo9TWmtfCbh2StPn4LUKLtrRzmLHfUR+w+AE7RIsCgzSEiUDkWlGe4r3RPz0r2ZjGnCoQQ0X/Kzzb4BdQFXxAoGBAJzhU5YkISiyAPxhWLKCr6U2AR+JDwEz5e/NgoiKlb1Q/uionylRBIlnFPwd+v+DQ3xM11HQzoMmB09g1j408IZdMhDxSWgAifVAykTLcSzKGiu78ikYOjt+2JXERzzr9vBUmXYs2hLuchTPZ1w/udsCAXXLw669ce3ZDmlzHfLt";
-        String RSA_PRIVATE = "";
-
-        if (TextUtils.isEmpty(APPID) || (TextUtils.isEmpty(RSA2_PRIVATE) && TextUtils.isEmpty(RSA_PRIVATE))) {
-            new AlertDialog.Builder(this).setTitle("警告").setMessage("需要配置APPID | RSA_PRIVATE")
-                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialoginterface, int i) {
-                            //
-                            finish();
-                        }
-                    }).show();
-            return;
-        }
+//        String RSA2_PRIVATE = "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCA+d0SUdqKkBDn0MvkLvEekmQf/4EtTDZmdJG+qcDDypo5tNwuUUcmXwEB3mpEIH2/vj/T6yOU10r5elhcRgh7iOqCWmZHTdoX+kcw2GZnrtrHfR/1k58xeMVOYAX505KohFJnDQ3r5t3tFZw9rfyY4WmqHIBW3jd2/IU3mhimp7Ns/sAqh4bvM6/uMDaoTEptSEVGrE3VugO8Tzh1rb7a8seURT1p4V4fuoZT5V2VJi7x7qfdWf+0EhuTcg4DmfG82llKzinow1SJsOaLKlUIBa9Kvra6GO1oXEp3JPfjxqPJMcJ2Xh6VICLXLTzbeFNzb5lDWfWEc++wkQ0qE1PHAgMBAAECggEAL16VqVLS1y1OaDWxjN8Iw9e0WmQ3B3IEUODjXoluOPrCZgtdCs3jOd6Ouib8FIVyaefv/V9RNCtWaAZdSZaXKvgAWVvmUK3xOfk8CF6STeZUiAwWntVXFI5suPpfd4ATTz06HosW39ttCtRzC9xI98ViT44kPMNkz5izPNal0x8jJvunewGF0/k3/fbaE2uDILbWThZgPu9Sj+WtwERmVkr+Ek6jpVB95vJc5Ey9SbACk8UdHHwMhDS9VA6ZdkS4TNmVELOISB+NrxlrR9wkZ3lSL7qy5lpgoNNUsumgvxs9qHMre7UyyWa94FDp77wlz4NWML/mqZmKZrz3n1FAMQKBgQC7b1BZw8Nnf3ag3iweWMTX1J5QqlhwSQYRp52BKAxY+k8Z56UsUzdqkrj9bYEVMcbyqqJ+UnuNpce3gZZVe5WATTkCsAI2f7h7tEPh8u95wEqYOV5fdHa3NufJEr1tf0cAXsfeAN3UI5dqIubEFmlZrrXeydfrVfQAyDQ+mA9wNQKBgQCwKBD8zcBDigo7QHEWsO9Jy6w98bl/AYz7YnsS5eOGI4COPifn3YGmjgC/26HjiVPUy8dFaYDR5sw27HFelknYZMh6dw33abmM2H+a4k18xqNlwq81SmKD14VAQcV0/GAw9Uj8h1ydE3o43658ViC4gwGbdc5IRyE2T/tRFoariwKBgQCSx7cKtK0/Tagejh3KngV4Z36a+OtM80KXbMWBMVWKEGsFhEvrDDfnc4L+o1RkvphnzIx3lCxBXsOpxwdtZdxLny24FxGEkDxuU1qdhNtYYueHkdV/tvqIu6yD3/ML3pJBjffCuLb+u+iFK1O/1zUlEBZIo5Q9LRBp1F5lbjsYyQKBgHKiICvjWPKaqf3U+cLicVV8jSHiY+wafjw44g5yO5XXFJl8KUviAbT5Q9OWgcsoWr1nvs2U0pfFsa8sPrpm4rdHHo9TWmtfCbh2StPn4LUKLtrRzmLHfUR+w+AE7RIsCgzSEiUDkWlGe4r3RPz0r2ZjGnCoQQ0X/Kzzb4BdQFXxAoGBAJzhU5YkISiyAPxhWLKCr6U2AR+JDwEz5e/NgoiKlb1Q/uionylRBIlnFPwd+v+DQ3xM11HQzoMmB09g1j408IZdMhDxSWgAifVAykTLcSzKGiu78ikYOjt+2JXERzzr9vBUmXYs2hLuchTPZ1w/udsCAXXLw669ce3ZDmlzHfLt";
+//        String RSA_PRIVATE = "";
+//
+//        if (TextUtils.isEmpty(APPID) || (TextUtils.isEmpty(RSA2_PRIVATE) && TextUtils.isEmpty(RSA_PRIVATE))) {
+//            new AlertDialog.Builder(this).setTitle("警告").setMessage("需要配置APPID | RSA_PRIVATE")
+//                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+//                        public void onClick(DialogInterface dialoginterface, int i) {
+//                            //
+//                            finish();
+//                        }
+//                    }).show();
+//            return;
+//        }
 
         /**
          * 这里只是为了方便直接向商户展示支付宝的整个支付流程；所以Demo中加签过程直接放在客户端完成；
@@ -343,33 +347,48 @@ public class PayActivity extends AppCompatActivity {
          *
          * orderInfo的获取必须来自服务端；
          */
-        boolean rsa2 = (RSA2_PRIVATE.length() > 0);
-        Map<String, String> params = OrderInfoUtil2_0.buildOrderParamMap(APPID, rsa2);
-        String orderParam = OrderInfoUtil2_0.buildOrderParam(params);
+//        boolean rsa2 = (RSA2_PRIVATE.length() > 0);
+//        Map<String, String> params = OrderInfoUtil2_0.buildOrderParamMap(APPID, rsa2);
+//        String orderParam = OrderInfoUtil2_0.buildOrderParam(params);
+//
+//        String privateKey = rsa2 ? RSA2_PRIVATE : RSA_PRIVATE;
+//        String sign = OrderInfoUtil2_0.getSign(params, privateKey, rsa2);
+//        final String orderInfo = orderParam + "&" + sign;
+        mOrderId = new Random().nextInt(100) + 1;
+        AliPayService aliPayService = ServiceGenerator.createService(AliPayService.class);
+        AliPayRequest aliPayRequest = new AliPayRequest(mOrderId);
+        Call<AliPayResponse> call = aliPayService.aliPay(aliPayRequest);
+        call.enqueue(new Callback<AliPayResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<AliPayResponse> call, @NonNull Response<AliPayResponse> response) {
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                    final String orderInfo = response.body().getData().getOrderInfo();
+                    Runnable payRunnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            PayTask alipay = new PayTask(PayActivity.this);
+                            Map<String, String> result = alipay.payV2(orderInfo, true);
+                            Log.i("msp", result.toString());
 
-        String privateKey = rsa2 ? RSA2_PRIVATE : RSA_PRIVATE;
-        String sign = OrderInfoUtil2_0.getSign(params, privateKey, rsa2);
-        final String orderInfo = orderParam + "&" + sign;
+                            Message msg = new Message();
+                            msg.what = MSG_ALIPAY;
+                            msg.obj = result;
+                            mHandler.sendMessage(msg);
+                        }
+                    };
 
-        Runnable payRunnable = new Runnable() {
+                    Thread payThread = new Thread(payRunnable);
+                    payThread.start();
+                } else {
+                    ToastUtil.showToast(mContext, "支付失败");
+                }
+            }
 
             @Override
-            public void run() {
-                PayTask alipay = new PayTask(PayActivity.this);
-                Map<String, String> result = alipay.payV2(orderInfo, true);
-                Log.i("msp", result.toString());
-
-                Message msg = new Message();
-                msg.what = MSG_ALIPAY;
-                msg.obj = result;
-                mHandler.sendMessage(msg);
+            public void onFailure(@NonNull Call<AliPayResponse> call,@NonNull Throwable t) {
+                ToastUtil.showToast(mContext, "支付失败（服务器繁忙）");
             }
-        };
-
-        Thread payThread = new Thread(payRunnable);
-        payThread.start();
-
-
+        });
 
     }
 
@@ -552,6 +571,22 @@ public class PayActivity extends AppCompatActivity {
                     if (TextUtils.equals(resultStatus, "9000")) {
                         // 该笔订单是否真实支付成功，需要依赖服务端的异步通知。
                         Toast.makeText(mContext, "支付成功", Toast.LENGTH_SHORT).show();
+                        PayGuaranteeService payGuaranteeService = ServiceGenerator.createService(PayGuaranteeService.class);
+                        PayGuaranteeRequest payGuaranteeRequest = new PayGuaranteeRequest(mOrderId);
+                        Call<PayGuaranteeResponse> call = payGuaranteeService.payGuarantee(payGuaranteeRequest);
+                        call.enqueue(new retrofit2.Callback<PayGuaranteeResponse>() {
+                            @Override
+                            public void onResponse(@NonNull Call<PayGuaranteeResponse> call, @NonNull Response<PayGuaranteeResponse> response) {
+                                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(@NonNull Call<PayGuaranteeResponse> call, @NonNull Throwable t) {
+
+                            }
+                        });
                     } else {
                         // 该笔订单真实的支付结果，需要依赖服务端的异步通知。
                         Toast.makeText(mContext, "支付失败", Toast.LENGTH_SHORT).show();

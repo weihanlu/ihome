@@ -1,5 +1,8 @@
 package com.qhiehome.ihome.activity;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,6 +16,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.ActionBar;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -127,17 +131,31 @@ public class SettingActivity extends BaseActivity {
                         break;
                     case 3:
                         AboutActivity.start(mContext);
-//                        View aboutApp = LayoutInflater.from(mContext).inflate(R.layout.dialog_about_app, null);
-//                        new MaterialDialog.Builder(mContext)
-//                                .title("关于Ihome")
-//                                .customView(aboutApp, false)
-//                                .show();
                         break;
                     default:
                         break;
                 }
             }
         });
+    }
+
+    private void notification() {
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.mipmap.ic_launcher_logo)
+                .setContentTitle("爱车位")
+                .setContentText("共享停车类app");
+
+        Intent intent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this,
+                0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        mBuilder.setContentIntent(pendingIntent);
+        mBuilder.setPriority(Notification.PRIORITY_HIGH);
+        mBuilder.setDefaults(Notification.DEFAULT_VIBRATE);
+
+        Notification notification = mBuilder.build();
+
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.notify(1, notification);
     }
 
     private void updateApp() {

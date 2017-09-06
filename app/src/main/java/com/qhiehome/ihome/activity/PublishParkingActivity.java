@@ -3,6 +3,7 @@ package com.qhiehome.ihome.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -28,15 +29,20 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.adapter.DialogParkAdapter;
 import com.qhiehome.ihome.adapter.PublishParkingAdapter;
+import com.qhiehome.ihome.bean.ParkingItem;
 import com.qhiehome.ihome.bean.PublishBean;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.base.ParkingResponse;
+import com.qhiehome.ihome.network.model.configuration.city.CityConfigRequest;
+import com.qhiehome.ihome.network.model.configuration.city.CityConfigResponse;
+import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyResponse;
 import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedRequest;
 import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedResponse;
 import com.qhiehome.ihome.network.model.park.publish.PublishparkRequest;
 import com.qhiehome.ihome.network.model.park.publish.PublishparkResponse;
 import com.qhiehome.ihome.network.model.park.publishcancel.PublishCancelRequest;
 import com.qhiehome.ihome.network.model.park.publishcancel.PublishCancelResponse;
+import com.qhiehome.ihome.network.service.configuration.CityConfigService;
 import com.qhiehome.ihome.network.service.inquiry.ParkingOwnedService;
 import com.qhiehome.ihome.network.service.park.PublishCallbackService;
 import com.qhiehome.ihome.network.service.park.PublishParkService;
@@ -82,7 +88,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
     @BindView(R.id.ll_publish_empty)
     LinearLayout mLlPublishEmpty;
 
-    private ArrayList<String> mParkingIdList;
+    private ArrayList<ParkingItem> mParkingItems;
     private ArrayList<Boolean> mSelected;
 
     private Context mContext;
@@ -103,27 +109,25 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
 
     private int selectedPosition;
 
+    private ArrayAdapter<String> mStartAdapter;
+    private ArrayAdapter<String> mEndAdapter;
+
+    private List<String> mStartData;
+    private List<String> mEndData;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         CommonUtil.setStatusBarGradient(this);
         setContentView(R.layout.activity_publish_parking);
         ButterKnife.bind(this);
-        initSwiperRefreshLayout();
+        mContext = this;
+        initSwipeRefreshLayout();
         initData();
         initView();
-        mContext = this;
-        checkFab();
     }
 
-    private void checkFab() {
-        int passedHalfHour = TimeUtil.getInstance().getPassedHalfHour(System.currentTimeMillis());
-        if (passedHalfHour == 47) {
-            mFab.setVisibility(View.INVISIBLE);
-        }
-    }
-
-    private void initSwiperRefreshLayout() {
+    private void initSwipeRefreshLayout() {
         mSrfPublish.setOnRefreshListener(this);
         mSrfPublish.setColorSchemeResources(android.R.color.holo_blue_bright,
                 android.R.color.holo_green_light, android.R.color.holo_orange_light, android.R.color.holo_red_light);
@@ -131,16 +135,29 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
     }
 
     private void initData() {
-        mParkingIdList = new ArrayList<>();
+        mParkingItems = new ArrayList<>();
         mSelected = new ArrayList<>();
         mPublishList = new ArrayList<>();
         mTimePeriods = new ArrayList<>();
         mPhoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, "");
+        initSpinner();
         inquiryParkingInfo();
     }
 
+    private void initSpinner() {
+        mStartData = TimeUtil.getInstance().setTimeInterval(TimeUtil.TIME_INTERVAL).getStartTime();
+        mEndData = TimeUtil.getInstance().setTimeInterval(TimeUtil.TIME_INTERVAL).getEndTime();
+        if (mEndData.size() > 1) {
+            mEndData.remove(0);
+        }
+        mStartAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, mStartData);
+        mStartAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mEndAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, mEndData);
+        mEndAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+    }
+
     private void inquiryParkingInfo() {
-        mParkingIdList.clear();
+        mParkingItems.clear();
         mPublishList.clear();
         ParkingOwnedService parkingOwnedService = ServiceGenerator.createService(ParkingOwnedService.class);
         ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(mPhoneNum);
@@ -151,10 +168,12 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     // first step get the parking ids, then get share info
                     List<ParkingResponse.DataBean.EstateBean> estateList = response.body().getData().getEstate();
+                    int estateId = 0;
                     for (ParkingResponse.DataBean.EstateBean estateBean : estateList) {
+                        estateId = estateBean.getId();
                         List<ParkingResponse.DataBean.EstateBean.ParkingListBean> parkingList = estateBean.getParkingList();
                         for (ParkingResponse.DataBean.EstateBean.ParkingListBean parkingBean : parkingList) {
-                            mParkingIdList.add(parkingBean.getId() + "");
+                            mParkingItems.add(new ParkingItem(parkingBean.getId() + "", estateId));
                             mSelected.add(false);
                             List<ParkingResponse.DataBean.EstateBean.ParkingListBean.ShareListBean> shareList = parkingBean.getShareList();
                             for (ParkingResponse.DataBean.EstateBean.ParkingListBean.ShareListBean shareBean : shareList) {
@@ -310,7 +329,6 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
 
     private void showPublishDialog() {
         selectedPosition = 0;
-        TimeUtil.getInstance().update();
         for (int i = 0; i < mSelected.size(); i++) {
             mSelected.set(i, false);
         }
@@ -324,11 +342,12 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
             if (mSelected.size() > 0) {
                 mSelected.set(0, true);
             }
-            DialogParkAdapter dialogParkAdapter = new DialogParkAdapter(this, mParkingIdList, mSelected);
+            DialogParkAdapter dialogParkAdapter = new DialogParkAdapter(this, mParkingItems, mSelected);
             dialogParkAdapter.setOnItemClickListener(new DialogParkAdapter.OnClickListener() {
                 @Override
                 public void onClick(View view, int i) {
                     selectedPosition = i;
+                    updateTimeInterval(i);
                 }
             });
             mRvPark.setAdapter(dialogParkAdapter);
@@ -339,39 +358,28 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                 public void onClick(View v) {
                     View itemContainer = LayoutInflater.from(mContext).inflate(R.layout.item_publish_parking, null);
                     AppCompatSpinner startSpinner = (AppCompatSpinner) itemContainer.findViewById(R.id.spinner_start);
-                    List<String> startData = TimeUtil.getInstance().getOnedayTime();
-                    ArrayAdapter<String> startAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, startData);
-                    startAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    startSpinner.setAdapter(startAdapter);
+                    startSpinner.setAdapter(mStartAdapter);
                     final AppCompatSpinner endSpinner = (AppCompatSpinner) itemContainer.findViewById(R.id.spinner_end);
-                    mContainer.addView(itemContainer);
-                    startSpinner.setSelection(0);
+                    endSpinner.setAdapter(mEndAdapter);
                     startSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                         @Override
-                        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                            List<String> endData = TimeUtil.getInstance().getOnedayTime();
-                            endData.remove(0);
-                            ArrayAdapter<String> endAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_spinner_item, endData);
-                            endAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                            endSpinner.setAdapter(endAdapter);
-                            for (int j = 0; j < i; j++) {
-                                endData.remove(0);
-                            }
-                            endAdapter.notifyDataSetChanged();
-                            endSpinner.setSelection(0);
+                        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                            endSpinner.setSelection(position);
                         }
 
                         @Override
-                        public void onNothingSelected(AdapterView<?> adapterView) {
-
+                        public void onNothingSelected(AdapterView<?> parent) {
+                            // do nothing
                         }
                     });
+                    mContainer.addView(itemContainer);
                     if (++mPeriodTimes == Constant.TIME_PERIOD_LIMIT) {
                         addBtn.setVisibility(View.GONE);
                     }
                 }
             });
             addBtn.callOnClick();
+            updateTimeInterval(0);
         }
         dialog.setOnSurePublishListener(new QhPublishParkingDialog.OnSurePublishListener() {
             @Override
@@ -381,6 +389,35 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
             }
         });
         dialog.show();
+    }
+
+    private void updateTimeInterval(int position) {
+        int estateId = mParkingItems.get(position).getEstateId();
+        CityConfigService cityConfigService = ServiceGenerator.createService(CityConfigService.class);
+        CityConfigRequest cityConfigRequest = new CityConfigRequest(estateId);
+        Call<CityConfigResponse> call = cityConfigService.queryCityConfig(cityConfigRequest);
+        call.enqueue(new Callback<CityConfigResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<CityConfigResponse> call, @NonNull Response<CityConfigResponse> response) {
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
+                    int minSharingPeriod = response.body().getData().getMinSharingPeriod();
+                    mStartData.clear();
+                    mStartData.addAll(TimeUtil.getInstance().setTimeInterval(minSharingPeriod).getStartTime());
+                    mStartAdapter.notifyDataSetChanged();
+
+                    mEndData.clear();
+                    mEndData.addAll(TimeUtil.getInstance().setTimeInterval(minSharingPeriod).getEndTime());
+                    mEndAdapter.notifyDataSetChanged();
+                }else {
+                    ToastUtil.showToast(mContext, "服务器繁忙，请稍后再试");
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<CityConfigResponse> call, @NonNull Throwable t) {
+                ToastUtil.showToast(mContext, "网络连接异常");
+            }
+        });
     }
 
     private void getSelectedPeriod() {
@@ -400,7 +437,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
     }
 
     private void publishParking() {
-        long parkingId = Long.valueOf(mParkingIdList.get(selectedPosition));
+        long parkingId = Long.valueOf(mParkingItems.get(selectedPosition).getParkingId());
         PublishParkService publishParkService = ServiceGenerator.createService(PublishParkService.class);
         PublishparkRequest publishparkRequest = new PublishparkRequest();
         publishparkRequest.setParkingId(parkingId);
