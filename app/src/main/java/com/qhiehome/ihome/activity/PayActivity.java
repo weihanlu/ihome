@@ -230,41 +230,76 @@ public class PayActivity extends AppCompatActivity {
     @OnClick(R.id.btn_pay)
     public void onViewClicked() {
 
-//        if (mPayState == Constant.PAY_STATE_ADD_ACCOUNT) {
-//            int red = ContextCompat.getColor(mContext, android.R.color.holo_red_light);
-//            new MaterialDialog.Builder(mContext)
-//                    .title("确认支付？")
-//                    .titleColor(red)
-//                    .content("接口还没好，假装支付一波ㄟ( ▔, ▔ )ㄏ")
-//                    .contentColor(red)
-//                    .positiveText("假装支付好了")
-//                    .positiveColor(red)
-//                    .negativeText("取消")
-//                    .canceledOnTouchOutside(false)
-//                    .onPositive(new MaterialDialog.SingleButtonCallback() {
-//                        @Override
-//                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-//                            AccountBalanceService accountBalanceService = ServiceGenerator.createService(AccountBalanceService.class);
-//                            AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256), Double.valueOf(mPriceList[mButtonClicked - 1]));
-//                            Call<AccountBalanceResponse> call = accountBalanceService.account(accountBalanceRequest);
-//                            call.enqueue(new Callback<AccountBalanceResponse>() {
-//                                @Override
-//                                public void onResponse(@NonNull Call<AccountBalanceResponse> call, @NonNull Response<AccountBalanceResponse> response) {
-//                                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-//                                        ToastUtil.showToast(mContext, "充值成功");
-//                                        PayActivity.this.finish();
-//                                    }
-//                                }
-//
-//                                @Override
-//                                public void onFailure(@NCall<AccountBalanceResponse> call, Throwable t) {
-//                                    ToastUtil.showToast(mContext, "网络连接异常");
-//                                }
-//                            });
-//                        }
-//                    })
-//                    .show();
-//        }
+        if (mPayState == Constant.PAY_STATE_ADD_ACCOUNT) {
+            AccountBalanceService accountBalanceService = ServiceGenerator.createService(AccountBalanceService.class);
+            AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256), Double.valueOf(mPriceList[mButtonClicked - 1]));
+            Call<AccountBalanceResponse> call = accountBalanceService.account(accountBalanceRequest);
+            call.enqueue(new Callback<AccountBalanceResponse>() {
+                @Override
+                public void onResponse(@NonNull Call<AccountBalanceResponse> call, @NonNull Response<AccountBalanceResponse> response) {
+                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                        final String orderInfo = response.body().getData().getOrderInfo();
+                        Runnable payRunnable = new Runnable() {
+                            @Override
+                            public void run() {
+                                PayTask alipay = new PayTask(PayActivity.this);
+                                Map<String, String> result = alipay.payV2(orderInfo, true);
+                                Log.i("msp", result.toString());
+
+                                Message msg = new Message();
+                                msg.what = MSG_ALIPAY;
+                                msg.obj = result;
+                                mHandler.sendMessage(msg);
+                            }
+                        };
+                        Thread payThread = new Thread(payRunnable);
+                        payThread.start();
+                    } else {
+                        ToastUtil.showToast(mContext, "充值失败");
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<AccountBalanceResponse> call, @NonNull Throwable t) {
+
+                }
+            });
+        } else if (mPayState == Constant.PAY_STATE_GUARANTEE) {
+            AliPayService aliPayService = ServiceGenerator.createService(AliPayService.class);
+            AliPayRequest aliPayRequest = new AliPayRequest(mOrderId);
+            Call<AliPayResponse> call = aliPayService.aliPay(aliPayRequest);
+            call.enqueue(new Callback<AliPayResponse>() {
+                @Override
+                public void onResponse(@NonNull Call<AliPayResponse> call, @NonNull Response<AliPayResponse> response) {
+                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                        final String orderInfo = response.body().getData().getOrderInfo();
+                        Runnable payRunnable = new Runnable() {
+                            @Override
+                            public void run() {
+                                PayTask alipay = new PayTask(PayActivity.this);
+                                Map<String, String> result = alipay.payV2(orderInfo, true);
+                                Log.i("msp", result.toString());
+
+                                Message msg = new Message();
+                                msg.what = MSG_ALIPAY;
+                                msg.obj = result;
+                                mHandler.sendMessage(msg);
+                            }
+                        };
+
+                        Thread payThread = new Thread(payRunnable);
+                        payThread.start();
+                    } else {
+                        ToastUtil.showToast(mContext, "支付失败");
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<AliPayResponse> call,@NonNull Throwable t) {
+                    ToastUtil.showToast(mContext, "支付失败（服务器繁忙）");
+                }
+            });
+        }
 //
 //        // TODO: 2017/8/14 根据选择方式调用支付接口
 //        if (mPayState == Constant.PAY_STATE_GUARANTEE) {
@@ -354,41 +389,6 @@ public class PayActivity extends AppCompatActivity {
 //        String privateKey = rsa2 ? RSA2_PRIVATE : RSA_PRIVATE;
 //        String sign = OrderInfoUtil2_0.getSign(params, privateKey, rsa2);
 //        final String orderInfo = orderParam + "&" + sign;
-        mOrderId = new Random().nextInt(100) + 1;
-        AliPayService aliPayService = ServiceGenerator.createService(AliPayService.class);
-        AliPayRequest aliPayRequest = new AliPayRequest(mOrderId);
-        Call<AliPayResponse> call = aliPayService.aliPay(aliPayRequest);
-        call.enqueue(new Callback<AliPayResponse>() {
-            @Override
-            public void onResponse(@NonNull Call<AliPayResponse> call, @NonNull Response<AliPayResponse> response) {
-                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                    final String orderInfo = response.body().getData().getOrderInfo();
-                    Runnable payRunnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            PayTask alipay = new PayTask(PayActivity.this);
-                            Map<String, String> result = alipay.payV2(orderInfo, true);
-                            Log.i("msp", result.toString());
-
-                            Message msg = new Message();
-                            msg.what = MSG_ALIPAY;
-                            msg.obj = result;
-                            mHandler.sendMessage(msg);
-                        }
-                    };
-
-                    Thread payThread = new Thread(payRunnable);
-                    payThread.start();
-                } else {
-                    ToastUtil.showToast(mContext, "支付失败");
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<AliPayResponse> call,@NonNull Throwable t) {
-                ToastUtil.showToast(mContext, "支付失败（服务器繁忙）");
-            }
-        });
 
     }
 
@@ -570,26 +570,28 @@ public class PayActivity extends AppCompatActivity {
                     // 判断resultStatus 为9000则代表支付成功
                     if (TextUtils.equals(resultStatus, "9000")) {
                         // 该笔订单是否真实支付成功，需要依赖服务端的异步通知。
-                        Toast.makeText(mContext, "支付成功", Toast.LENGTH_SHORT).show();
-                        PayGuaranteeService payGuaranteeService = ServiceGenerator.createService(PayGuaranteeService.class);
-                        PayGuaranteeRequest payGuaranteeRequest = new PayGuaranteeRequest(mOrderId);
-                        Call<PayGuaranteeResponse> call = payGuaranteeService.payGuarantee(payGuaranteeRequest);
-                        call.enqueue(new retrofit2.Callback<PayGuaranteeResponse>() {
-                            @Override
-                            public void onResponse(@NonNull Call<PayGuaranteeResponse> call, @NonNull Response<PayGuaranteeResponse> response) {
-                                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                        ToastUtil.showToast(mContext, "支付成功");
+                        if (mPayState == Constant.PAY_STATE_GUARANTEE) {
+                            PayGuaranteeService payGuaranteeService = ServiceGenerator.createService(PayGuaranteeService.class);
+                            PayGuaranteeRequest payGuaranteeRequest = new PayGuaranteeRequest(mOrderId);
+                            Call<PayGuaranteeResponse> call = payGuaranteeService.payGuarantee(payGuaranteeRequest);
+                            call.enqueue(new retrofit2.Callback<PayGuaranteeResponse>() {
+                                @Override
+                                public void onResponse(@NonNull Call<PayGuaranteeResponse> call, @NonNull Response<PayGuaranteeResponse> response) {
+                                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(@NonNull Call<PayGuaranteeResponse> call, @NonNull Throwable t) {
 
                                 }
-                            }
-
-                            @Override
-                            public void onFailure(@NonNull Call<PayGuaranteeResponse> call, @NonNull Throwable t) {
-
-                            }
-                        });
+                            });
+                        }
                     } else {
                         // 该笔订单真实的支付结果，需要依赖服务端的异步通知。
-                        Toast.makeText(mContext, "支付失败", Toast.LENGTH_SHORT).show();
+                        ToastUtil.showToast(mContext, "支付失败");
                     }
                     break;
                 }

@@ -854,7 +854,6 @@ public class ReserveActivity extends BaseActivity implements AsyncExpandableList
                                     dialog.dismiss();
                                 } else {
                                     connectLock.setAction(ConnectLockService.ACTION_BLUETOOTH_CONNECT);
-                                    connectLock.putExtra(ConnectLockService.EXTRA_LOCK_PWD, lockPwd);
                                 }
                             }
                             connectLock.putExtra(ConnectLockService.EXTRA_LOCK_MAC, lockMac);

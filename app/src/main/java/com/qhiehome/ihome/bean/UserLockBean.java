@@ -104,5 +104,10 @@ public class UserLockBean {
         this.isRented = isRented;
     }
 
+    public static enum LOCK_ROLE {
+        CUSTOMER,
+        OWNER
+    }
+
     
 }

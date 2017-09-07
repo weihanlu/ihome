@@ -43,6 +43,9 @@ public class UserLockActivity extends BaseActivity {
     private ArrayList<Fragment> mFragments;
     private TabLayoutAdapter mAdapter;
 
+    UserLockFragment mUserLockFragment;
+    OrderOwnerFragment mOrderOwnerFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,9 +62,11 @@ public class UserLockActivity extends BaseActivity {
             add("我的车锁");
             add("使用历史");
         }};
+        mUserLockFragment = new UserLockFragment();
+        mOrderOwnerFragment = new OrderOwnerFragment();
         mFragments = new ArrayList<Fragment>() {{
-            add(new UserLockFragment());
-            add(new OrderOwnerFragment());
+            add(mUserLockFragment);
+            add(mOrderOwnerFragment);
         }};
     }
 
@@ -96,6 +101,12 @@ public class UserLockActivity extends BaseActivity {
                 finish();
             }
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        mUserLockFragment.onActivityResult(requestCode, resultCode, data);
     }
 
     private class TabLayoutAdapter extends FragmentPagerAdapter {

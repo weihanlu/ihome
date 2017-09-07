@@ -29,6 +29,16 @@ public class AccountBalanceResponse extends Response {
 
         private double account;
 
+        private String orderInfo;
+
+        public String getOrderInfo() {
+            return orderInfo;
+        }
+
+        public void setOrderInfo(String orderInfo) {
+            this.orderInfo = orderInfo;
+        }
+
         public double getAccount() {
             return account;
         }

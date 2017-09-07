@@ -146,7 +146,7 @@ public class ParkingTimelineActivity extends AppCompatActivity {
         mItemDecoration.setSpanIndexListener(new SpanIndexListener() {
             @Override
             public void onSpanIndexChange(View view, int spanIndex) {
-                view.setBackgroundResource(spanIndex == 0 ? R.drawable.pop_left : R.drawable.pop_right);
+                view.setBackgroundResource(spanIndex == 0 ? R.drawable.img_left_background : R.drawable.img_right_background);
             }
         });
         mRvParkingTimeline.addItemDecoration(mItemDecoration);

@@ -27,9 +27,10 @@ public class ConnectLockService extends IntentService {
     public static final String ACTION_UP_LOCK = "com.qhiehome.ihome.lock.action.UP_LOCK";
     public static final String ACTION_DOWN_LOCK = "com.qhiehome.ihome.lock.action.DOWN_LOCK";
 
+    public static final String ACTION_LOCK_STATE = "com.qhiehome.ihom.lock.action.LOCK_STATE";
+
     public static final String EXTRA_GATEWAY_ID = "com.qhiehome.ihome.lock.extra.GATEWAYID";
     public static final String EXTRA_LOCK_MAC = "com.qhiehome.ihome.lock.extra.LOCKMAC";
-    public static final String EXTRA_LOCK_PWD = "com.qhiehome.ihome.lock.extra.LOCKPWD";
 
     public static final String BROADCAST_CONNECT = "com.qhiehome.ihome.lock.broad.CONNECT";
 
@@ -46,6 +47,7 @@ public class ConnectLockService extends IntentService {
         if (intent != null) {
             String action = intent.getAction();
             String lockMac = intent.getStringExtra(EXTRA_LOCK_MAC);
+            int lockState = intent.getIntExtra(ACTION_LOCK_STATE, -1);
             switch (action) {
                 case ACTION_GATEWAY_CONNECT:
                     String gateWayId = intent.getStringExtra(EXTRA_GATEWAY_ID);
@@ -55,10 +57,8 @@ public class ConnectLockService extends IntentService {
                     handleActionGateWayConnect();
                     break;
                 case ACTION_BLUETOOTH_CONNECT:
-                    String lockPwd = intent.getStringExtra(EXTRA_LOCK_PWD);
                     bluetoothClient = BluetoothClient.getInstance(this);
                     bluetoothClient.setLockMac(lockMac);
-                    bluetoothClient.setLockPwd(lockPwd);
                     handleActionBluetoothConnect();
                     break;
                 case ACTION_DISCONNECT:
@@ -76,6 +76,7 @@ public class ConnectLockService extends IntentService {
                         gateWayClient.raiseLock();
                     } else {
                         bluetoothClient = BluetoothClient.getInstance(this);
+                        bluetoothClient.setLockState(lockState);
                         bluetoothClient.raiseLock();
                     }
                     break;
@@ -85,6 +86,7 @@ public class ConnectLockService extends IntentService {
                         gateWayClient.downLock();
                     } else {
                         bluetoothClient = BluetoothClient.getInstance(this);
+                        bluetoothClient.setLockState(lockState);
                         bluetoothClient.downLock();
                     }
                     break;
