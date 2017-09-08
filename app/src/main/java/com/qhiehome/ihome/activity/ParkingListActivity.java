@@ -11,7 +11,10 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,6 +23,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
@@ -53,23 +57,24 @@ import retrofit2.Response;
 
 public class ParkingListActivity extends BaseActivity {
 
+    private static final int ITEM_NUM = 2;
+
+    private String[] titleArray = {"开始时间", "结束时间"};
+
+    @BindView(R.id.tv_title_toolbar)
+    TextView mTvTitle;
+    @BindView(R.id.tv_subtitle_toolbar)
+    TextView mTvSubTitle;
     @BindView(R.id.tv_parking_guaranteeFee_num)
     TextView mTvParkingGuarfee;
-    @BindView(R.id.btn_parking_reserve)
-    Button mBtnParkingReserve;
-    @BindView(R.id.tv_parking_name_parkinglist)
-    TextView mTvParkingName;
-    @BindView(R.id.ll_parking_list)
-    LinearLayout ll_pay_introduction;
+    @BindView(R.id.tv_parking_fee_num)
+    TextView mTvParkingFee;
+    @BindView(R.id.rl_parking_list)
+    RelativeLayout mRlParkingList;
+    @BindView(R.id.tv_tip_three)
+    TextView mTvTipThree;
 
-
-
-    private static enum ITEM_TYPE {
-        ITEM_TYPE_BTN,
-        ITEM_TYPE_NO_BTN
-    }
-
-    @BindView(R.id.tb_parking)
+    @BindView(R.id.toolbar_center)
     Toolbar mTbParking;
     @BindView(R.id.rv_parking)
     RecyclerView mRvParking;
@@ -82,17 +87,14 @@ public class ParkingListActivity extends BaseActivity {
     private static final SimpleDateFormat MIN_FORMAT = new SimpleDateFormat("mm", Locale.CHINA);
     private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm", Locale.CHINA);
     private static final String INTEGER_2 = "%02d";
-    private static final String DECIMAL_2 = "%.2f";
+    private static final String DECIMAL_2 = "¥%.2f";
     private static final long QUARTER_TIME = 15 * 60 * 1000;
-    private static final int LIST_PARKING_INFO = 0;
-    private static final int LIST_START_TIME = 1;
-    private static final int LIST_END_TIME = 2;
-    private static final int LIST_TOTAL_FEE = 3;
     private static final int LIST_ITEM_COUNT = 4;
     private float mPrice = 0;
     private float mUnitPrice = 0;
     private float mGuaranteeFee = 0;
 
+    private String[] timeArray = new String[2];
     private ArrayList<String> mStartSelectionStr = new ArrayList<>();  //起始时间轴 显示
     private ArrayList<String> mEndSelectionStr = new ArrayList<>();    //终止时间轴 显示
 
@@ -127,36 +129,36 @@ public class ParkingListActivity extends BaseActivity {
         MIN_SHARING_PERIOD = bundle.getInt(Constant.MIN_SHARING_PERIOD);
         MIN_CHARGING_PERIOD = bundle.getInt(Constant.MIN_CHARGING_PERIOD);
         FREE_CANCELLATION_TIME = bundle.getInt(Constant.FREE_CANCELLATION_TIME);
-        initToolbar();
-//        initData();
-        initTimePickerData();
-        initRecyclerView();
+        initView();
         mUnitPrice = (float) mEstateBean.getUnitPrice();
         mGuaranteeFee = (float) mEstateBean.getGuaranteeFee();
-        mTvParkingGuarfee.setText(String.format(Locale.CHINA, DECIMAL_2, mGuaranteeFee));
         mPrice = mUnitPrice / 60 * MIN_SHARING_PERIOD;
+
+        mTvParkingGuarfee.setText(String.format(Locale.CHINA, DECIMAL_2, mGuaranteeFee));
+        updateParkingFee();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_parking_list, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_detail_parking_list) {
-            ShowAllParking();
-            return true;
+    private void updateParkingFee() {
+        if (mTvParkingFee != null) {
+            mTvParkingFee.setText(String.format(Locale.CHINA, DECIMAL_2, mPrice));
         }
+    }
 
-        return super.onOptionsItemSelected(item);
+    private void initView() {
+        initToolbar();
+        initTimePickerData();
+        initRecyclerView();
+
+        SpannableString sp = new SpannableString("3.了解更多计费信息请阅读《担保费与计费说明》");
+        sp.setSpan(new ForegroundColorSpan(
+                        ContextCompat.getColor(this, R.color.theme_start_color)),
+                13, 23, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        mTvTipThree.setText(sp);
+    }
+
+    @OnClick(R.id.iv_time_axis)
+    public void onTimeAxisClick() {
+        ShowAllParking();
     }
 
     private void initToolbar() {
@@ -166,8 +168,8 @@ public class ParkingListActivity extends BaseActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
         }
-        mTvParkingName.setText(mEstateBean.getName());
-        mTbParking.setTitleTextColor(ContextCompat.getColor(this, R.color.white));
+        mTvTitle.setText(mEstateBean.getName());
+        mTvSubTitle.setText(String.format(Locale.CHINA, DECIMAL_2, (float) mEstateBean.getUnitPrice()) + "元/小时");
         mTbParking.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -220,19 +222,21 @@ public class ParkingListActivity extends BaseActivity {
             mEndSelectionMillis.remove(0);
             mEndSelectIndex = 0;
         }
-
+        updateTimeArray();
     }
 
 
     public void onItemClick(View view) {
         int position = mRvParking.getChildAdapterPosition(view);
-        if (position == 1) {
+        if (position == 0) {
             OptionsPickerView pvOptions = new OptionsPickerView.Builder(this, new OptionsPickerView.OnOptionsSelectListener() {
                 @Override
                 public void onOptionsSelect(int options1, int options2, int options3, View v) {
                     mStartSelectIndex = options1;
+                    updateTimeArray();
                     initTimePickerData();
                     mPrice = mUnitPrice * (mEndSelectionMillis.get(mEndSelectIndex) - mStartSelectionMillis.get(mStartSelectIndex)) / 1000 / 60 / 60;
+                    updateParkingFee();
                     mAdapter.notifyDataSetChanged();
                 }
             })
@@ -254,13 +258,15 @@ public class ParkingListActivity extends BaseActivity {
             pvOptions.setPicker(mStartSelectionStr);//二级选择器
             pvOptions.show();
         }
-        if (position == 2) {
+        if (position == 1) {
             OptionsPickerView pvOptions = new OptionsPickerView.Builder(this, new OptionsPickerView.OnOptionsSelectListener() {
                 @Override
                 public void onOptionsSelect(int options1, int options2, int options3, View v) {
                     //返回的分别是三个级别的选中位置
                     mEndSelectIndex = options1;
+                    updateTimeArray();
                     mPrice = mUnitPrice * (mEndSelectionMillis.get(mEndSelectIndex) - mStartSelectionMillis.get(mStartSelectIndex)) / 1000 / 60 / 60;
+                    updateParkingFee();
                     mAdapter.notifyDataSetChanged();
                 }
             })
@@ -284,6 +290,11 @@ public class ParkingListActivity extends BaseActivity {
         }
     }
 
+    private void updateTimeArray() {
+        timeArray[0] = mStartSelectionStr.get(mStartSelectIndex);
+        timeArray[1] = mEndSelectionStr.get(mEndSelectIndex);
+    }
+
 
     private void initRecyclerView() {
         mRvParking.setLayoutManager(new LinearLayoutManager(this));
@@ -294,87 +305,39 @@ public class ParkingListActivity extends BaseActivity {
         mRvParking.addItemDecoration(did);
     }
 
-
-    public class ParkingListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    public class ParkingListAdapter extends RecyclerView.Adapter<ParkingListAdapter.ParkingHolder> {
 
 
         @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            if (viewType == ITEM_TYPE.ITEM_TYPE_BTN.ordinal()) {
-                ParkingHolder viewHolder = new ParkingHolder(LayoutInflater.from(ParkingListActivity.this).inflate(R.layout.item_rv_parking_list, parent, false));
-                return viewHolder;
-            }
-            if (viewType == ITEM_TYPE.ITEM_TYPE_NO_BTN.ordinal()) {
-                ParkingHolderNoBtn viewHolder = new ParkingHolderNoBtn(LayoutInflater.from(ParkingListActivity.this).inflate(R.layout.item_rv_parking_list_nobtn, parent, false));
-                return viewHolder;
-            }
-            return null;
+        public ParkingHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            return new ParkingHolder(LayoutInflater.from(ParkingListActivity.this).inflate(R.layout.item_rv_parking_list, parent, false));
         }
 
         @Override
-        public int getItemViewType(int position) {
-            if (position == LIST_START_TIME || position == LIST_END_TIME) {
-                return ITEM_TYPE.ITEM_TYPE_BTN.ordinal();
-            } else {
-                return ITEM_TYPE.ITEM_TYPE_NO_BTN.ordinal();
-            }
-        }
-
-        @Override
-        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-            if (holder instanceof ParkingHolderNoBtn) {
-                if (position == LIST_PARKING_INFO) {
-                    ((ParkingHolderNoBtn) holder).tv_title.setText(mEstateBean.getName());
-                    ((ParkingHolderNoBtn) holder).tv_content.setText("￥" + String.format(DECIMAL_2, (float) mEstateBean.getUnitPrice()) + "/小时");
-                }
-                if (position == LIST_TOTAL_FEE) {
-                    ((ParkingHolderNoBtn) holder).tv_title.setText("预计停车费");
-                    ((ParkingHolderNoBtn) holder).tv_content.setText("￥" + String.format(DECIMAL_2, mPrice));
-                }
-            } else if (holder instanceof ParkingHolder) {
-                if (position == LIST_START_TIME) {
-                    ((ParkingHolder) holder).tv_title.setText("开始时间");
-                    ((ParkingHolder) holder).tv_content.setText(mStartSelectionStr.get(mStartSelectIndex));
-                }
-                if (position == LIST_END_TIME) {
-                    ((ParkingHolder) holder).tv_title.setText("结束时间");
-                    ((ParkingHolder) holder).tv_content.setText(mEndSelectionStr.get(mEndSelectIndex));
-                }
-            }
+        public void onBindViewHolder(ParkingHolder holder, int position) {
+            holder.tv_title.setText(titleArray[position]);
+            holder.tv_content.setText(timeArray[position]);
         }
 
         @Override
         public int getItemCount() {
-            return LIST_ITEM_COUNT;
+            return ITEM_NUM;
         }
 
         class ParkingHolder extends RecyclerView.ViewHolder {
-            private TextView tv_title;
-            private TextView tv_content;
-            private ImageView iv_arrow;
+            TextView tv_title;
+            TextView tv_content;
 
             private ParkingHolder(View view) {
                 super(view);
                 tv_title = (TextView) view.findViewById(R.id.tv_parking_title);
                 tv_content = (TextView) view.findViewById(R.id.tv_parking_content);
-                iv_arrow = (ImageView) view.findViewById(R.id.iv_parking_arrow);
-            }
-        }
-
-        class ParkingHolderNoBtn extends RecyclerView.ViewHolder {
-            private TextView tv_title;
-            private TextView tv_content;
-
-            private ParkingHolderNoBtn(View view) {
-                super(view);
-                tv_title = (TextView) view.findViewById(R.id.tv_parking_title_nobtn);
-                tv_content = (TextView) view.findViewById(R.id.tv_parking_content_nobtn);
             }
         }
     }
 
     /*********预约按钮*********/
-    @OnClick(R.id.btn_parking_reserve)
+    @OnClick(R.id.tv_parking_reserve)
     public void onViewClicked() {
         String phoneNum = SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, "");
         if (TextUtils.isEmpty(phoneNum)) {
@@ -468,11 +431,6 @@ public class ParkingListActivity extends BaseActivity {
         bundle.putSerializable("estate", mEstateBean);
         intent.putExtras(bundle);
         startActivity(intent);
-    }
-
-    @OnClick(R.id.ll_parking_list)
-    public void onIntroClicked() {
-        // TODO: 2017/9/5 增加计费说明
     }
 
 }

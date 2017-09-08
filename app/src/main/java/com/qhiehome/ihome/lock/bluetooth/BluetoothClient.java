@@ -10,6 +10,7 @@ import android.os.HandlerThread;
 import android.util.Log;
 
 import com.qhiehome.ihome.bean.UserLockBean;
+import com.qhiehome.ihome.lock.AppClient;
 import com.qhiehome.ihome.lock.ConnectLockService;
 import com.qhiehome.ihome.lock.ble.CommunicationManager;
 import com.qhiehome.ihome.lock.ble.profile.BLECommandIntent;
@@ -17,11 +18,9 @@ import com.qhiehome.ihome.lock.ble.profile.HostAppService;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
-public class BluetoothClient {
+public class BluetoothClient extends AppClient {
 
     private static final String TAG = BluetoothClient.class.getSimpleName();
-
-    private static final String GATT_THREAD_NAME = "GATT_THREAD";
 
     private static volatile BluetoothClient bluetoothClient;
 
@@ -29,9 +28,9 @@ public class BluetoothClient {
 
     private boolean isFindLock;
 
-    private String mLockMac;
-
     private String mLockName;
+
+    private String mLockMac;
 
     private Context mContext;
 
@@ -61,14 +60,25 @@ public class BluetoothClient {
         return bluetoothClient;
     }
 
-    public void setLockMac(String lockMac) {
-        mLockMac = lockMac;
+    public void setLockName(String lockName) {
+        mLockName = lockName;
     }
 
     public void setLockState(int lockState) {
         mLockState = lockState;
     }
 
+    private void scanLeDevice(boolean startScan) {
+        if (mBluetoothAdapter != null) {
+            if (startScan) {
+                mBluetoothAdapter.startLeScan(mLeScanCallback);
+            } else {
+                mBluetoothAdapter.stopLeScan(mLeScanCallback);
+            }
+        }
+    }
+
+    @Override
     public void connect() {
         LogUtil.d(TAG, TAG + " connect");
         scanLeDevice(true);
@@ -85,16 +95,7 @@ public class BluetoothClient {
         }, 5000);
     }
 
-    private void scanLeDevice(boolean startScan) {
-        if (mBluetoothAdapter != null) {
-            if (startScan) {
-                mBluetoothAdapter.startLeScan(mLeScanCallback);
-            } else {
-                mBluetoothAdapter.stopLeScan(mLeScanCallback);
-            }
-        }
-    }
-
+    @Override
     public void disconnect() {
         LogUtil.d(TAG, TAG + " disconnect to bluetooth");
         Intent intent = new Intent(mContext, HostAppService.class);
@@ -102,6 +103,7 @@ public class BluetoothClient {
         mContext.startService(intent);
     }
 
+    @Override
     public void raiseLock() {
         LogUtil.d(TAG, TAG + " raise lock");
         if (!CommunicationManager.getInstance().isBLEConnectted()) {
@@ -122,6 +124,7 @@ public class BluetoothClient {
         }
     }
 
+    @Override
     public void downLock() {
         LogUtil.d(TAG, TAG + " down lock");
         if (!CommunicationManager.getInstance().isBLEConnectted()) {
@@ -154,14 +157,14 @@ public class BluetoothClient {
     private BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
         @Override
         public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-            LogUtil.d(TAG, "lock mac is " + mLockMac + ", device address is " + device.getAddress());
-            if (device.getAddress().equals(mLockMac)) {
+            LogUtil.d(TAG, "lock name is " + device.getName() + ", mLockName is " + mLockName);
+            if (device.getName() != null && device.getName().equals(mLockName)) {
                 isFindLock = true;
-                mLockName = device.getName();
+                mLockMac = device.getAddress();
                 scanLeDevice(false);
                 Intent intent = new Intent(mContext, HostAppService.class);
-                intent.putExtra(CommunicationManager.EXTRA_ADDRESS, device.getAddress());
-                intent.putExtra(CommunicationManager.EXTRA_NAME, device.getName());
+                intent.putExtra(CommunicationManager.EXTRA_ADDRESS, mLockMac);
+                intent.putExtra(CommunicationManager.EXTRA_NAME, mLockName);
                 intent.setAction(CommunicationManager.ACTION_CONNECT_TO_DEVICE);
                 mContext.startService(intent);
             }

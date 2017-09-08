@@ -3,6 +3,8 @@ package com.qhiehome.ihome.activity;
 import android.os.Handler;
 import android.support.v4.content.ContextCompat;
 import android.os.Bundle;
+import android.view.View;
+import android.view.WindowManager;
 
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.util.CommonUtil;
@@ -18,7 +20,7 @@ public class SplashActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        CommonUtil.setStatusBarGradient(this);
+        setThisFullScreen();
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
@@ -27,6 +29,12 @@ public class SplashActivity extends BaseActivity {
                 finish();
             }
         }, SPLASH_DURATION);
+    }
+
+    private void setThisFullScreen() {
+        View decorView = getWindow().getDecorView();
+        int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+        decorView.setSystemUiVisibility(uiOptions);
     }
 
 }

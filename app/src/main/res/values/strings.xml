@@ -14,7 +14,7 @@
     <string name="login_wrongMobile">Please re-enter your phone number</string>
     <string name="login_emptyVerification">Please enter the verification code</string>
     <string name="login_wrongVerification">Please re-enter the verification code</string>
-    <string name="login_getVerification">Get</string>
+    <string name="login_getVerification">Verify Code</string>
     <string name="login_successGetVerification">Successful</string>
 
     <!-- TODO: Remove or change this placeholder text -->
