@@ -100,7 +100,7 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_marginRight="21dp"
-            android:src="@drawable/spinner_arrow" />
+            />
 
         <ImageView
             android:id="@+id/iv_item_reserve_cancel"

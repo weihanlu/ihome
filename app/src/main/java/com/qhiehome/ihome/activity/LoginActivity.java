@@ -7,11 +7,16 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
+import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.TextUtils;
-import android.util.Log;
+import android.text.style.BackgroundColorSpan;
+import android.text.style.ForegroundColorSpan;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.network.ServiceGenerator;
@@ -20,7 +25,6 @@ import com.qhiehome.ihome.network.model.inquiry.orderusing.OrderUsingRequest;
 import com.qhiehome.ihome.network.model.inquiry.orderusing.OrderUsingResponse;
 import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedRequest;
 import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedResponse;
-import com.qhiehome.ihome.network.model.park.reserve.ReserveResponse;
 import com.qhiehome.ihome.network.model.signin.SigninRequest;
 import com.qhiehome.ihome.network.model.signin.SigninResponse;
 import com.qhiehome.ihome.network.service.SMS.SMSService;
@@ -36,7 +40,6 @@ import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
-
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.net.URLEncoder;
@@ -44,10 +47,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import butterknife.BindString;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -56,10 +59,14 @@ import retrofit2.Response;
 public class LoginActivity extends BaseActivity {
 
     private static final String TAG = LoginActivity.class.getSimpleName();
+    @BindView(R.id.tv_title_toolbar)
+    TextView mTvTitle;
     @BindView(R.id.et_phone)
     EditText mEtPhone;
-    @BindView(R.id.et_vertify)
+    @BindView(R.id.et_verify)
     EditText mEtVerify;
+    @BindView(R.id.tv_specification)
+    TextView mTvSpecification;
     @BindView(R.id.bt_verify)
     Button mBtVerify;
     @BindString(R.string.login_emptyVerification)
@@ -84,6 +91,8 @@ public class LoginActivity extends BaseActivity {
     private static final String SMS_KEY = "c718da9eb368b06d145a81f5661e093d";
 
     private static final int SUCCESS_ERROR_CODE = 0;
+    @BindView(R.id.bt_login)
+    Button mBtLogin;
 
     private Handler mHandler;
 
@@ -101,13 +110,19 @@ public class LoginActivity extends BaseActivity {
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
         mHandler = new SMSObserverHandler(this);
-        SMSContentObserver sco = new SMSContentObserver(LoginActivity.this,mHandler);
+        SMSContentObserver sco = new SMSContentObserver(LoginActivity.this, mHandler);
         LoginActivity.this.getContentResolver().registerContentObserver(
                 Uri.parse("content://sms/"), true, sco);
         initView();
     }
 
     private void initView() {
+        mTvTitle.setText(R.string.login);
+        SpannableString sp = new SpannableString("点击登录，表示默认同意《服务条款》");
+        sp.setSpan(new ForegroundColorSpan(
+                ContextCompat.getColor(this, R.color.theme_start_color)),
+                11, 17, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        mTvSpecification.setText(sp);
         String phoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, "");
         if (!TextUtils.isEmpty(phoneNum)) {
             mEtPhone.setText(SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, ""));
@@ -115,18 +130,32 @@ public class LoginActivity extends BaseActivity {
         }
     }
 
-    private static class SMSObserverHandler extends Handler{
+    @OnClick({R.id.ll_phone, R.id.rl_verify_code})
+    public void onViewClicked(View view) {
+        switch (view.getId()) {
+            case R.id.ll_phone:
+                mEtPhone.requestFocus();
+                break;
+            case R.id.rl_verify_code:
+                mEtVerify.requestFocus();
+                break;
+        }
+    }
+
+    private static class SMSObserverHandler extends Handler {
         private final WeakReference<LoginActivity> mActivity;
-        private SMSObserverHandler(LoginActivity loginActivity){
+
+        private SMSObserverHandler(LoginActivity loginActivity) {
             mActivity = new WeakReference<>(loginActivity);
         }
+
         @Override
         public void handleMessage(Message msg) {
             final LoginActivity loginActivity = mActivity.get();
-            if(msg.what == GET_VERIFICATION){
+            if (msg.what == GET_VERIFICATION) {
                 loginActivity.mEtVerify.setText(msg.obj.toString());
             }
-            if (msg.what == COUNT_DOWN_START){
+            if (msg.what == COUNT_DOWN_START) {
                 loginActivity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -138,7 +167,6 @@ public class LoginActivity extends BaseActivity {
             }
         }
     }
-
 
 
     private void webLogin() {
@@ -154,6 +182,7 @@ public class LoginActivity extends BaseActivity {
                     getOwnerParking();
                 }
             }
+
             @Override
             public void onFailure(@NonNull Call<SigninResponse> call, @NonNull Throwable t) {
                 runOnUiThread(new Runnable() {
@@ -187,18 +216,18 @@ public class LoginActivity extends BaseActivity {
             mHandler.sendEmptyMessage(COUNT_DOWN_START);
             //请求参数
             Map<String, Object> options = new HashMap<>();
-            options.put("mobile",mPhoneNum);
-            options.put("tpl_id",41356);
+            options.put("mobile", mPhoneNum);
+            options.put("tpl_id", 41356);
             float rand = new Random().nextFloat();
             mVerification = String.valueOf(rand);
             mVerification = mVerification.substring(2, 8);
-            try{
-                String StrVerification = URLEncoder.encode("#code#=" + mVerification,"UTF-8");
-                options.put("tpl_value",StrVerification);
-            }catch (UnsupportedEncodingException e){
+            try {
+                String StrVerification = URLEncoder.encode("#code#=" + mVerification, "UTF-8");
+                options.put("tpl_value", StrVerification);
+            } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
-            options.put("key",SMS_KEY);
+            options.put("key", SMS_KEY);
             //网络请求
             SMSService smsService = SMSServiceGenerator.createService(SMSService.class);
             Call<SMSResponse> call = smsService.sendSMS(options);
@@ -207,13 +236,14 @@ public class LoginActivity extends BaseActivity {
                 public void onResponse(Call<SMSResponse> call, Response<SMSResponse> response) {
                     SMSResponse smsResponse = response.body();
                     int error_code = smsResponse.getError_code();
-                    if (error_code == SUCCESS_ERROR_CODE){
+                    if (error_code == SUCCESS_ERROR_CODE) {
 //                        ToastUtil.showToast(LoginActivity.this,"短信发送成功");
-                    }else {
+                    } else {
                         ToastUtil.showToast(LoginActivity.this, smsResponse.getReason());
                         mHasSentSMS = false;
                     }
                 }
+
                 @Override
                 public void onFailure(Call<SMSResponse> call, Throwable t) {
                     ToastUtil.showToast(LoginActivity.this, "网络异常");
@@ -235,9 +265,9 @@ public class LoginActivity extends BaseActivity {
         } else {
             //验证验证码
             //SMSSDK.submitVerificationCode(DEFAULT_COUNTRY_CODE, mPhoneNum, verifyCode);
-            if (verifyCode.equals(mVerification)){
+            if (verifyCode.equals(mVerification)) {
                 webLogin();
-            }else {
+            } else {
                 ToastUtil.showToast(this, login_wrongVerification);
             }
         }
@@ -253,11 +283,10 @@ public class LoginActivity extends BaseActivity {
 
         @Override
         public void run() {
-            if (mHasSentSMS){
+            if (mHasSentSMS) {
                 mBtVerify.setClickable(false);
                 String leftSeconds = String.format(getResources().getString(R.string.left_second), seconds);
                 mBtVerify.setText(leftSeconds);
-                mBtVerify.setTextColor(getResources().getColor(R.color.colorAccent));
                 seconds--;
                 if (seconds > 0) {
                     mHandler.postDelayed(this, 1000);
@@ -265,9 +294,9 @@ public class LoginActivity extends BaseActivity {
                     mVerification = String.valueOf(new Random().nextFloat());//1分钟后验证码失效
                     mBtVerify.setClickable(true);
                     mBtVerify.setText(login_getVerification);
-                    mBtVerify.setTextColor(getResources().getColor(R.color.black));
+                    mBtVerify.setTextColor(ContextCompat.getColor(LoginActivity.this, R.color.theme_start_color));
                 }
-            }else {                 //网络请求失败或者网络不通则重置按钮
+            } else {                 //网络请求失败或者网络不通则重置按钮
                 mBtVerify.setClickable(true);
                 mBtVerify.setText(login_getVerification);
                 mBtVerify.setTextColor(getResources().getColor(R.color.black));
@@ -276,7 +305,7 @@ public class LoginActivity extends BaseActivity {
     }
 
     /********重新登录时恢复用户订单数据********/
-    private void getOrderInfo(){
+    private void getOrderInfo() {
         OrderUsingService orderUsingService = ServiceGenerator.createService(OrderUsingService.class);
         OrderUsingRequest orderUsingRequest = new OrderUsingRequest(EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.SHA_256));
         Call<OrderUsingResponse> call = orderUsingService.orderUsing(orderUsingRequest);
@@ -284,10 +313,10 @@ public class LoginActivity extends BaseActivity {
             @Override
             public void onResponse(Call<OrderUsingResponse> call, Response<OrderUsingResponse> response) {
                 try {
-                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
-                        if (response.body().getData() == null){
+                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                        if (response.body().getData() == null) {
                             MainActivity.start(LoginActivity.this);
-                        }else {
+                        } else {
                             OrderUsingResponse.DataBean.OrderBean orderBean = response.body().getData().getOrder();
                             OrderUsingResponse.DataBean.EstateBean estateBean = response.body().getData().getEstate();
                             SharedPreferenceUtil.setLong(LoginActivity.this, Constant.PARKING_START_TIME, orderBean.getStartTime());
@@ -301,10 +330,10 @@ public class LoginActivity extends BaseActivity {
                             SharedPreferenceUtil.setFloat(LoginActivity.this, Constant.ESTATE_LATITUDE, (float) estateBean.getY());
                             MainActivity.start(LoginActivity.this);
                         }
-                    }else {
+                    } else {
                         ToastUtil.showToast(LoginActivity.this, "服务器繁忙，请稍后再试");
                     }
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                     ToastUtil.showToast(LoginActivity.this, "服务器错误，请稍后再试");
                 }
@@ -320,7 +349,7 @@ public class LoginActivity extends BaseActivity {
 
 
     /********检查用户类型：临时/业主********/
-    private void getOwnerParking(){
+    private void getOwnerParking() {
         ParkingOwnedService parkingOwnedService = ServiceGenerator.createService(ParkingOwnedService.class);
         ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.SHA_256));
         Call<ParkingOwnedResponse> call = parkingOwnedService.parkingOwned(parkingOwnedRequest);
@@ -328,15 +357,15 @@ public class LoginActivity extends BaseActivity {
             @Override
             public void onResponse(Call<ParkingOwnedResponse> call, Response<ParkingOwnedResponse> response) {
                 try {
-                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
-                        if (response.body().getData() == null){
+                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                        if (response.body().getData() == null) {
                             SharedPreferenceUtil.setInt(LoginActivity.this, Constant.USER_TYPE, Constant.USER_TYPE_TEMP);
-                        }else {
+                        } else {
                             SharedPreferenceUtil.setInt(LoginActivity.this, Constant.USER_TYPE, Constant.USER_TYPE_OWNER);
                         }
                         getOrderInfo();
                     }
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                     ToastUtil.showToast(LoginActivity.this, "服务器错误，请稍后再试");
                 }

@@ -29,8 +29,9 @@ public class ConnectLockService extends IntentService {
 
     public static final String ACTION_LOCK_STATE = "com.qhiehome.ihom.lock.action.LOCK_STATE";
 
-    public static final String EXTRA_GATEWAY_ID = "com.qhiehome.ihome.lock.extra.GATEWAYID";
-    public static final String EXTRA_LOCK_MAC = "com.qhiehome.ihome.lock.extra.LOCKMAC";
+    public static final String EXTRA_GATEWAY_ID = "com.qhiehome.ihome.lock.extra.GATEWAY_ID";
+    public static final String EXTRA_LOCK_MAC = "com.qhiehome.ihome.lock.extra.LOCK_MAC";
+    public static final String EXTRA_LOCK_NAME = "com.qhiehome.ihome.lock.extra.LOCK_NAME";
 
     public static final String BROADCAST_CONNECT = "com.qhiehome.ihome.lock.broad.CONNECT";
 
@@ -46,19 +47,20 @@ public class ConnectLockService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         if (intent != null) {
             String action = intent.getAction();
-            String lockMac = intent.getStringExtra(EXTRA_LOCK_MAC);
             int lockState = intent.getIntExtra(ACTION_LOCK_STATE, -1);
             switch (action) {
                 case ACTION_GATEWAY_CONNECT:
                     String gateWayId = intent.getStringExtra(EXTRA_GATEWAY_ID);
+                    String lockMac = intent.getStringExtra(EXTRA_LOCK_MAC);
                     gateWayClient = GateWayClient.getInstance(this);
                     gateWayClient.setGateWayId(gateWayId);
                     gateWayClient.setLockMac(lockMac);
                     handleActionGateWayConnect();
                     break;
                 case ACTION_BLUETOOTH_CONNECT:
+                    String lockName = intent.getStringExtra(EXTRA_LOCK_NAME);
                     bluetoothClient = BluetoothClient.getInstance(this);
-                    bluetoothClient.setLockMac(lockMac);
+                    bluetoothClient.setLockName(lockName);
                     handleActionBluetoothConnect();
                     break;
                 case ACTION_DISCONNECT:

@@ -13,6 +13,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.SectionIndexer;
 import android.widget.TextView;
 
@@ -47,6 +48,8 @@ public class ParkingTimelineActivity extends AppCompatActivity {
     TextView mTvTitleToolbar;
     @BindView(R.id.tv_subtitle_toolbar)
     TextView mTvSubtitleToolbar;
+    @BindView(R.id.iv_time_axis)
+    ImageView mIvTimeAxis;
 
 //    @BindView(R.id.tv_parking_timeline_guaranteeFee_num)
 //    TextView mTvGuaranteeFee;
@@ -99,6 +102,7 @@ public class ParkingTimelineActivity extends AppCompatActivity {
         initToolbar();
         initData();
         initRecyclerView();
+        mIvTimeAxis.setVisibility(View.INVISIBLE);
 //        mTvGuaranteeFee.setText("0.00");
 
     }

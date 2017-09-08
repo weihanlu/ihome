@@ -328,67 +328,72 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
     }
 
     private void showPublishDialog() {
-        selectedPosition = 0;
-        for (int i = 0; i < mSelected.size(); i++) {
-            mSelected.set(i, false);
-        }
-        mPeriodTimes = 0;
-        QhPublishParkingDialog dialog = new QhPublishParkingDialog(mContext);
-        View customView = dialog.getCustomView();
-        if (customView != null) {
-            mRvPark = (RecyclerView) customView.findViewById(R.id.rv_dialog);
-            mRvPark.setHasFixedSize(true);
-            mRvPark.setLayoutManager(new GridLayoutManager(this, 3));
-            if (mSelected.size() > 0) {
-                mSelected.set(0, true);
+        try {
+            selectedPosition = 0;
+            for (int i = 0; i < mSelected.size(); i++) {
+                mSelected.set(i, false);
             }
-            DialogParkAdapter dialogParkAdapter = new DialogParkAdapter(this, mParkingItems, mSelected);
-            dialogParkAdapter.setOnItemClickListener(new DialogParkAdapter.OnClickListener() {
-                @Override
-                public void onClick(View view, int i) {
-                    selectedPosition = i;
-                    updateTimeInterval(i);
+            mPeriodTimes = 0;
+            QhPublishParkingDialog dialog = new QhPublishParkingDialog(mContext);
+            View customView = dialog.getCustomView();
+            if (customView != null) {
+                mRvPark = (RecyclerView) customView.findViewById(R.id.rv_dialog);
+                mRvPark.setHasFixedSize(true);
+                mRvPark.setLayoutManager(new GridLayoutManager(this, 3));
+                if (mSelected.size() > 0) {
+                    mSelected.set(0, true);
                 }
-            });
-            mRvPark.setAdapter(dialogParkAdapter);
-            mContainer = (LinearLayout) customView.findViewById(R.id.container_period);
-            final Button addBtn = (Button) customView.findViewById(R.id.btn_add);
-            addBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    View itemContainer = LayoutInflater.from(mContext).inflate(R.layout.item_publish_parking, null);
-                    AppCompatSpinner startSpinner = (AppCompatSpinner) itemContainer.findViewById(R.id.spinner_start);
-                    startSpinner.setAdapter(mStartAdapter);
-                    final AppCompatSpinner endSpinner = (AppCompatSpinner) itemContainer.findViewById(R.id.spinner_end);
-                    endSpinner.setAdapter(mEndAdapter);
-                    startSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                        @Override
-                        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                            endSpinner.setSelection(position);
-                        }
-
-                        @Override
-                        public void onNothingSelected(AdapterView<?> parent) {
-                            // do nothing
-                        }
-                    });
-                    mContainer.addView(itemContainer);
-                    if (++mPeriodTimes == Constant.TIME_PERIOD_LIMIT) {
-                        addBtn.setVisibility(View.GONE);
+                DialogParkAdapter dialogParkAdapter = new DialogParkAdapter(this, mParkingItems, mSelected);
+                dialogParkAdapter.setOnItemClickListener(new DialogParkAdapter.OnClickListener() {
+                    @Override
+                    public void onClick(View view, int i) {
+                        selectedPosition = i;
+                        updateTimeInterval(i);
                     }
+                });
+                mRvPark.setAdapter(dialogParkAdapter);
+                mContainer = (LinearLayout) customView.findViewById(R.id.container_period);
+                final Button addBtn = (Button) customView.findViewById(R.id.btn_add);
+                addBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        View itemContainer = LayoutInflater.from(mContext).inflate(R.layout.item_publish_parking, null);
+                        AppCompatSpinner startSpinner = (AppCompatSpinner) itemContainer.findViewById(R.id.spinner_start);
+                        startSpinner.setAdapter(mStartAdapter);
+                        final AppCompatSpinner endSpinner = (AppCompatSpinner) itemContainer.findViewById(R.id.spinner_end);
+                        endSpinner.setAdapter(mEndAdapter);
+                        startSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                            @Override
+                            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                                endSpinner.setSelection(position);
+                            }
+
+                            @Override
+                            public void onNothingSelected(AdapterView<?> parent) {
+                                // do nothing
+                            }
+                        });
+                        mContainer.addView(itemContainer);
+                        if (++mPeriodTimes == Constant.TIME_PERIOD_LIMIT) {
+                            addBtn.setVisibility(View.GONE);
+                        }
+                    }
+                });
+                addBtn.callOnClick();
+                updateTimeInterval(0);
+            }
+            dialog.setOnSurePublishListener(new QhPublishParkingDialog.OnSurePublishListener() {
+                @Override
+                public void onSure(View view) {
+                    getSelectedPeriod();
+                    publishParking();
                 }
             });
-            addBtn.callOnClick();
-            updateTimeInterval(0);
+            dialog.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            ToastUtil.showToast(mContext, "获取车位锁发生错误");
         }
-        dialog.setOnSurePublishListener(new QhPublishParkingDialog.OnSurePublishListener() {
-            @Override
-            public void onSure(View view) {
-                getSelectedPeriod();
-                publishParking();
-            }
-        });
-        dialog.show();
     }
 
     private void updateTimeInterval(int position) {
