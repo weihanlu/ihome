@@ -1,16 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context="com.qhiehome.ihome.activity.ReserveActivity">
+    tools:context="com.qhiehome.ihome.activity.ReserveActivity_old">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/toolbar_theme">
+
+        <!--<android.support.v7.widget.Toolbar-->
+            <!--android:id="@+id/tb_reserve_list"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="?attr/actionBarSize"-->
+            <!--android:background="@drawable/bg_theme_gradient"-->
+            <!--android:minHeight="?attr/actionBarSize"-->
+            <!--android:theme="?attr/actionBarTheme"/>-->
 
         <include layout="@layout/layout_toolbar_centertitle"
             android:layout_width="match_parent"
@@ -19,17 +26,17 @@
 
     </android.support.design.widget.AppBarLayout>
 
+
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/srl_reserve_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:visibility="gone"
         >
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/bg_activity">
+            android:background="@color/white">
 
             <ViewStub
                 android:id="@+id/viewstub_reserve_list"
@@ -40,43 +47,22 @@
 
             </ViewStub>
 
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/rv_reserve_list"
+            <com.ericliu.asyncexpandablelist.async.AsyncExpandableListView
+                android:id="@+id/lv_reserve_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
-            </android.support.v7.widget.RecyclerView>
+            </com.ericliu.asyncexpandablelist.async.AsyncExpandableListView>
 
         </RelativeLayout>
 
 
+
+
+
     </android.support.v4.widget.SwipeRefreshLayout>
 
-    <LinearLayout
-        android:id="@+id/ll_reserve_use"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:visibility="gone"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <include layout="@layout/item_reserve_header"/>
-
-        <android.support.design.widget.TabLayout
-            android:id="@+id/tl_reserve"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            app:tabIndicatorHeight="2dp"
-            app:tabSelectedTextColor="@color/theme_start_color"
-            app:tabTextAppearance="@style/MyTabLayoutTextAppearance"
-            android:background="@color/white"/>
 
 
-        <android.support.v4.view.ViewPager
-            android:id="@+id/vp_reserve"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            />
 
-    </LinearLayout>
 
-</LinearLayout>
+</android.support.design.widget.CoordinatorLayout>

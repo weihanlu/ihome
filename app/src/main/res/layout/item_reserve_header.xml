@@ -1,72 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/explore_io_card_container"
     android:layout_width="match_parent"
-    android:layout_height="120dp"
-    android:layout_marginLeft="0dp"
-    android:layout_marginRight="0dp"
-    app:cardCornerRadius="@dimen/card_corner_radius"
-    app:cardElevation="@dimen/card_header_elevation"
-    android:layout_marginBottom="8dp"
+    android:layout_height="117dp"
+    android:layout_marginBottom="10dp"
+    android:background="@color/white"
     >
 
 
     <RelativeLayout
-        android:id="@+id/layout_item_reserve_header"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/pale_green">
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true">
 
-        <TextView
-            android:id="@+id/tv_item_reserve_parking"
+        <RelativeLayout
+            android:id="@+id/layout_title_reserve"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
-            android:layout_marginStart="20dp"
-            android:layout_weight="1"
-            android:ellipsize="end"
-            android:gravity="center_vertical|left"
-            android:maxLines="1"
-            android:paddingStart="8dp"
-            android:paddingTop="8dp"
-            android:text="北京邮电大学停车场"
-            android:textColor="@android:color/white"
-            android:textSize="18sp" />
+            android:layout_marginStart="20dp">
+
+            <TextView
+                android:id="@+id/tv_item_reserve_parking"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="北京邮电大学停车场"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tv_item_reserve_state"
+                android:layout_width="40dp"
+                android:layout_height="16dp"
+                android:background="@drawable/gray_rect_reserve"
+                tools:text="进行中"
+                android:textSize="9sp"
+                android:textColor="@color/white"
+                android:layout_toRightOf="@id/tv_item_reserve_parking"
+                android:layout_marginStart="5dp"
+                android:gravity="center"
+                android:layout_centerVertical="true"
+                />
+        </RelativeLayout>
+
 
         <TextView
             android:id="@+id/tv_item_reserve_orderid"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/tv_item_reserve_parking"
-            android:layout_alignStart="@id/tv_item_reserve_parking"
-            android:layout_weight="1"
+            android:layout_below="@id/layout_title_reserve"
+            android:layout_alignStart="@id/layout_title_reserve"
             android:ellipsize="end"
-            android:gravity="center_vertical|left"
             android:maxLines="1"
-            android:paddingStart="8dp"
-            android:paddingTop="8dp"
-            android:textColor="@android:color/white"
-            android:textSize="14sp"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/minor_text"
+            android:textSize="12sp"
             tools:text="订单:29101923" />
 
         <TextView
             android:id="@+id/tv_item_reserve_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:ellipsize="end"
-            android:gravity="center_vertical|left"
             android:maxLines="1"
-            android:paddingStart="8dp"
-            android:paddingTop="8dp"
-            android:textColor="@android:color/white"
-            android:textSize="14sp"
+            android:textColor="@color/minor_text"
+            android:textSize="12sp"
             tools:text="2017.4.5 16:30 - 17:32"
             android:layout_below="@id/tv_item_reserve_orderid"
-            android:layout_alignStart="@id/tv_item_reserve_orderid" />
+            android:layout_alignStart="@id/tv_item_reserve_orderid"
+            android:layout_marginTop="10dp"/>
 
         <TextView
             android:id="@+id/tv_item_reserve_fee"
@@ -74,42 +79,11 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/tv_item_reserve_time"
             tools:text="已支付：23.45元"
-            android:textSize="14sp"
-            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:textColor="@color/minor_text"
             android:layout_alignStart="@id/tv_item_reserve_time"
-            android:paddingStart="8dp"
-            android:paddingTop="8dp"
+            android:layout_marginTop="10dp"
             />
 
 
-        <ProgressBar
-            android:id="@+id/pb_item_reserve"
-            style="?android:attr/progressBarStyleSmall"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginRight="21dp"
-            android:visibility="gone"
-            tools:visibility="visible" />
-
-        <ImageView
-            android:id="@+id/iv_item_reserve"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginRight="21dp"
-            />
-
-        <ImageView
-            android:id="@+id/iv_item_reserve_cancel"
-            android:layout_width="45dp"
-            android:layout_height="45dp"
-            android:layout_centerVertical="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginEnd="16dp"
-            tools:background="@drawable/ic_order_cancel"/>
-
-    </RelativeLayout>
-</android.support.v7.widget.CardView>
+</RelativeLayout>

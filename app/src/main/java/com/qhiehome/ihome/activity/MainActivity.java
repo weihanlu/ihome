@@ -53,7 +53,6 @@ import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 import com.qhiehome.ihome.view.QhAvatarSelectDialog;
-import com.qhiehome.ihome.view.SharePopupWindow;
 
 import java.io.File;
 import java.io.FileNotFoundException;

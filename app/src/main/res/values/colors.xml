@@ -40,6 +40,7 @@
     <color name="bg_clear_history">#e2e2e2</color>
     <color name="sub_text">#666666</color>
     <color name="submit_feedback">#fefefe</color>
+    <color name="alpha_black">#80000000</color>
     
     
 </resources>
