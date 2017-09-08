@@ -106,7 +106,6 @@ public class OrderOwnerFragment extends Fragment implements SwipeRefreshLayout.O
                     orderOwnerFragment.mSrlOrderOwner.setRefreshing(false);
                     break;
                 case EXTRA_INFO:
-                    orderOwnerFragment.mPostTimes ++;
                     orderOwnerFragment.initData();
                 default:
                     break;

@@ -2,6 +2,7 @@ package com.qhiehome.ihome.network.model.inquiry.order;
 
 import com.qhiehome.ihome.network.model.base.Response;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -35,7 +36,7 @@ public class OrderResponse extends Response{
             this.orderList = orderList;
         }
 
-        public static class OrderListBean {
+        public static class OrderListBean implements Serializable{
             /**
              * id : 123456789
              * parking : {"id":123456789,"name":"xxxxxx"}
@@ -200,7 +201,7 @@ public class OrderResponse extends Response{
                 this.state = state;
             }
 
-            public static class ParkingBean {
+            public static class ParkingBean implements Serializable{
                 /**
                  * id : 123456789
                  * name : xxxxxx
@@ -226,7 +227,7 @@ public class OrderResponse extends Response{
                 }
             }
 
-            public static class EstateBean {
+            public static class EstateBean implements Serializable{
                 /**
                  * id : 123456789
                  * name : xxxxxx

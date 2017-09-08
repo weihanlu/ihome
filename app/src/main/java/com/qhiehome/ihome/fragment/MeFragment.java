@@ -14,18 +14,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.qhiehome.ihome.R;
-import com.qhiehome.ihome.activity.LoginActivity;
-import com.qhiehome.ihome.activity.OrderListActivity;
 import com.qhiehome.ihome.activity.PublishParkingActivity;
 import com.qhiehome.ihome.activity.ReserveActivity;
-import com.qhiehome.ihome.activity.ReserveListActivity;
+import com.qhiehome.ihome.activity.ReserveActivity_old;
 import com.qhiehome.ihome.activity.SettingActivity;
 import com.qhiehome.ihome.adapter.MeAdapter;
-import com.qhiehome.ihome.manager.ActivityManager;
-import com.qhiehome.ihome.util.Constant;
-import com.qhiehome.ihome.util.ToastUtil;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

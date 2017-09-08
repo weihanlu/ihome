@@ -1,16 +1,12 @@
 package com.qhiehome.ihome.fragment;
 
-import android.Manifest;
-import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.NotificationCompat;
@@ -49,10 +45,9 @@ import com.qhiehome.ihome.activity.CityActivity;
 import com.qhiehome.ihome.activity.MainActivity;
 import com.qhiehome.ihome.activity.MapSearchActivity;
 import com.qhiehome.ihome.activity.ParkingListActivity;
-import com.qhiehome.ihome.activity.ReserveActivity;
+import com.qhiehome.ihome.activity.ReserveActivity_old;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.baiduMap.BaiduMapResponse;
-import com.qhiehome.ihome.network.model.base.ParkingResponse;
 import com.qhiehome.ihome.network.model.configuration.city.CityConfigRequest;
 import com.qhiehome.ihome.network.model.configuration.city.CityConfigResponse;
 import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyRequest;
@@ -68,10 +63,8 @@ import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 import com.qhiehome.ihome.view.SharePopupWindow;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -83,7 +76,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static android.R.attr.id;
 import static android.content.Context.NOTIFICATION_SERVICE;
 
 
@@ -746,7 +738,7 @@ public class ParkFragment extends Fragment {
 
 
         // 设置通知的点击行为：这里启动一个 Activity
-        Intent intent = new Intent(getActivity(), ReserveActivity.class);
+        Intent intent = new Intent(getActivity(), ReserveActivity_old.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(pendingIntent);
         builder.setPriority(Notification.PRIORITY_HIGH);
