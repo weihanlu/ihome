@@ -200,10 +200,11 @@ public class ParkFragment extends Fragment {
         if (mHasInit) {
             mIvMapRefresh.performClick();
         }
-        if (SharedPreferenceUtil.getInt(mContext, Constant.ORDER_STATE, 0) == 0) {
-            mIvMapNavi.setVisibility(View.GONE);
-        }else {
+        if (SharedPreferenceUtil.getInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_CANCEL) == Constant.ORDER_STATE_RESERVED ||
+                SharedPreferenceUtil.getInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_CANCEL) == Constant.ORDER_STATE_PARKED) {
             mIvMapNavi.setVisibility(View.VISIBLE);
+        }else {
+            mIvMapNavi.setVisibility(View.GONE);
         }
 
     }

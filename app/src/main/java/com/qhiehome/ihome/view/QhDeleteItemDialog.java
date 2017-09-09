@@ -15,6 +15,9 @@ public class QhDeleteItemDialog extends Dialog{
 
     private Context mContext;
 
+    private String mTitle;
+    private int mType = 0;
+
     public QhDeleteItemDialog(@NonNull Context context) {
         super(context, R.style.qh_dialog_Theme);
         mContext = context;
@@ -25,6 +28,12 @@ public class QhDeleteItemDialog extends Dialog{
         mContext = context;
     }
 
+    public QhDeleteItemDialog(@NonNull Context context, String mTitle, int mType) {
+        super(context, R.style.qh_dialog_Theme);
+        this.mContext = context;
+        this.mTitle = mTitle;
+        this.mType = mType;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +42,11 @@ public class QhDeleteItemDialog extends Dialog{
         View view = LayoutInflater.from(mContext).inflate(R.layout.dialog_delete_item, null);
 
         setContentView(view);
+
+        if (mType == 1){
+            TextView tvTitle = (TextView) view.findViewById(R.id.tv_delete_title);
+            tvTitle.setText(mTitle);
+        }
 
         TextView mTvQuitCallback = (TextView) view.findViewById(R.id.tv_quit_callback);
         mTvQuitCallback.setOnClickListener(new View.OnClickListener() {

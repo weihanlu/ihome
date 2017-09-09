@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.qhiehome.ihome.activity.ReserveActivity">
+    tools:context="com.qhiehome.ihome.activity.ReserveActivity"
+    android:background="@color/bg_activity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"

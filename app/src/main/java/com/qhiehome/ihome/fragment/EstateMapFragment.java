@@ -24,6 +24,7 @@ import com.qhiehome.ihome.network.service.configuration.CityConfigService;
 import com.qhiehome.ihome.network.service.estate.DownloadEstateMapService;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.ToastUtil;
+import com.qhiehome.ihome.view.QhDeleteItemDialog;
 
 
 import java.text.SimpleDateFormat;
@@ -120,7 +121,14 @@ public class EstateMapFragment extends Fragment {
         switch (view.getId()) {
             case R.id.btn_function_1:
                 if (mOrderBean.getState() == Constant.ORDER_STATE_RESERVED){//取消预约
-                    mActivity.CancelReserve(0);
+                    QhDeleteItemDialog dialog = new QhDeleteItemDialog(mContext, "确认取消此次预约？", 1);
+                    dialog.setOnSureCallbackListener(new QhDeleteItemDialog.OnSureCallbackListener() {
+                        @Override
+                        public void onSure(View view) {
+                            mActivity.CancelReserve(0);
+                        }
+                    });
+                    dialog.show();
                 }
                 if (mOrderBean.getState() == Constant.ORDER_STATE_PARKED){//暂时离开
                     mActivity.LockControlSelf();
@@ -128,11 +136,28 @@ public class EstateMapFragment extends Fragment {
                 break;
             case R.id.btn_function_2:
                 if (mOrderBean.getState() == Constant.ORDER_STATE_PARKED){//结束停车
-                    mActivity.LockControl(0, false);
+                    String title = "点击『结束停车』后将不能使用车位，确认结束停车？";
+                    QhDeleteItemDialog dialog = new QhDeleteItemDialog(mContext, title, 1);
+                    dialog.setOnSureCallbackListener(new QhDeleteItemDialog.OnSureCallbackListener() {
+                        @Override
+                        public void onSure(View view) {
+                            mActivity.LockControl(0, false);
+                        }
+                    });
+                    dialog.show();
+
                 }
                 if (mOrderBean.getState() == Constant.ORDER_STATE_RESERVED && mCanUse){//开始停车
-                    mActivity.LockControl(0, true);
-                    mOrderBean.setState(Constant.ORDER_STATE_PARKED);
+                    String title = "点击『开始停车』后开始计费，请您离开后务必点击『结束停车』按钮以确认离开";
+                    QhDeleteItemDialog dialog = new QhDeleteItemDialog(mContext, title, 1);
+                    dialog.setOnSureCallbackListener(new QhDeleteItemDialog.OnSureCallbackListener() {
+                        @Override
+                        public void onSure(View view) {
+                            mActivity.LockControl(0, true);
+                            mOrderBean.setState(Constant.ORDER_STATE_PARKED);
+                        }
+                    });
+                    dialog.show();
                 }else if (mOrderBean.getState() == Constant.ORDER_STATE_RESERVED && !mCanUse){//查询是否可用
                     mActivity.QueryParkingUsing();
                 }
