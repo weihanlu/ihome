@@ -16,6 +16,10 @@ public class QhAvatarSelectDialog extends Dialog{
 
     private Context mContext;
 
+    private String mSelect1;
+    private String mSelect2;
+    private int mType = 0;  //0:选择投降; 1:选择支付担保费or取消预约
+
     public QhAvatarSelectDialog(@NonNull Context context) {
         super(context, R.style.qh_dialog_Theme);
         mContext = context;
@@ -26,6 +30,14 @@ public class QhAvatarSelectDialog extends Dialog{
         mContext = context;
     }
 
+    public QhAvatarSelectDialog(@NonNull Context context, String mSelect1, String mSelect2, int mType) {
+        super(context, R.style.qh_dialog_Theme);
+        this.mContext = context;
+        this.mSelect1 = mSelect1;
+        this.mSelect2 = mSelect2;
+        this.mType = mType;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,6 +46,7 @@ public class QhAvatarSelectDialog extends Dialog{
         setContentView(view);
 
         TextView mTakePhoto = (TextView) view.findViewById(R.id.tv_take_photo);
+
         mTakePhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -54,6 +67,11 @@ public class QhAvatarSelectDialog extends Dialog{
                 QhAvatarSelectDialog.this.dismiss();
             }
         });
+
+        if (mType == 1){
+            mTakePhoto.setText(mSelect1);
+            mGallery.setText(mSelect2);
+        }
     }
 
     public interface OnItemClickListener {

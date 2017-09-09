@@ -28,6 +28,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.baidu.mapapi.model.LatLng;
 import com.baidu.navisdk.adapter.BNRoutePlanNode;
@@ -37,6 +38,7 @@ import com.qhiehome.ihome.adapter.ReserveListAdapter;
 import com.qhiehome.ihome.fragment.EstateMapFragment;
 import com.qhiehome.ihome.fragment.EstatePassFragment;
 import com.qhiehome.ihome.lock.ConnectLockService;
+import com.qhiehome.ihome.manager.ActivityManager;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.inquiry.order.OrderRequest;
 import com.qhiehome.ihome.network.model.inquiry.order.OrderResponse;
@@ -60,6 +62,7 @@ import com.qhiehome.ihome.util.NaviUtil;
 import com.qhiehome.ihome.util.NetworkUtils;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
+import com.qhiehome.ihome.view.QhAvatarSelectDialog;
 import com.qhiehome.ihome.view.QhDeleteItemDialog;
 
 import java.text.SimpleDateFormat;
@@ -140,7 +143,6 @@ public class ReserveActivity extends AppCompatActivity {
         initSwiperRefreshLayout();
         initRecyclerView();
         initTabLayout();
-        orderRequest();
 
         mNavi = NaviUtil.getInstance();
         mNavi.setmContext(mContext);
@@ -188,8 +190,26 @@ public class ReserveActivity extends AppCompatActivity {
         mRvAdapter = new ReserveListAdapter(mOrderBeanList, mContext);
         mRvAdapter.setOnItemClickListener(new ReserveListAdapter.OnClickListener() {
             @Override
-            public void onClick(View view, int i) {
-                Pay(i, mOrderBeanList.get(i).getState() == Constant.ORDER_STATE_TEMP_RESERVED?Constant.PAY_STATE_GUARANTEE:Constant.PAY_STATE_TOTAL);
+            public void onClick(View view, final int i) {
+                if(mOrderBeanList.get(i).getState() == Constant.ORDER_STATE_TEMP_RESERVED){
+                    QhAvatarSelectDialog dialog = new QhAvatarSelectDialog(mContext, "支付担保费", "取消预约", 1);
+                    dialog.setOnItemClickListener(new QhAvatarSelectDialog.OnItemClickListener() {
+                        @Override
+                        public void onTakePhoto(View view) {
+                            Pay(i, mOrderBeanList.get(i).getState() == Constant.ORDER_STATE_TEMP_RESERVED?Constant.PAY_STATE_GUARANTEE:Constant.PAY_STATE_TOTAL);
+                        }
+
+                        @Override
+                        public void onGallery(View view) {
+                            CancelReserve(i);
+                        }
+                    });
+                    dialog.show();
+                }else {
+                    Pay(i, mOrderBeanList.get(i).getState() == Constant.ORDER_STATE_TEMP_RESERVED?Constant.PAY_STATE_GUARANTEE:Constant.PAY_STATE_TOTAL);
+                }
+
+
             }
         });
 
@@ -251,6 +271,7 @@ public class ReserveActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<OrderResponse> call, Throwable t) {
                 ToastUtil.showToast(mContext, "网络连接异常");
+                mSrlReserve.setVisibility(View.VISIBLE);
                 mSrlReserve.setRefreshing(false);
                 try {
                     View viewStubContent = mViewStub.inflate();     //inflate 方法只能被调用一次
@@ -367,6 +388,10 @@ public class ReserveActivity extends AppCompatActivity {
                     mOrderBeanList.get(index).setState(Constant.ORDER_STATE_CANCEL);
                     updateData();
                     refreshActivity();
+                    new MaterialDialog.Builder(mContext)
+                            .content("您的预约已取消")
+                            .negativeText("确定")
+                            .show();
                 }
             }
 
@@ -602,6 +627,7 @@ public class ReserveActivity extends AppCompatActivity {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ConnectLockService.BROADCAST_CONNECT);
         registerReceiver(mReceiver, intentFilter);
+        orderRequest();
     }
 
     @Override
