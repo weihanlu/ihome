@@ -60,6 +60,7 @@
             android:layout_centerVertical="true"
             android:layout_marginEnd="20dp"
             android:clickable="false"
+            android:visibility="gone"
             />
 
     </RelativeLayout>

@@ -118,7 +118,7 @@ public class RecyclerViewEmptySupport extends RecyclerView {
                         @Override
                         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                             if (mListener != null) {
-                                mListener.onToggleRepublish(buttonView, isChecked, mPosition, mTvRepublishDate);
+//                                mListener.onToggleRepublish(buttonView, isChecked, mPosition, mTvRepublishDate);
                             }
                         }
                     });

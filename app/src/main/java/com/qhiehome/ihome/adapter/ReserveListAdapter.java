@@ -105,6 +105,7 @@ public class ReserveListAdapter extends RecyclerView.Adapter<ReserveListAdapter.
         if (orderState == Constant.ORDER_STATE_TEMP_RESERVED) {
             mCountDownTimer = new MyCountDownTimer(orderListBean.getCreateTime() + 15 * 60 * 1000 - System.currentTimeMillis(), INTERVAL, holder.tv_time);
             mCountDownTimer.start();
+            holder.tv_time.setTag(mCountDownTimer);
         } else {
             holder.tv_time.setText(time);
         }
@@ -128,6 +129,14 @@ public class ReserveListAdapter extends RecyclerView.Adapter<ReserveListAdapter.
         }
     }
 
+    @Override
+    public void onViewRecycled(ReserveViewHolder holder) {
+        super.onViewRecycled(holder);
+        CountDownTimer countDownTimer = (CountDownTimer) holder.tv_time.getTag();
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+    }
 
     @Override
     public int getItemCount() {
@@ -177,7 +186,6 @@ public class ReserveListAdapter extends RecyclerView.Adapter<ReserveListAdapter.
         @Override
         public void onFinish() {
             mTvTime.setText("剩余支付时间：00:00");
-            cancelTimer();
         }
 
     }
@@ -186,16 +194,15 @@ public class ReserveListAdapter extends RecyclerView.Adapter<ReserveListAdapter.
         this.onClickListener = listener;
     }
 
+    public void cancelTimer() {
+        if (mCountDownTimer != null) {
+            mCountDownTimer.cancel();
+        }
+    }
+
     private OnClickListener onClickListener;
 
     public interface OnClickListener {
         void onClick(View view, int i);
-    }
-
-    public void cancelTimer() {
-        if (mCountDownTimer != null) {
-            mCountDownTimer.cancel();
-            mCountDownTimer = null;
-        }
     }
 }

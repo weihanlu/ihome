@@ -15,6 +15,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -61,8 +62,10 @@ import com.qhiehome.ihome.view.WeekPickView;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -115,6 +118,8 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
     private List<String> mStartData;
     private List<String> mEndData;
 
+    private SparseBooleanArray mCheckedArray;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -138,6 +143,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
         mSelected = new ArrayList<>();
         mPublishList = new ArrayList<>();
         mTimePeriods = new ArrayList<>();
+        mCheckedArray = new SparseBooleanArray();
         mPhoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, "");
         initSpinner();
         inquiryParkingInfo();
@@ -266,7 +272,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
             }
 
             @Override
-            public void onToggleRepublish(final View switcher, boolean isChecked, int position, final TextView textView) {
+            public void onToggleRepublish(final View switcher, boolean isChecked, final int position, final TextView textView) {
                 // republish
                 if (isChecked) {
                     View customView = LayoutInflater.from(mContext).inflate(R.layout.dialog_select_days, null);
@@ -295,9 +301,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                             })
                             .canceledOnTouchOutside(false)
                             .show();
-
                 } else {
-                    // TODO: 2017/8/28  取消重复发布
                     textView.setText("仅一次");
                 }
             }
