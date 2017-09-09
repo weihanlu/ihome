@@ -20,7 +20,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class CityActivity extends AppCompatActivity {
+public class CityActivity extends BaseActivity {
 
 
     @BindView(R.id.rv_city)
@@ -39,10 +39,9 @@ public class CityActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        CommonUtil.setStatusBarGradient(this);
         setContentView(R.layout.activity_city);
         ButterKnife.bind(this);
-        Intent intent = this.getIntent();
+        Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
         mCurrentCity = bundle.getString("city");
         mTvCurrentCity.setText(mCurrentCity);

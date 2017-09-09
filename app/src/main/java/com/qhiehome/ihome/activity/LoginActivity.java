@@ -106,7 +106,6 @@ public class LoginActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        CommonUtil.setStatusBarGradient(this);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
         mHandler = new SMSObserverHandler(this);

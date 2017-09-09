@@ -135,7 +135,6 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         SDKInitializer.initialize(getApplicationContext());
-        CommonUtil.setStatusBarGradient(this);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         mContext = this;

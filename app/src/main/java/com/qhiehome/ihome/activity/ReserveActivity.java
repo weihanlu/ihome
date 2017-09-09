@@ -76,7 +76,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ReserveActivity extends AppCompatActivity {
+public class ReserveActivity extends BaseActivity {
 
     @BindView(R.id.toolbar_center)
     Toolbar mTbReserve;
@@ -134,7 +134,6 @@ public class ReserveActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        CommonUtil.setStatusBarGradient(this);
         setContentView(R.layout.activity_reserve);
         ButterKnife.bind(this);
 
@@ -222,7 +221,6 @@ public class ReserveActivity extends AppCompatActivity {
     }
 
     private void updateData() {
-        mRvAdapter.cancelTimer();
         mRvAdapter.setmOrderBeanList(mOrderBeanList);
         mRvAdapter.notifyDataSetChanged();
     }
@@ -634,14 +632,7 @@ public class ReserveActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         unregisterReceiver(mReceiver);
+        mRvAdapter.cancelTimer();
     }
 
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (mRvAdapter != null){
-            mRvAdapter.cancelTimer();
-        }
-    }
 }

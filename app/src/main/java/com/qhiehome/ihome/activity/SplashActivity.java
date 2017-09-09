@@ -3,15 +3,17 @@ package com.qhiehome.ihome.activity;
 import android.os.Handler;
 import android.support.v4.content.ContextCompat;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.WindowManager;
 
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.manager.ActivityManager;
 import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.LogUtil;
 
 
-public class SplashActivity extends BaseActivity {
+public class SplashActivity extends AppCompatActivity {
 
     private static final String TAG = SplashActivity.class.getSimpleName();
 
@@ -29,6 +31,7 @@ public class SplashActivity extends BaseActivity {
                 finish();
             }
         }, SPLASH_DURATION);
+        ActivityManager.add(this);
     }
 
     private void setThisFullScreen() {
@@ -37,4 +40,9 @@ public class SplashActivity extends BaseActivity {
         decorView.setSystemUiVisibility(uiOptions);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ActivityManager.remove(this);
+    }
 }

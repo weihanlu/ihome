@@ -118,7 +118,6 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        CommonUtil.setStatusBarGradient(this);
         setContentView(R.layout.activity_publish_parking);
         ButterKnife.bind(this);
         mContext = this;

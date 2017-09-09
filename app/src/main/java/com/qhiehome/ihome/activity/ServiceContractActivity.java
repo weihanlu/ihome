@@ -33,7 +33,6 @@ public class ServiceContractActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        CommonUtil.setStatusBarGradient(this);
         setContentView(R.layout.activity_service_contract);
         ButterKnife.bind(this);
         initView();

@@ -119,7 +119,6 @@ public class ParkingListActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        CommonUtil.setStatusBarGradient(this);
         setContentView(R.layout.activity_parking_list);
         ButterKnife.bind(this);
         mContext = this;

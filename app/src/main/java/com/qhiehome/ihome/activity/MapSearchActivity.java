@@ -104,7 +104,6 @@ public class MapSearchActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        CommonUtil.setStatusBarGradient(this);
         setContentView(R.layout.activity_map_search);
         ButterKnife.bind(this);
         mContext = this;

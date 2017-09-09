@@ -36,7 +36,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import in.myinnos.alphabetsindexfastscrollrecycler.IndexFastScrollRecyclerView;
 
-public class ParkingTimelineActivity extends AppCompatActivity {
+public class ParkingTimelineActivity extends BaseActivity {
 
     //    @BindView(R.id.rv_parking_timeline)
 //    RecyclerView mRvParkingTimeline;
@@ -91,7 +91,6 @@ public class ParkingTimelineActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        CommonUtil.setStatusBarGradient(this);
         setContentView(R.layout.activity_parking_timeline);
         ButterKnife.bind(this);
         mContext = this;

@@ -14,28 +14,23 @@ import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.network.model.inquiry.order.OrderResponse;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.LogUtil;
+import com.qhiehome.ihome.util.ToastUtil;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
-
-/**
- * Created by YueMa on 2017/9/8.
- */
 
 public class ReserveListAdapter extends RecyclerView.Adapter<ReserveListAdapter.ReserveViewHolder>{
 
     private List<OrderResponse.DataBean.OrderListBean> mOrderBeanList;
     private Context mContext;
 
-    private MyCountDownTimer mCountDownTimer;
-
     private static final SimpleDateFormat START_TIME_FORMAT = new SimpleDateFormat("yyyy年MM月dd日 HH:mm", Locale.CHINA);
     private static final SimpleDateFormat END_TIME_FORMAT = new SimpleDateFormat("HH:mm", Locale.CHINA);
     private static final String DECIMAL_2 = "%.2f";
     private static final long INTERVAL = 1000L;
 
-
+    private MyCountDownTimer mCountDownTimer;
 
     public ReserveListAdapter(List<OrderResponse.DataBean.OrderListBean> mOrderBeanList, Context mContext) {
         this.mOrderBeanList = mOrderBeanList;
@@ -55,76 +50,82 @@ public class ReserveListAdapter extends RecyclerView.Adapter<ReserveListAdapter.
 
     @Override
     public void onBindViewHolder(final ReserveViewHolder holder, int position) {
-        LogUtil.e("BindViewHolder", position + "");
-        holder.itemView.setOnClickListener(null);
-        if (position != 0){
-            cancelTimer();
-        }
+        LogUtil.i("ViewHolder", "position is " + position);
+        OrderResponse.DataBean.OrderListBean orderListBean = mOrderBeanList.get(position);
 
-        holder.tv_parking_name.setText(mOrderBeanList.get(position).getEstate().getName());
-        holder.tv_order_id.setText("订单号:" + mOrderBeanList.get(position).getId());
+        String parkingName = orderListBean.getEstate().getName();
+        String orderId = "订单号：" + String.valueOf(orderListBean.getId());
         String time = "";
         String feeInfo = "";
-        switch (mOrderBeanList.get(position).getState()) {
-            case Constant.ORDER_STATE_CANCEL:       //39
+        String state = "";
+
+        int orderState = orderListBean.getState();
+        switch (orderState) {
+            case Constant.ORDER_STATE_CANCEL:
+                time = START_TIME_FORMAT.format(orderListBean.getStartTime())
+                        + "-" + END_TIME_FORMAT.format(orderListBean.getEndTime());
                 feeInfo = "订单已取消";
-                time = START_TIME_FORMAT.format(mOrderBeanList.get(position).getStartTime()) + "-" + END_TIME_FORMAT.format(mOrderBeanList.get(position).getEndTime());
-                holder.tv_time.setText(time);
-                holder.tv_state.setText("已取消");
+                state = "已取消";
                 holder.tv_state.setBackground(ContextCompat.getDrawable(mContext, R.drawable.gray_rect_reserve));
                 break;
-            case Constant.ORDER_STATE_PAID:         //34
-                feeInfo = "已支付：" + String.format(Locale.CHINA, DECIMAL_2, (float) mOrderBeanList.get(position).getPayFee()) + "元";
-                time = START_TIME_FORMAT.format(mOrderBeanList.get(position).getEnterTime()) + "-" + END_TIME_FORMAT.format(mOrderBeanList.get(position).getLeaveTime());
-                holder.tv_time.setText(time);
-                holder.tv_state.setText("已完成");
+            case Constant.ORDER_STATE_PAID:
+                time = START_TIME_FORMAT.format(orderListBean.getEnterTime())
+                        + "-" + END_TIME_FORMAT.format(orderListBean.getLeaveTime());
+                feeInfo = "已支付：" + String.format(Locale.CHINA, DECIMAL_2, (float) orderListBean.getPayFee()) + "元";
+                state = "已完成";
                 holder.tv_state.setBackground(ContextCompat.getDrawable(mContext, R.drawable.gray_rect_reserve));
                 break;
-            case Constant.ORDER_STATE_TIMEOUT:      //38
-                feeInfo = "超时已扣除：" + String.format(Locale.CHINA, DECIMAL_2, (float) mOrderBeanList.get(position).getPayFee()) + "元（担保费）";
-                time = START_TIME_FORMAT.format(mOrderBeanList.get(position).getStartTime()) + "-" + END_TIME_FORMAT.format(mOrderBeanList.get(position).getEndTime());
-                holder.tv_time.setText(time);
-                holder.tv_state.setText("已超时");
+            case Constant.ORDER_STATE_TIMEOUT:
+                time = START_TIME_FORMAT.format(orderListBean.getStartTime())
+                        + "-" + END_TIME_FORMAT.format(orderListBean.getEndTime());
+                feeInfo = "超时已扣除：" + String.format(Locale.CHINA, DECIMAL_2, (float) orderListBean.getPayFee()) + "元（担保费）";
+                state = "已超时";
                 holder.tv_state.setBackground(ContextCompat.getDrawable(mContext, R.drawable.gray_rect_reserve));
                 break;
-            case Constant.ORDER_STATE_TEMP_RESERVED:    //30
-                feeInfo = "待支付担保费：" + String.format(Locale.CHINA, DECIMAL_2, mOrderBeanList.get(position).getPayFee());
-                long timeRemaining = mOrderBeanList.get(0).getCreateTime() + 15*60*1000 - System.currentTimeMillis();
-                if (mCountDownTimer == null) {
-                    mCountDownTimer = new MyCountDownTimer(timeRemaining, INTERVAL, holder.tv_time);
-                }
-                mCountDownTimer.start();
-                holder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (onClickListener != null) {
-                            onClickListener.onClick(holder.itemView, holder.getLayoutPosition());
-                        }
-                    }
-                });
-                holder.tv_state.setText("未支付");
+            case Constant.ORDER_STATE_NOT_PAID:
+                time = START_TIME_FORMAT.format(orderListBean.getEnterTime()) + "-" + END_TIME_FORMAT.format(orderListBean.getLeaveTime());
+                feeInfo = "待支付金额：" + String.format(Locale.CHINA, DECIMAL_2, orderListBean.getPayFee());
+                state = "未支付";
                 holder.tv_state.setBackground(ContextCompat.getDrawable(mContext, R.drawable.blue_rect_reserve));
                 break;
-            case Constant.ORDER_STATE_NOT_PAID:     //33
-                feeInfo = "待支付金额：" + String.format(Locale.CHINA, DECIMAL_2, mOrderBeanList.get(position).getPayFee());
-                time = START_TIME_FORMAT.format(mOrderBeanList.get(position).getEnterTime()) + "-" + END_TIME_FORMAT.format(mOrderBeanList.get(position).getLeaveTime());
-                holder.tv_time.setText(time);
-                holder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (onClickListener != null) {
-                            onClickListener.onClick(holder.itemView, holder.getLayoutPosition());
-                        }
-                    }
-                });
-                holder.tv_state.setText("未支付");
+            case Constant.ORDER_STATE_TEMP_RESERVED:
+                feeInfo = "待支付担保费：" + String.format(Locale.CHINA, DECIMAL_2, orderListBean.getPayFee());
+                state = "未支付";
                 holder.tv_state.setBackground(ContextCompat.getDrawable(mContext, R.drawable.blue_rect_reserve));
                 break;
             default:
                 break;
         }
-        holder.tv_fee.setText(feeInfo);
 
+        holder.tv_parking_name.setText(parkingName);
+        holder.tv_order_id.setText(orderId);
+        holder.tv_fee.setText(feeInfo);
+        holder.tv_state.setText(state);
+
+        if (orderState == Constant.ORDER_STATE_TEMP_RESERVED) {
+            mCountDownTimer = new MyCountDownTimer(orderListBean.getCreateTime() + 15 * 60 * 1000 - System.currentTimeMillis(), INTERVAL, holder.tv_time);
+            mCountDownTimer.start();
+        } else {
+            holder.tv_time.setText(time);
+        }
+
+        if (orderState == Constant.ORDER_STATE_NOT_PAID || orderState == Constant.ORDER_STATE_TEMP_RESERVED) {
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (onClickListener != null) {
+                        onClickListener.onClick(holder.itemView, holder.getLayoutPosition());
+                    }
+                }
+            });
+        } else {
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // do nothing
+                }
+            });
+        }
     }
 
     @Override
@@ -154,17 +155,17 @@ public class ReserveListAdapter extends RecyclerView.Adapter<ReserveListAdapter.
 
     public class MyCountDownTimer extends CountDownTimer {
 
-        TextView mTvTime;
+        private TextView mTvTime;
 
-        public MyCountDownTimer(long millisInFuture, long countDownInterval, TextView tv_time) {
+        public MyCountDownTimer(long millisInFuture, long countDownInterval, TextView textView) {
             super(millisInFuture, countDownInterval);
-            mTvTime = tv_time;
+            mTvTime = textView;
         }
 
         @Override
         public void onTick(long millisUntilFinished) {
             long time = millisUntilFinished / 1000;
-
+            LogUtil.i("ViewHolder", "time is " + time);
             if (time <= 59) {
                 mTvTime.setText(String.format(Locale.CHINA, "剩余支付时间：00:%02d", time));
             } else {
@@ -180,14 +181,6 @@ public class ReserveListAdapter extends RecyclerView.Adapter<ReserveListAdapter.
 
     }
 
-
-    public void cancelTimer() {
-        if (mCountDownTimer != null) {
-            mCountDownTimer.cancel();
-            mCountDownTimer = null;
-        }
-    }
-
     public void setOnItemClickListener(OnClickListener listener) {
         this.onClickListener = listener;
     }
@@ -196,5 +189,12 @@ public class ReserveListAdapter extends RecyclerView.Adapter<ReserveListAdapter.
 
     public interface OnClickListener {
         void onClick(View view, int i);
+    }
+
+    public void cancelTimer() {
+        if (mCountDownTimer != null) {
+            mCountDownTimer.cancel();
+            mCountDownTimer = null;
+        }
     }
 }

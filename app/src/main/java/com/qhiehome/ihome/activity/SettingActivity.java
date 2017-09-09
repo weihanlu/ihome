@@ -86,7 +86,6 @@ public class SettingActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        CommonUtil.setStatusBarGradient(this);
         setContentView(R.layout.activity_setting);
         ButterKnife.bind(this);
         mToolbar = (Toolbar) findViewById(R.id.toolbar_center);

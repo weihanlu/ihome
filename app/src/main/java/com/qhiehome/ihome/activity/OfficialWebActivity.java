@@ -18,7 +18,7 @@ import butterknife.ButterKnife;
 
 import static com.qhiehome.ihome.util.Constant.OFFICIAL_WEB_URL;
 
-public class OfficialWebActivity extends AppCompatActivity {
+public class OfficialWebActivity extends BaseActivity {
 
     private static final String TAG = OfficialWebActivity.class.getSimpleName();
 
@@ -33,7 +33,6 @@ public class OfficialWebActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        CommonUtil.setStatusBarGradient(this);
         setContentView(R.layout.activity_official_web);
         ButterKnife.bind(this);
         initView();
