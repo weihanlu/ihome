@@ -15,7 +15,8 @@
         android:textSize="16sp"
         android:textColor="@color/major_text"
         android:gravity="center_vertical"
-        android:paddingStart="20dp"/>
+        android:paddingStart="20dp"
+        android:background="@drawable/selector_dialog_avatar_photo"/>
 
     <View
         android:layout_width="match_parent"
@@ -31,7 +32,7 @@
         android:text="@string/avatar_gallery"
         android:textSize="16sp"
         android:textColor="@color/major_text"
-        android:background="@drawable/bg_dialog_avatar_select_gallery"
+        android:background="@drawable/selector_dialog_avatar_gallery"
         android:gravity="center_vertical"
         android:paddingStart="20dp"/>
 

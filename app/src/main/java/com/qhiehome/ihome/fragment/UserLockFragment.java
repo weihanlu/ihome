@@ -95,6 +95,7 @@ public class UserLockFragment extends Fragment {
 
     private String mGateWayId;
     private String mLockMac;
+    private String mLockName;
 
     @BindView(R.id.vs_user_locks)
     ViewStub mViewStub;
@@ -247,6 +248,7 @@ public class UserLockFragment extends Fragment {
                 UserLockBean userLockBean = mUserLocks.get(i);
                 mGateWayId = userLockBean.getGatewayId();
                 mLockMac = userLockBean.getLockMac();
+                mLockName = userLockBean.getParkingName();
                 if (!NetworkUtils.isConnected(mActivity)) {
                     mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
                     if (mBluetoothAdapter == null) {
@@ -455,15 +457,16 @@ public class UserLockFragment extends Fragment {
                             if (NetworkUtils.isConnected(mActivity)) {
                                 connectLock.setAction(ConnectLockService.ACTION_GATEWAY_CONNECT);
                                 connectLock.putExtra(ConnectLockService.EXTRA_GATEWAY_ID, mGateWayId);
+                                connectLock.putExtra(ConnectLockService.EXTRA_LOCK_MAC, mLockMac);
                             } else {
                                 if (!getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
                                     ToastUtil.showToast(mActivity, "不支持蓝牙低能耗特性");
                                     dialog.dismiss();
                                 } else {
                                     connectLock.setAction(ConnectLockService.ACTION_BLUETOOTH_CONNECT);
+                                    connectLock.putExtra(ConnectLockService.EXTRA_LOCK_NAME, mLockName);
                                 }
                             }
-                            connectLock.putExtra(ConnectLockService.EXTRA_LOCK_MAC, mLockMac);
                             mActivity.startService(connectLock);
                         }
                     }).build();

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.qhiehome.ihome.application.IhomeApplication;
+import com.qhiehome.ihome.lock.AppClient;
 import com.qhiehome.ihome.lock.ConnectLockService;
 import com.qhiehome.ihome.util.LogUtil;
 
@@ -17,7 +18,7 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
-public class GateWayClient {
+public class GateWayClient extends AppClient{
 
     private static final String TAG = GateWayClient.class.getSimpleName();
 
@@ -83,6 +84,7 @@ public class GateWayClient {
         this.lockMac = lockMac;
     }
 
+    @Override
     public void connect() {
         try {
             mqttAndroidClient.connect(mqttConnectOptions, new IMqttActionListener() {
@@ -106,6 +108,7 @@ public class GateWayClient {
         }
     }
 
+    @Override
     public void disconnect() {
         if (mqttAndroidClient != null && mqttAndroidClient.isConnected()) {
             try {
@@ -152,21 +155,23 @@ public class GateWayClient {
         }
     }
 
+    private void beeLock() {
+        if (gateWayClient != null) {
+            gateWayClient.publishMessage(COMMAND_BEE);
+        }
+    }
+
+    @Override
     public void raiseLock() {
         if (gateWayClient != null) {
             gateWayClient.publishMessage(COMMAND_UP);
         }
     }
 
+    @Override
     public void downLock() {
         if (gateWayClient != null) {
             gateWayClient.publishMessage(COMMAND_DOWN);
-        }
-    }
-
-    public void beeLock() {
-        if (gateWayClient != null) {
-            gateWayClient.publishMessage(COMMAND_BEE);
         }
     }
 

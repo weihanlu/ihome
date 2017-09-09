@@ -251,28 +251,46 @@ public class ReserveActivity extends AppCompatActivity {
                 mSrlReserve.setRefreshing(false);
                 try {
                     View viewStubContent = mViewStub.inflate();     //inflate 方法只能被调用一次
-                    Button btnLockControl = (Button) viewStubContent.findViewById(R.id.btn_reserve_nonetwork);
+                    Button btnFunction1 = (Button) viewStubContent.findViewById(R.id.btn_nonetwork_function1);
+                    Button btnFunction2 = (Button) viewStubContent.findViewById(R.id.btn_nonetwork_function2);
                     switch (SharedPreferenceUtil.getInt(mContext, Constant.ORDER_STATE, 0)) {
                         case Constant.ORDER_STATE_RESERVED:
-                            btnLockControl.setText("降车位锁");
-                            btnLockControl.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    LockControl(0, true);
-                                }
-                            });
+                            if (SharedPreferenceUtil.getLong(mContext, Constant.PARKING_START_TIME, 0) >= System.currentTimeMillis()){
+                                btnFunction1.setText("开始停车");
+                                btnFunction1.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        LockControl(0, true);
+                                    }
+                                });
+                                btnFunction1.setVisibility(View.VISIBLE);
+                            }else {
+                                btnFunction1.setVisibility(View.INVISIBLE);
+                            }
+                            btnFunction2.setVisibility(View.INVISIBLE);
                             break;
                         case Constant.ORDER_STATE_PARKED:
-                            btnLockControl.setText("升车位锁");
-                            btnLockControl.setOnClickListener(new View.OnClickListener() {
+                            btnFunction1.setText("结束离开");
+                            btnFunction1.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
                                     LockControl(0, false);
                                 }
                             });
+                            btnFunction1.setVisibility(View.VISIBLE);
+
+                            btnFunction2.setText("结束离开");
+                            btnFunction2.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    LockControl(0, false);
+                                }
+                            });
+                            btnFunction1.setVisibility(View.VISIBLE);
+                            btnFunction2.setVisibility(View.VISIBLE);
                             break;
                         default:
-                            btnLockControl.setVisibility(View.INVISIBLE);
+                            btnFunction1.setVisibility(View.INVISIBLE);
                             break;
                     }
 
@@ -391,6 +409,7 @@ public class ReserveActivity extends AppCompatActivity {
      *
      * @param index    列表位置，目前仅为0
      * @param downLock true-降车位锁
+     * 停车与离开后将订单状态记录在本地
      */
     public void LockControl(int index, final boolean downLock) {
         if (!downLock) {
@@ -509,7 +528,6 @@ public class ReserveActivity extends AppCompatActivity {
 
     /**
      * 查询车位是否可以提前使用
-
      */
     public void QueryParkingUsing() {
         ParkingUsingService parkingUsingService = ServiceGenerator.createService(ParkingUsingService.class);

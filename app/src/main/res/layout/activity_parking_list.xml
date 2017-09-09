@@ -1,47 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.qhiehome.ihome.activity.ParkingListActivity">
+    tools:context="com.qhiehome.ihome.activity.ParkingListActivity"
+    android:orientation="vertical">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/toolbar_theme">
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/tb_parking"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@drawable/bg_theme_gradient"
-            android:minHeight="?attr/actionBarSize"
-            android:theme="?attr/actionBarTheme">
-
-            <TextView
-                android:id="@+id/tv_parking_name_parkinglist"
-                android:layout_width="240dp"
-                android:layout_height="wrap_content"
-                tools:text="北京邮电大学停车场"
-                android:textColor="@color/white"
-                android:marqueeRepeatLimit="-1"
-                android:textSize="18sp"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:singleLine="true"
-                android:ellipsize="marquee"/>
-
-        </android.support.v7.widget.Toolbar>
-
-
+        <include layout="@layout/layout_toolbar_subtitle"
+                 android:layout_width="match_parent"
+                 android:layout_height="?attr/actionBarSize">
+        </include>
 
     </android.support.design.widget.AppBarLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/white"
+        android:background="@color/bg_activity"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <android.support.v7.widget.RecyclerView
@@ -50,99 +31,124 @@
             android:layout_height="wrap_content"
             />
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/tv_label_tip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
             android:layout_below="@id/rv_parking"
-            android:layout_marginTop="10dp"
-            android:layout_marginStart="10dp">
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="20dp"
+            android:text="温馨提示:"
+            android:textSize="12sp"
+            android:textColor="@color/hint_text"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="温馨提示:"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="1.xxxxxxxxxxx"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="2.xxxxxxxxxxxxxx"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/ll_parking_list"
+        <TextView
+            android:id="@+id/tv_tip_one"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_above="@+id/rl_parking_list"
-            android:layout_marginBottom="20dp"
-            android:layout_marginStart="20dp">
+            android:layout_below="@id/tv_label_tip"
+            android:layout_alignStart="@id/tv_label_tip"
+            android:layout_marginTop="2dp"
+            android:text="1.请按时到预约车位停车"
+            android:textSize="12sp"
+            android:textColor="@color/hint_text"/>
 
-            <ImageView
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:background="@color/pale_green"
-                android:layout_gravity="center_vertical"/>
+        <TextView
+            android:id="@+id/tv_tip_two"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tv_tip_one"
+            android:layout_alignStart="@id/tv_tip_one"
+            android:layout_marginTop="2dp"
+            android:text="2.15分钟未入场，订单自动取消"
+            android:textSize="12sp"
+            android:textColor="@color/hint_text"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="担保费与计费说明"
-                android:textSize="16sp"
-                android:gravity="center_vertical"
-                android:layout_gravity="center_vertical"/>
-
-        </LinearLayout>
+        <TextView
+            android:id="@+id/tv_tip_three"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tv_tip_two"
+            android:layout_alignStart="@id/tv_tip_two"
+            android:layout_marginTop="2dp"
+            android:textSize="12sp"
+            android:textColor="@color/hint_text"/>
 
         <RelativeLayout
             android:id="@+id/rl_parking_list"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
+            android:layout_height="56dp"
             android:layout_alignParentBottom="true"
-            android:background="@color/pale_green">
+            android:background="@color/white">
 
             <TextView
-                android:id="@+id/tv_parking_guaranteeFee"
+                android:id="@+id/tv_parking_fee_num"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_marginLeft="16dp"
                 android:layout_centerVertical="true"
-                android:text="担保费    ￥"
-                android:textSize="16sp"
-                android:textColor="@color/white"
+                android:layout_marginStart="20dp"
+                android:text="¥10.00"
+                android:textSize="24sp"
+                android:textColor="@color/theme_start_color"/>
+
+            <TextView
+                android:id="@+id/tv_label_parking_fee"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/tv_parking_fee_num"
+                android:layout_marginStart="5dp"
+                android:text="停车费"
+                android:textSize="12sp"
+                android:textColor="@color/minor_text"
+                android:layout_alignBaseline="@id/tv_parking_fee_num"
+                />
+
+            <View
+                android:id="@+id/view_separator"
+                android:layout_width="1dp"
+                android:layout_height="18dp"
+                android:layout_toEndOf="@id/tv_label_parking_fee"
+                android:layout_marginStart="5dp"
+                android:layout_alignBottom="@id/tv_label_parking_fee"
+                android:background="@color/minor_text"
+                />
+
+            <TextView
+                android:id="@+id/tv_label_guarantee_fee"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/view_separator"
+                android:layout_marginStart="5dp"
+                android:text="担保费"
+                android:textSize="12sp"
+                android:textColor="@color/minor_text"
+                android:layout_alignBaseline="@id/tv_parking_fee_num"
                 />
 
             <TextView
                 android:id="@+id/tv_parking_guaranteeFee_num"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toEndOf="@id/tv_parking_guaranteeFee"
-                android:layout_marginLeft="4dp"
-                android:layout_centerVertical="true"
-                android:text="10.00"
-                android:textSize="22sp"
-                android:textColor="@color/white"/>
+                android:layout_toEndOf="@id/tv_label_guarantee_fee"
+                android:layout_marginStart="5dp"
+                android:text="¥10.00"
+                android:textSize="12sp"
+                android:textColor="@color/minor_text"
+                android:layout_alignBaseline="@id/tv_parking_fee_num"/>
 
-            <Button
-                android:id="@+id/btn_parking_reserve"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/round_button_white"
+            <TextView
+                android:id="@+id/tv_parking_reserve"
+                android:layout_width="110dp"
+                android:layout_height="match_parent"
                 android:text="确认预约"
-                android:textColor="@color/pale_green"
+                android:textSize="16sp"
+                android:gravity="center"
+                android:textColor="@color/white"
+                android:background="@color/theme_start_color"
                 android:layout_alignParentEnd="true"
-                android:layout_marginEnd="16dp"
-                android:textSize="18sp"
-                android:layout_centerVertical="true"
                 />
 
         </RelativeLayout>
 
     </RelativeLayout>
-</android.support.design.widget.CoordinatorLayout>
+</LinearLayout>
