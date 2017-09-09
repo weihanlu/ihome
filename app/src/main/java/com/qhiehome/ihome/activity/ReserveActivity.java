@@ -211,7 +211,24 @@ public class ReserveActivity extends BaseActivity {
 
             }
         });
+        mRvReserve.setOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
+                //判断是当前layoutManager是否为LinearLayoutManager
+                //只有LinearLayoutManager才有查找第一个和最后一个可见view位置的方法
+                if (layoutManager instanceof LinearLayoutManager) {
+                    LinearLayoutManager linearManager = (LinearLayoutManager) layoutManager;
+                    //获取第一个可见view的位置
+                    int firstItemPosition =linearManager.findFirstVisibleItemPosition();
+                    if (firstItemPosition != 0){
+                        mRvAdapter.cancelTimer();
+                    }
+                }
 
+            }
+        });
         mRvReserve.setAdapter(mRvAdapter);
     }
 
