@@ -25,6 +25,7 @@ public class QhDeleteItemDialog extends Dialog{
         mContext = context;
     }
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -177,6 +177,7 @@ public class PayActivity extends AppCompatActivity {
         mAdapter.setOnItemClickListener(new OnClickListener() {
             @Override
             public void onClick(View view, int i) {
+                /*  账户余额可以混合支付
                 if (mPayState == Constant.PAY_STATE_ADD_ACCOUNT) {//充值
                     if (i == 1) {
                         mSelectedNum[1] = true;
@@ -211,7 +212,14 @@ public class PayActivity extends AppCompatActivity {
                     } else {
                         mBtnPay.setText("确认支付：" + String.format(Locale.CHINA, DECIMAL_2, mFee) + "元");
                     }
+                }*/
+                if (!(i == 2 && mAccountBalance < mFee)){
+                    mSelectedNum[0] = false;
+                    mSelectedNum[1] = false;
+                    mSelectedNum[2] = false;
+                    mSelectedNum[i] = true;
                 }
+
                 mAdapter.notifyDataSetChanged();
             }
         });
@@ -295,7 +303,7 @@ public class PayActivity extends AppCompatActivity {
                     }
                 });
             }else if (mSelectedNum[2]){
-                changeAccountBalance(null, -mFee);
+                payWithAccount();
             }
 
         }
@@ -440,6 +448,11 @@ public class PayActivity extends AppCompatActivity {
         void onClick(View view, int i);
     }
 
+    /**
+     * for add balance
+     * @param holder    to show balance
+     * @param change    0 or positive num
+     */
     private void changeAccountBalance(final PayListAdapter.PayListHolder holder, final double change) {
         AccountBalanceService accountBalanceService = ServiceGenerator.createService(AccountBalanceService.class);
         AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256), change);
@@ -455,15 +468,35 @@ public class PayActivity extends AppCompatActivity {
                         pay_info += "元";
                         holder.tv_pay_info.setText(pay_info);
                     }
-                    if (change < 0){
-                        PayGuaranteeFee();
-                    }
                 }
             }
 
             @Override
             public void onFailure(Call<AccountBalanceResponse> call, Throwable t) {
                 ToastUtil.showToast(mContext, "网络连接异常");
+            }
+        });
+    }
+
+    private void payWithAccount(){
+        AccountBalanceService accountBalanceService = ServiceGenerator.createService(AccountBalanceService.class);
+        AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256), -mFee, mOrderId);
+        Call<AccountBalanceResponse> call = accountBalanceService.account(accountBalanceRequest);
+        call.enqueue(new Callback<AccountBalanceResponse>() {
+            @Override
+            public void onResponse(Call<AccountBalanceResponse> call, Response<AccountBalanceResponse> response) {
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                    ToastUtil.showToast(mContext, "支付成功");
+                    if (mPayState == Constant.PAY_STATE_GUARANTEE){
+                        PayGuaranteeFee();
+                    }else {
+                        finish();
+                    }
+                }
+            }
+            @Override
+            public void onFailure(Call<AccountBalanceResponse> call, Throwable t) {
+
             }
         });
     }
@@ -519,7 +552,7 @@ public class PayActivity extends AppCompatActivity {
                     SharedPreferenceUtil.setString(mContext, Constant.ESTATE_NAME, response.body().getData().getEstate().getName());
                     SharedPreferenceUtil.setFloat(mContext, Constant.ESTATE_LONGITUDE, (float) response.body().getData().getEstate().getX());
                     SharedPreferenceUtil.setFloat(mContext, Constant.ESTATE_LATITUDE, (float) response.body().getData().getEstate().getY());
-                    Intent intent = new Intent(PayActivity.this, ReserveActivity_old.class);
+                    Intent intent = new Intent(PayActivity.this, ReserveActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);
                     PayActivity.this.finish();

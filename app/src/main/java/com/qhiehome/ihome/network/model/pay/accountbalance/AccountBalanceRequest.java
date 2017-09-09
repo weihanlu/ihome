@@ -13,10 +13,17 @@ public class AccountBalanceRequest {
 
     private String phone;
     private double accountChange;
+    private int orderId;
 
     public AccountBalanceRequest(String phone, double accountChange) {
         this.phone = phone;
         this.accountChange = accountChange;
+    }
+
+    public AccountBalanceRequest(String phone, double accountChange, int orderId) {
+        this.phone = phone;
+        this.accountChange = accountChange;
+        this.orderId = orderId;
     }
 
     public String getPhone() {
@@ -33,5 +40,13 @@ public class AccountBalanceRequest {
 
     public void setAccountChange(double accountChange) {
         this.accountChange = accountChange;
+    }
+
+    public int getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(int orderId) {
+        this.orderId = orderId;
     }
 }

@@ -2,7 +2,6 @@ package com.qhiehome.ihome.fragment;
 
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -100,7 +99,7 @@ public class EstateMapFragment extends Fragment {
         try {
             Bundle bundle = this.getArguments();
             mOrderBean = (OrderResponse.DataBean.OrderListBean) bundle.getSerializable("order");
-            refreshUI();
+            refreshFragment();
             if (mOrderBean.getState() == Constant.ORDER_STATE_RESERVED || mOrderBean.getState() == Constant.ORDER_STATE_PARKED){
                 DownloadEstateMap();
             }
@@ -120,28 +119,26 @@ public class EstateMapFragment extends Fragment {
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.btn_function_1:
-                if (mOrderBean.getState() == Constant.ORDER_STATE_RESERVED){
+                if (mOrderBean.getState() == Constant.ORDER_STATE_RESERVED){//取消预约
                     mActivity.CancelReserve(0);
                 }
-                if (mOrderBean.getState() == Constant.ORDER_STATE_PARKED){
+                if (mOrderBean.getState() == Constant.ORDER_STATE_PARKED){//暂时离开
                     mActivity.LockControlSelf();
                 }
                 break;
             case R.id.btn_function_2:
-                if (mOrderBean.getState() == Constant.ORDER_STATE_PARKED){
+                if (mOrderBean.getState() == Constant.ORDER_STATE_PARKED){//结束停车
                     mActivity.LockControl(0, false);
-                    mActivity.refreshActivity();
                 }
-                if (mOrderBean.getState() == Constant.ORDER_STATE_RESERVED && mCanUse){
+                if (mOrderBean.getState() == Constant.ORDER_STATE_RESERVED && mCanUse){//开始停车
                     mActivity.LockControl(0, true);
                     mOrderBean.setState(Constant.ORDER_STATE_PARKED);
-                    refreshUI();
-                }else if (mOrderBean.getState() == Constant.ORDER_STATE_RESERVED && !mCanUse){
+                }else if (mOrderBean.getState() == Constant.ORDER_STATE_RESERVED && !mCanUse){//查询是否可用
                     mActivity.QueryParkingUsing();
                 }
                 break;
             case R.id.btn_function_3:
-                mActivity.Navigation(0);
+                mActivity.Navigation(0);//导航
                 break;
         }
     }
@@ -150,7 +147,7 @@ public class EstateMapFragment extends Fragment {
         mCanUse = canUse;
     }
 
-    public void refreshUI(){
+    public void refreshFragment(){
         switch (mOrderBean.getState()){
             case Constant.ORDER_STATE_RESERVED:
                 setRemindInfo();

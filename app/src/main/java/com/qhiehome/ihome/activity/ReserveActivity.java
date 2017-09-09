@@ -60,6 +60,7 @@ import com.qhiehome.ihome.util.NaviUtil;
 import com.qhiehome.ihome.util.NetworkUtils;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
+import com.qhiehome.ihome.view.QhDeleteItemDialog;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -191,6 +192,7 @@ public class ReserveActivity extends AppCompatActivity {
                 Pay(i, mOrderBeanList.get(i).getState() == Constant.ORDER_STATE_TEMP_RESERVED?Constant.PAY_STATE_GUARANTEE:Constant.PAY_STATE_TOTAL);
             }
         });
+
         mRvReserve.setAdapter(mRvAdapter);
     }
 
@@ -200,6 +202,7 @@ public class ReserveActivity extends AppCompatActivity {
     }
 
     private void updateData() {
+        mRvAdapter.cancelTimer();
         mRvAdapter.setmOrderBeanList(mOrderBeanList);
         mRvAdapter.notifyDataSetChanged();
     }
@@ -363,6 +366,7 @@ public class ReserveActivity extends AppCompatActivity {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     mOrderBeanList.get(index).setState(Constant.ORDER_STATE_CANCEL);
                     updateData();
+                    refreshActivity();
                 }
             }
 
@@ -472,6 +476,7 @@ public class ReserveActivity extends AppCompatActivity {
                     public void onResponse(Call<EnterParkingResponse> call, Response<EnterParkingResponse> response) {
                         if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                             SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_ENTER_TIME, false);
+                            mEstateMapFragment.refreshFragment();
                         } else {
                             ToastUtil.showToast(mContext, "发送请求失败");
                             SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_ENTER_TIME, true);
@@ -502,6 +507,7 @@ public class ReserveActivity extends AppCompatActivity {
                     public void onResponse(Call<ChargeResponse> call, Response<ChargeResponse> response) {
                         if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                             SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_LEAVE_TIME, false);
+                            refreshActivity();
                         } else {
                             ToastUtil.showToast(mContext, "发送请求失败");
                             SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_LEAVE_TIME, true);
@@ -538,7 +544,7 @@ public class ReserveActivity extends AppCompatActivity {
             public void onResponse(Call<ParkingUsingResponse> call, Response<ParkingUsingResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     mEstateMapFragment.setCanUse(true);
-                    mEstateMapFragment.refreshUI();
+                    mEstateMapFragment.refreshFragment();
                 } else if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == PARKING_USING) {
                     new MaterialDialog.Builder(mContext)
                             .title("车位占用")
