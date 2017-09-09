@@ -1,6 +1,7 @@
 package com.qhiehome.ihome.adapter;
 
 import android.content.Context;
+import android.nfc.Tag;
 import android.os.CountDownTimer;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
@@ -12,6 +13,7 @@ import android.widget.TextView;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.network.model.inquiry.order.OrderResponse;
 import com.qhiehome.ihome.util.Constant;
+import com.qhiehome.ihome.util.LogUtil;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -26,12 +28,14 @@ public class ReserveListAdapter extends RecyclerView.Adapter<ReserveListAdapter.
     private List<OrderResponse.DataBean.OrderListBean> mOrderBeanList;
     private Context mContext;
 
+    private MyCountDownTimer mCountDownTimer;
+
     private static final SimpleDateFormat START_TIME_FORMAT = new SimpleDateFormat("yyyy年MM月dd日 HH:mm", Locale.CHINA);
     private static final SimpleDateFormat END_TIME_FORMAT = new SimpleDateFormat("HH:mm", Locale.CHINA);
     private static final String DECIMAL_2 = "%.2f";
     private static final long INTERVAL = 1000L;
 
-    private MyCountDownTimer mCountDownTimer;
+
 
     public ReserveListAdapter(List<OrderResponse.DataBean.OrderListBean> mOrderBeanList, Context mContext) {
         this.mOrderBeanList = mOrderBeanList;
@@ -51,12 +55,39 @@ public class ReserveListAdapter extends RecyclerView.Adapter<ReserveListAdapter.
 
     @Override
     public void onBindViewHolder(final ReserveViewHolder holder, int position) {
+        LogUtil.e("BindViewHolder", position + "");
+        holder.itemView.setOnClickListener(null);
+        if (position != 0){
+            cancelTimer();
+        }
+
         holder.tv_parking_name.setText(mOrderBeanList.get(position).getEstate().getName());
         holder.tv_order_id.setText("订单号:" + mOrderBeanList.get(position).getId());
         String time = "";
         String feeInfo = "";
         switch (mOrderBeanList.get(position).getState()) {
-            case Constant.ORDER_STATE_TEMP_RESERVED:
+            case Constant.ORDER_STATE_CANCEL:       //39
+                feeInfo = "订单已取消";
+                time = START_TIME_FORMAT.format(mOrderBeanList.get(position).getStartTime()) + "-" + END_TIME_FORMAT.format(mOrderBeanList.get(position).getEndTime());
+                holder.tv_time.setText(time);
+                holder.tv_state.setText("已取消");
+                holder.tv_state.setBackground(ContextCompat.getDrawable(mContext, R.drawable.gray_rect_reserve));
+                break;
+            case Constant.ORDER_STATE_PAID:         //34
+                feeInfo = "已支付：" + String.format(Locale.CHINA, DECIMAL_2, (float) mOrderBeanList.get(position).getPayFee()) + "元";
+                time = START_TIME_FORMAT.format(mOrderBeanList.get(position).getEnterTime()) + "-" + END_TIME_FORMAT.format(mOrderBeanList.get(position).getLeaveTime());
+                holder.tv_time.setText(time);
+                holder.tv_state.setText("已完成");
+                holder.tv_state.setBackground(ContextCompat.getDrawable(mContext, R.drawable.gray_rect_reserve));
+                break;
+            case Constant.ORDER_STATE_TIMEOUT:      //38
+                feeInfo = "超时已扣除：" + String.format(Locale.CHINA, DECIMAL_2, (float) mOrderBeanList.get(position).getPayFee()) + "元（担保费）";
+                time = START_TIME_FORMAT.format(mOrderBeanList.get(position).getStartTime()) + "-" + END_TIME_FORMAT.format(mOrderBeanList.get(position).getEndTime());
+                holder.tv_time.setText(time);
+                holder.tv_state.setText("已超时");
+                holder.tv_state.setBackground(ContextCompat.getDrawable(mContext, R.drawable.gray_rect_reserve));
+                break;
+            case Constant.ORDER_STATE_TEMP_RESERVED:    //30
                 feeInfo = "待支付担保费：" + String.format(Locale.CHINA, DECIMAL_2, mOrderBeanList.get(position).getPayFee());
                 long timeRemaining = mOrderBeanList.get(0).getCreateTime() + 15*60*1000 - System.currentTimeMillis();
                 if (mCountDownTimer == null) {
@@ -74,9 +105,10 @@ public class ReserveListAdapter extends RecyclerView.Adapter<ReserveListAdapter.
                 holder.tv_state.setText("未支付");
                 holder.tv_state.setBackground(ContextCompat.getDrawable(mContext, R.drawable.blue_rect_reserve));
                 break;
-            case Constant.ORDER_STATE_NOT_PAID:
+            case Constant.ORDER_STATE_NOT_PAID:     //33
                 feeInfo = "待支付金额：" + String.format(Locale.CHINA, DECIMAL_2, mOrderBeanList.get(position).getPayFee());
                 time = START_TIME_FORMAT.format(mOrderBeanList.get(position).getEnterTime()) + "-" + END_TIME_FORMAT.format(mOrderBeanList.get(position).getLeaveTime());
+                holder.tv_time.setText(time);
                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -88,26 +120,11 @@ public class ReserveListAdapter extends RecyclerView.Adapter<ReserveListAdapter.
                 holder.tv_state.setText("未支付");
                 holder.tv_state.setBackground(ContextCompat.getDrawable(mContext, R.drawable.blue_rect_reserve));
                 break;
-            case Constant.ORDER_STATE_CANCEL:
-                feeInfo = "订单已取消";
-                time = START_TIME_FORMAT.format(mOrderBeanList.get(position).getStartTime()) + "-" + END_TIME_FORMAT.format(mOrderBeanList.get(position).getEndTime());
-                holder.tv_state.setText("已取消");
-                break;
-            case Constant.ORDER_STATE_PAID:
-                feeInfo = "已支付：" + String.format(Locale.CHINA, DECIMAL_2, (float) mOrderBeanList.get(position).getPayFee()) + "元";
-                time = START_TIME_FORMAT.format(mOrderBeanList.get(position).getEnterTime()) + "-" + END_TIME_FORMAT.format(mOrderBeanList.get(position).getLeaveTime());
-                holder.tv_state.setText("已完成");
-                break;
-            case Constant.ORDER_STATE_TIMEOUT:
-                feeInfo = "超时已扣除：" + String.format(Locale.CHINA, DECIMAL_2, (float) mOrderBeanList.get(position).getPayFee()) + "元（担保费）";
-                time = START_TIME_FORMAT.format(mOrderBeanList.get(position).getStartTime()) + "-" + END_TIME_FORMAT.format(mOrderBeanList.get(position).getEndTime());
-                holder.tv_state.setText("已超时");
-                break;
             default:
                 break;
         }
         holder.tv_fee.setText(feeInfo);
-        holder.tv_time.setText(time);
+
     }
 
     @Override
@@ -116,6 +133,7 @@ public class ReserveListAdapter extends RecyclerView.Adapter<ReserveListAdapter.
     }
 
     static class ReserveViewHolder extends RecyclerView.ViewHolder{
+
 
         TextView tv_parking_name;
         TextView tv_time;

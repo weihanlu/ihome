@@ -2,6 +2,8 @@ package com.qhiehome.ihome.fragment;
 
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -13,8 +15,15 @@ import android.widget.TextView;
 import com.qhiehome.ihome.R;
 
 import com.qhiehome.ihome.activity.ReserveActivity;
+import com.qhiehome.ihome.network.ServiceGenerator;
+import com.qhiehome.ihome.network.model.configuration.city.CityConfigRequest;
+import com.qhiehome.ihome.network.model.configuration.city.CityConfigResponse;
+import com.qhiehome.ihome.network.model.estate.map.DownloadEstateMapRequest;
 import com.qhiehome.ihome.network.model.inquiry.order.OrderResponse;
+import com.qhiehome.ihome.network.service.configuration.CityConfigService;
+import com.qhiehome.ihome.network.service.estate.DownloadEstateMapService;
 import com.qhiehome.ihome.util.Constant;
+import com.qhiehome.ihome.util.ToastUtil;
 
 
 import java.text.SimpleDateFormat;
@@ -24,6 +33,10 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 /**
@@ -86,7 +99,10 @@ public class EstateMapFragment extends Fragment {
         try {
             Bundle bundle = this.getArguments();
             mOrderBean = (OrderResponse.DataBean.OrderListBean) bundle.getSerializable("order");
-            refreshUI();
+            refreshFragment();
+            if (mOrderBean.getState() == Constant.ORDER_STATE_RESERVED || mOrderBean.getState() == Constant.ORDER_STATE_PARKED){
+                DownloadEstateMap();
+            }
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -103,28 +119,26 @@ public class EstateMapFragment extends Fragment {
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.btn_function_1:
-                if (mOrderBean.getState() == Constant.ORDER_STATE_RESERVED){
+                if (mOrderBean.getState() == Constant.ORDER_STATE_RESERVED){//取消预约
                     mActivity.CancelReserve(0);
                 }
-                if (mOrderBean.getState() == Constant.ORDER_STATE_PARKED){
+                if (mOrderBean.getState() == Constant.ORDER_STATE_PARKED){//暂时离开
                     mActivity.LockControlSelf();
                 }
                 break;
             case R.id.btn_function_2:
-                if (mOrderBean.getState() == Constant.ORDER_STATE_RESERVED && mCanUse){
+                if (mOrderBean.getState() == Constant.ORDER_STATE_PARKED){//结束停车
+                    mActivity.LockControl(0, false);
+                }
+                if (mOrderBean.getState() == Constant.ORDER_STATE_RESERVED && mCanUse){//开始停车
                     mActivity.LockControl(0, true);
                     mOrderBean.setState(Constant.ORDER_STATE_PARKED);
-                    refreshUI();
-                }else if (mOrderBean.getState() == Constant.ORDER_STATE_RESERVED && !mCanUse){
+                }else if (mOrderBean.getState() == Constant.ORDER_STATE_RESERVED && !mCanUse){//查询是否可用
                     mActivity.QueryParkingUsing();
-                }
-                if (mOrderBean.getState() == Constant.ORDER_STATE_PARKED){
-                    mActivity.LockControl(0, false);
-                    mActivity.refreshActivity();
                 }
                 break;
             case R.id.btn_function_3:
-                mActivity.Navigation(0);
+                mActivity.Navigation(0);//导航
                 break;
         }
     }
@@ -133,11 +147,11 @@ public class EstateMapFragment extends Fragment {
         mCanUse = canUse;
     }
 
-    public void refreshUI(){
+    public void refreshFragment(){
         switch (mOrderBean.getState()){
             case Constant.ORDER_STATE_RESERVED:
-                // TODO: 2017/9/8 获取城市参数
-                mTvRemind.setText("最晚停车时间："+ END_TIME_FORMAT.format(mOrderBean.getStartTime() + 15*60*1000));
+                setRemindInfo();
+                mTvRemind.setText("正在加载...");
                 if ((mOrderBean.getStartTime() - System.currentTimeMillis() <= 30 * 60 * 1000 && mOrderBean.getStartTime() - System.currentTimeMillis() > 0) && !mCanUse) {
                     mBtnFunction2.setText("查询可否使用");
                     mBtnFunction2.setVisibility(View.VISIBLE);
@@ -162,6 +176,60 @@ public class EstateMapFragment extends Fragment {
             default:
                 break;
         }
+    }
+
+    private void DownloadEstateMap(){
+        DownloadEstateMapService downloadEstateMapService = ServiceGenerator.createService(DownloadEstateMapService.class);
+        DownloadEstateMapRequest downloadEstateMapRequest = new DownloadEstateMapRequest(mOrderBean.getEstate().getId());
+        Call<ResponseBody> call = downloadEstateMapService.downloadMap(downloadEstateMapRequest);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    try {
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(response.body().bytes(), 0, response.body().bytes().length, new BitmapFactory.Options());
+                        mIvMap.setImageBitmap(bitmap);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                } else {
+                    //图片加载错误
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                //图片加载错误
+            }
+        });
+    }
+
+    private void setRemindInfo(){
+        CityConfigService cityConfigService = ServiceGenerator.createService(CityConfigService.class);
+        CityConfigRequest cityConfigRequest = new CityConfigRequest(mOrderBean.getEstate().getId());
+        Call<CityConfigResponse> call = cityConfigService.queryCityConfig(cityConfigRequest);
+        call.enqueue(new Callback<CityConfigResponse>() {
+            @Override
+            public void onResponse(Call<CityConfigResponse> call, Response<CityConfigResponse> response) {
+                try {
+                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
+                        int freeCancellationTime = response.body().getData().getFreeCancellationTime();
+                        mTvRemind.setText("最晚停车时间："+ END_TIME_FORMAT.format(mOrderBean.getStartTime() + freeCancellationTime*60*1000));
+                    }else {
+                        ToastUtil.showToast(mContext, "服务器繁忙，请稍后再试");
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                    ToastUtil.showToast(mContext, "服务器错误，请稍后再试");
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<CityConfigResponse> call, Throwable t) {
+                ToastUtil.showToast(mContext, "网络连接异常");
+            }
+        });
     }
 
 }

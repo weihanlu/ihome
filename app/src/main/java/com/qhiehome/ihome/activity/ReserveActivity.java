@@ -60,6 +60,7 @@ import com.qhiehome.ihome.util.NaviUtil;
 import com.qhiehome.ihome.util.NetworkUtils;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
+import com.qhiehome.ihome.view.QhDeleteItemDialog;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -191,6 +192,7 @@ public class ReserveActivity extends AppCompatActivity {
                 Pay(i, mOrderBeanList.get(i).getState() == Constant.ORDER_STATE_TEMP_RESERVED?Constant.PAY_STATE_GUARANTEE:Constant.PAY_STATE_TOTAL);
             }
         });
+
         mRvReserve.setAdapter(mRvAdapter);
     }
 
@@ -200,6 +202,7 @@ public class ReserveActivity extends AppCompatActivity {
     }
 
     private void updateData() {
+        mRvAdapter.cancelTimer();
         mRvAdapter.setmOrderBeanList(mOrderBeanList);
         mRvAdapter.notifyDataSetChanged();
     }
@@ -251,28 +254,46 @@ public class ReserveActivity extends AppCompatActivity {
                 mSrlReserve.setRefreshing(false);
                 try {
                     View viewStubContent = mViewStub.inflate();     //inflate 方法只能被调用一次
-                    Button btnLockControl = (Button) viewStubContent.findViewById(R.id.btn_reserve_nonetwork);
+                    Button btnFunction1 = (Button) viewStubContent.findViewById(R.id.btn_nonetwork_function1);
+                    Button btnFunction2 = (Button) viewStubContent.findViewById(R.id.btn_nonetwork_function2);
                     switch (SharedPreferenceUtil.getInt(mContext, Constant.ORDER_STATE, 0)) {
                         case Constant.ORDER_STATE_RESERVED:
-                            btnLockControl.setText("降车位锁");
-                            btnLockControl.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    LockControl(0, true);
-                                }
-                            });
+                            if (SharedPreferenceUtil.getLong(mContext, Constant.PARKING_START_TIME, 0) >= System.currentTimeMillis()){
+                                btnFunction1.setText("开始停车");
+                                btnFunction1.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        LockControl(0, true);
+                                    }
+                                });
+                                btnFunction1.setVisibility(View.VISIBLE);
+                            }else {
+                                btnFunction1.setVisibility(View.INVISIBLE);
+                            }
+                            btnFunction2.setVisibility(View.INVISIBLE);
                             break;
                         case Constant.ORDER_STATE_PARKED:
-                            btnLockControl.setText("升车位锁");
-                            btnLockControl.setOnClickListener(new View.OnClickListener() {
+                            btnFunction1.setText("结束离开");
+                            btnFunction1.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
                                     LockControl(0, false);
                                 }
                             });
+                            btnFunction1.setVisibility(View.VISIBLE);
+
+                            btnFunction2.setText("结束离开");
+                            btnFunction2.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    LockControl(0, false);
+                                }
+                            });
+                            btnFunction1.setVisibility(View.VISIBLE);
+                            btnFunction2.setVisibility(View.VISIBLE);
                             break;
                         default:
-                            btnLockControl.setVisibility(View.INVISIBLE);
+                            btnFunction1.setVisibility(View.INVISIBLE);
                             break;
                     }
 
@@ -345,6 +366,7 @@ public class ReserveActivity extends AppCompatActivity {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     mOrderBeanList.get(index).setState(Constant.ORDER_STATE_CANCEL);
                     updateData();
+                    refreshActivity();
                 }
             }
 
@@ -391,6 +413,7 @@ public class ReserveActivity extends AppCompatActivity {
      *
      * @param index    列表位置，目前仅为0
      * @param downLock true-降车位锁
+     * 停车与离开后将订单状态记录在本地
      */
     public void LockControl(int index, final boolean downLock) {
         if (!downLock) {
@@ -453,6 +476,7 @@ public class ReserveActivity extends AppCompatActivity {
                     public void onResponse(Call<EnterParkingResponse> call, Response<EnterParkingResponse> response) {
                         if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                             SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_ENTER_TIME, false);
+                            mEstateMapFragment.refreshFragment();
                         } else {
                             ToastUtil.showToast(mContext, "发送请求失败");
                             SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_ENTER_TIME, true);
@@ -483,6 +507,7 @@ public class ReserveActivity extends AppCompatActivity {
                     public void onResponse(Call<ChargeResponse> call, Response<ChargeResponse> response) {
                         if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                             SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_LEAVE_TIME, false);
+                            refreshActivity();
                         } else {
                             ToastUtil.showToast(mContext, "发送请求失败");
                             SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_LEAVE_TIME, true);
@@ -509,7 +534,6 @@ public class ReserveActivity extends AppCompatActivity {
 
     /**
      * 查询车位是否可以提前使用
-
      */
     public void QueryParkingUsing() {
         ParkingUsingService parkingUsingService = ServiceGenerator.createService(ParkingUsingService.class);
@@ -520,7 +544,7 @@ public class ReserveActivity extends AppCompatActivity {
             public void onResponse(Call<ParkingUsingResponse> call, Response<ParkingUsingResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     mEstateMapFragment.setCanUse(true);
-                    mEstateMapFragment.refreshUI();
+                    mEstateMapFragment.refreshFragment();
                 } else if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == PARKING_USING) {
                     new MaterialDialog.Builder(mContext)
                             .title("车位占用")
