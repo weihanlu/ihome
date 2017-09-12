@@ -60,6 +60,7 @@ import retrofit2.Response;
 
 public class PayActivity extends BaseActivity {
 
+    public static final String PAY_STATE = "payState";
 
     @BindView(R.id.rv_pay)
     RecyclerView mRvPay;
@@ -87,6 +88,8 @@ public class PayActivity extends BaseActivity {
     Toolbar mTbPay;
     @BindView(R.id.tv_title_toolbar)
     TextView mTvTitleToolbar;
+
+    private float mCurrentAccount;
 
     private Context mContext;
     private PayListAdapter mAdapter;
@@ -161,7 +164,7 @@ public class PayActivity extends BaseActivity {
             actionBar.setDisplayShowTitleEnabled(false);
         }
         mTbPay.setTitle("");
-        mTvTitleToolbar.setText("支付订单");
+        mTvTitleToolbar.setText(mPayState == Constant.PAY_STATE_ADD_ACCOUNT? "充值": "支付订单");
         mTbPay.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -230,81 +233,91 @@ public class PayActivity extends BaseActivity {
 
     @OnClick(R.id.btn_pay)
     public void onViewClicked() {
+        switch (mPayState) {
+            case Constant.PAY_STATE_ADD_ACCOUNT:
+                if (mSelectedNum[0]) {
+                    mCurrentAccount = Float.valueOf(mPriceList[mButtonClicked - 1]);
+                    AccountBalanceService accountBalanceService = ServiceGenerator.createService(AccountBalanceService.class);
+                    AccountBalanceRequest accountBalanceRequest =
+                            new AccountBalanceRequest(EncryptUtil.
+                                    encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""),
+                                            EncryptUtil.ALGO.SHA_256), Double.valueOf(mPriceList[mButtonClicked - 1]));
+                    Call<AccountBalanceResponse> call = accountBalanceService.account(accountBalanceRequest);
+                    call.enqueue(new Callback<AccountBalanceResponse>() {
+                        @Override
+                        public void onResponse(@NonNull Call<AccountBalanceResponse> call, @NonNull Response<AccountBalanceResponse> response) {
+                            if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                                final String orderInfo = response.body().getData().getOrderInfo();
+                                Runnable payRunnable = new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        PayTask alipay = new PayTask(PayActivity.this);
+                                        Map<String, String> result = alipay.payV2(orderInfo, true);
+                                        Log.i("msp", result.toString());
 
-        if (mPayState == Constant.PAY_STATE_ADD_ACCOUNT && mSelectedNum[0]) {
-            AccountBalanceService accountBalanceService = ServiceGenerator.createService(AccountBalanceService.class);
-            AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256), Double.valueOf(mPriceList[mButtonClicked - 1]));
-            Call<AccountBalanceResponse> call = accountBalanceService.account(accountBalanceRequest);
-            call.enqueue(new Callback<AccountBalanceResponse>() {
-                @Override
-                public void onResponse(@NonNull Call<AccountBalanceResponse> call, @NonNull Response<AccountBalanceResponse> response) {
-                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                        final String orderInfo = response.body().getData().getOrderInfo();
-                        Runnable payRunnable = new Runnable() {
-                            @Override
-                            public void run() {
-                                PayTask alipay = new PayTask(PayActivity.this);
-                                Map<String, String> result = alipay.payV2(orderInfo, true);
-                                Log.i("msp", result.toString());
-
-                                Message msg = new Message();
-                                msg.what = MSG_ALIPAY;
-                                msg.obj = result;
-                                mHandler.sendMessage(msg);
+                                        Message msg = new Message();
+                                        msg.what = MSG_ALIPAY;
+                                        msg.obj = result;
+                                        mHandler.sendMessage(msg);
+                                    }
+                                };
+                                Thread payThread = new Thread(payRunnable);
+                                payThread.start();
+                            } else {
+                                ToastUtil.showToast(mContext, "充值失败");
                             }
-                        };
-                        Thread payThread = new Thread(payRunnable);
-                        payThread.start();
-                    } else {
-                        ToastUtil.showToast(mContext, "充值失败");
-                    }
-                }
-
-                @Override
-                public void onFailure(@NonNull Call<AccountBalanceResponse> call, @NonNull Throwable t) {
-
-                }
-            });
-        } else if (mPayState == Constant.PAY_STATE_GUARANTEE || mPayState ==  Constant.PAY_STATE_TOTAL) {
-            if (mSelectedNum[0]){
-                AliPayService aliPayService = ServiceGenerator.createService(AliPayService.class);
-                AliPayRequest aliPayRequest = new AliPayRequest(mOrderId);
-                Call<AliPayResponse> call = aliPayService.aliPay(aliPayRequest);
-                call.enqueue(new Callback<AliPayResponse>() {
-                    @Override
-                    public void onResponse(@NonNull Call<AliPayResponse> call, @NonNull Response<AliPayResponse> response) {
-                        if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                            final String orderInfo = response.body().getData().getOrderInfo();
-                            Runnable payRunnable = new Runnable() {
-                                @Override
-                                public void run() {
-                                    PayTask alipay = new PayTask(PayActivity.this);
-                                    Map<String, String> result = alipay.payV2(orderInfo, true);
-                                    Log.i("msp", result.toString());
-
-                                    Message msg = new Message();
-                                    msg.what = MSG_ALIPAY;
-                                    msg.obj = result;
-                                    mHandler.sendMessage(msg);
-                                }
-                            };
-
-                            Thread payThread = new Thread(payRunnable);
-                            payThread.start();
-                        } else {
-                            ToastUtil.showToast(mContext, "支付失败");
                         }
-                    }
 
-                    @Override
-                    public void onFailure(@NonNull Call<AliPayResponse> call,@NonNull Throwable t) {
-                        ToastUtil.showToast(mContext, "支付失败（服务器繁忙）");
-                    }
-                });
-            }else if (mSelectedNum[2]){
-                payWithAccount();
-            }
+                        @Override
+                        public void onFailure(@NonNull Call<AccountBalanceResponse> call, @NonNull Throwable t) {
 
+                        }
+                    });
+                }
+                break;
+            case Constant.PAY_STATE_GUARANTEE:
+            case Constant.PAY_STATE_TOTAL:
+                mCurrentAccount = mFee;
+                if (mSelectedNum[0]) {
+                    AliPayService aliPayService = ServiceGenerator.createService(AliPayService.class);
+                    AliPayRequest aliPayRequest = new AliPayRequest(mOrderId);
+                    Call<AliPayResponse> call = aliPayService.aliPay(aliPayRequest);
+                    call.enqueue(new Callback<AliPayResponse>() {
+                        @Override
+                        public void onResponse(@NonNull Call<AliPayResponse> call, @NonNull Response<AliPayResponse> response) {
+                            if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                                final String orderInfo = response.body().getData().getOrderInfo();
+                                Runnable payRunnable = new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        PayTask alipay = new PayTask(PayActivity.this);
+                                        Map<String, String> result = alipay.payV2(orderInfo, true);
+                                        Log.i("msp", result.toString());
+
+                                        Message msg = new Message();
+                                        msg.what = MSG_ALIPAY;
+                                        msg.obj = result;
+                                        mHandler.sendMessage(msg);
+                                    }
+                                };
+
+                                Thread payThread = new Thread(payRunnable);
+                                payThread.start();
+                            } else {
+                                ToastUtil.showToast(mContext, "支付失败");
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(@NonNull Call<AliPayResponse> call,@NonNull Throwable t) {
+                            ToastUtil.showToast(mContext, "支付失败（服务器繁忙）");
+                        }
+                    });
+                } else {
+                    payWithAccount();
+                }
+            default:
+                break;
         }
 
     }
@@ -485,11 +498,10 @@ public class PayActivity extends BaseActivity {
             @Override
             public void onResponse(Call<AccountBalanceResponse> call, Response<AccountBalanceResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                    ToastUtil.showToast(mContext, "支付成功");
                     if (mPayState == Constant.PAY_STATE_GUARANTEE){
                         PayGuaranteeFee();
                     }else {
-                        finish();
+                        PayResultActivity.start(mContext, mCurrentAccount, mPayState);
                     }
                 }
             }
@@ -517,9 +529,14 @@ public class PayActivity extends BaseActivity {
                     // 判断resultStatus 为9000则代表支付成功
                     if (TextUtils.equals(resultStatus, "9000")) {
                         // 该笔订单是否真实支付成功，需要依赖服务端的异步通知。
-                        ToastUtil.showToast(mContext, "支付成功");
+//                        ToastUtil.showToast(mContext, "支付成功");
                         if (mPayState == Constant.PAY_STATE_GUARANTEE) {
                             PayGuaranteeFee();
+                        } else if (mPayState == Constant.PAY_STATE_ADD_ACCOUNT) {
+                            PayResultActivity.start(mContext, mCurrentAccount, mPayState);
+                        } else if (mPayState == Constant.PAY_STATE_TOTAL) {
+                            // TODO: 2017/9/12 有无发送什么命令
+                            PayResultActivity.start(mContext, mCurrentAccount, mPayState);
                         }
                     } else {
                         // 该笔订单真实的支付结果，需要依赖服务端的异步通知。
@@ -551,10 +568,8 @@ public class PayActivity extends BaseActivity {
                     SharedPreferenceUtil.setString(mContext, Constant.ESTATE_NAME, response.body().getData().getEstate().getName());
                     SharedPreferenceUtil.setFloat(mContext, Constant.ESTATE_LONGITUDE, (float) response.body().getData().getEstate().getX());
                     SharedPreferenceUtil.setFloat(mContext, Constant.ESTATE_LATITUDE, (float) response.body().getData().getEstate().getY());
-                    Intent intent = new Intent(PayActivity.this, ReserveActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(intent);
-                    PayActivity.this.finish();
+
+                    PayResultActivity.start(mContext, mCurrentAccount, mPayState);
                 }
             }
 

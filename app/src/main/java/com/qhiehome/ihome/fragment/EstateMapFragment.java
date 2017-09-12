@@ -39,11 +39,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-
-/**
- * Created by YueMa on 2017/9/8.
- */
-
 public class EstateMapFragment extends Fragment {
 
     @BindView(R.id.iv_estate_map)
@@ -60,7 +55,7 @@ public class EstateMapFragment extends Fragment {
     Unbinder unbinder;
     private ReserveActivity mActivity;
 
-    private OrderResponse.DataBean.OrderListBean mOrderBean;
+    private OrderResponse.DataBean.OrderListBean mOrderListBean;
 
     private static final SimpleDateFormat START_TIME_FORMAT = new SimpleDateFormat("yyyy年MM月dd日 HH:mm", Locale.CHINA);
     private static final SimpleDateFormat END_TIME_FORMAT = new SimpleDateFormat("HH:mm", Locale.CHINA);
@@ -98,10 +93,8 @@ public class EstateMapFragment extends Fragment {
     public void onResume() {
         super.onResume();
         try {
-            Bundle bundle = this.getArguments();
-            mOrderBean = (OrderResponse.DataBean.OrderListBean) bundle.getSerializable("order");
             refreshFragment();
-            if (mOrderBean.getState() == Constant.ORDER_STATE_RESERVED || mOrderBean.getState() == Constant.ORDER_STATE_PARKED){
+            if (mOrderListBean.getState() == Constant.ORDER_STATE_RESERVED || mOrderListBean.getState() == Constant.ORDER_STATE_PARKED){
                 DownloadEstateMap();
             }
         }catch (Exception e){
@@ -120,7 +113,7 @@ public class EstateMapFragment extends Fragment {
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.btn_function_1:
-                if (mOrderBean.getState() == Constant.ORDER_STATE_RESERVED){//取消预约
+                if (mOrderListBean.getState() == Constant.ORDER_STATE_RESERVED){//取消预约
                     QhDeleteItemDialog dialog = new QhDeleteItemDialog(mContext, "确认取消此次预约？", 1);
                     dialog.setOnSureCallbackListener(new QhDeleteItemDialog.OnSureCallbackListener() {
                         @Override
@@ -130,12 +123,12 @@ public class EstateMapFragment extends Fragment {
                     });
                     dialog.show();
                 }
-                if (mOrderBean.getState() == Constant.ORDER_STATE_PARKED){//暂时离开
+                if (mOrderListBean.getState() == Constant.ORDER_STATE_PARKED){//暂时离开
                     mActivity.LockControlSelf();
                 }
                 break;
             case R.id.btn_function_2:
-                if (mOrderBean.getState() == Constant.ORDER_STATE_PARKED){//结束停车
+                if (mOrderListBean.getState() == Constant.ORDER_STATE_PARKED){//结束停车
                     String title = "点击『结束停车』后将不能使用车位，确认结束停车？";
                     QhDeleteItemDialog dialog = new QhDeleteItemDialog(mContext, title, 1);
                     dialog.setOnSureCallbackListener(new QhDeleteItemDialog.OnSureCallbackListener() {
@@ -147,18 +140,18 @@ public class EstateMapFragment extends Fragment {
                     dialog.show();
 
                 }
-                if (mOrderBean.getState() == Constant.ORDER_STATE_RESERVED && mCanUse){//开始停车
+                if (mOrderListBean.getState() == Constant.ORDER_STATE_RESERVED && mCanUse){//开始停车
                     String title = "点击『开始停车』后开始计费，请您离开后务必点击『结束停车』按钮以确认离开";
                     QhDeleteItemDialog dialog = new QhDeleteItemDialog(mContext, title, 1);
                     dialog.setOnSureCallbackListener(new QhDeleteItemDialog.OnSureCallbackListener() {
                         @Override
                         public void onSure(View view) {
                             mActivity.LockControl(0, true);
-                            mOrderBean.setState(Constant.ORDER_STATE_PARKED);
+                            mOrderListBean.setState(Constant.ORDER_STATE_PARKED);
                         }
                     });
                     dialog.show();
-                }else if (mOrderBean.getState() == Constant.ORDER_STATE_RESERVED && !mCanUse){//查询是否可用
+                }else if (mOrderListBean.getState() == Constant.ORDER_STATE_RESERVED && !mCanUse){//查询是否可用
                     mActivity.QueryParkingUsing();
                 }
                 break;
@@ -173,15 +166,15 @@ public class EstateMapFragment extends Fragment {
     }
 
     public void refreshFragment(){
-        switch (mOrderBean.getState()){
+        switch (mOrderListBean.getState()){
             case Constant.ORDER_STATE_RESERVED:
                 setRemindInfo();
                 mTvRemind.setText("正在加载...");
-                if ((mOrderBean.getStartTime() - System.currentTimeMillis() <= 30 * 60 * 1000 && mOrderBean.getStartTime() - System.currentTimeMillis() > 0) && !mCanUse) {
+                if ((mOrderListBean.getStartTime() - System.currentTimeMillis() <= 30 * 60 * 1000 && mOrderListBean.getStartTime() - System.currentTimeMillis() > 0) && !mCanUse) {
                     mBtnFunction2.setText("查询可否使用");
                     mBtnFunction2.setVisibility(View.VISIBLE);
                     mCanUse = false;
-                } else if (mOrderBean.getStartTime() - System.currentTimeMillis() <= 0 || mCanUse){
+                } else if (mOrderListBean.getStartTime() - System.currentTimeMillis() <= 0 || mCanUse){
                     mBtnFunction2.setText("开始停车");
                     mBtnFunction2.setVisibility(View.VISIBLE);
                     mCanUse = true;
@@ -193,7 +186,7 @@ public class EstateMapFragment extends Fragment {
                 mBtnFunction3.setText("地图导航");
                 break;
             case Constant.ORDER_STATE_PARKED:
-                mTvRemind.setText("最晚离开时间："+ END_TIME_FORMAT.format(mOrderBean.getEndTime()));
+                mTvRemind.setText("最晚离开时间："+ END_TIME_FORMAT.format(mOrderListBean.getEndTime()));
                 mBtnFunction1.setText("暂时离开");
                 mBtnFunction2.setText("离开计费");
                 mBtnFunction3.setText("地图导航");
@@ -205,7 +198,7 @@ public class EstateMapFragment extends Fragment {
 
     private void DownloadEstateMap(){
         DownloadEstateMapService downloadEstateMapService = ServiceGenerator.createService(DownloadEstateMapService.class);
-        DownloadEstateMapRequest downloadEstateMapRequest = new DownloadEstateMapRequest(mOrderBean.getEstate().getId());
+        DownloadEstateMapRequest downloadEstateMapRequest = new DownloadEstateMapRequest(mOrderListBean.getEstate().getId());
         Call<ResponseBody> call = downloadEstateMapService.downloadMap(downloadEstateMapRequest);
         call.enqueue(new Callback<ResponseBody>() {
             @Override
@@ -231,7 +224,7 @@ public class EstateMapFragment extends Fragment {
 
     private void setRemindInfo(){
         CityConfigService cityConfigService = ServiceGenerator.createService(CityConfigService.class);
-        CityConfigRequest cityConfigRequest = new CityConfigRequest(mOrderBean.getEstate().getId());
+        CityConfigRequest cityConfigRequest = new CityConfigRequest(mOrderListBean.getEstate().getId());
         Call<CityConfigResponse> call = cityConfigService.queryCityConfig(cityConfigRequest);
         call.enqueue(new Callback<CityConfigResponse>() {
             @Override
@@ -239,7 +232,7 @@ public class EstateMapFragment extends Fragment {
                 try {
                     if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
                         int freeCancellationTime = response.body().getData().getFreeCancellationTime();
-                        mTvRemind.setText("最晚停车时间："+ END_TIME_FORMAT.format(mOrderBean.getStartTime() + freeCancellationTime*60*1000));
+                        mTvRemind.setText("最晚停车时间："+ END_TIME_FORMAT.format(mOrderListBean.getStartTime() + freeCancellationTime*60*1000));
                     }else {
                         ToastUtil.showToast(mContext, "服务器繁忙，请稍后再试");
                     }
@@ -255,6 +248,10 @@ public class EstateMapFragment extends Fragment {
                 ToastUtil.showToast(mContext, "网络连接异常");
             }
         });
+    }
+
+    public void setOrderListBean(OrderResponse.DataBean.OrderListBean orderListBean) {
+        this.mOrderListBean = orderListBean;
     }
 
 }

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.qhiehome.ihome.activity.SettingActivity">
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/toolbar_theme">
+
+        <include layout="@layout/layout_toolbar_centertitle"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize">
+        </include>
+
+    </android.support.design.widget.AppBarLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:background="@color/bg_activity"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:background="@color/white"
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+            <ImageView
+                android:contentDescription="ic_pay_bao"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_pay_bao"
+                android:layout_marginTop="30dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="支付成功"
+                android:textSize="16sp"
+                android:textColor="@color/theme_start_color"
+                android:layout_marginTop="10dp"
+                />
+            
+            <TextView
+                android:id="@+id/tv_pay_account"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="24sp"
+                android:textColor="@color/major_text"
+                android:layout_marginTop="20dp"/>
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_pay_accomplish"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:text="完成"
+            android:textSize="16sp"
+            android:textColor="@color/submit_feedback"
+            android:background="@drawable/round_long_button_blue"
+            android:layout_marginTop="30dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            />
+
+    </LinearLayout>
+
+</android.support.design.widget.CoordinatorLayout>

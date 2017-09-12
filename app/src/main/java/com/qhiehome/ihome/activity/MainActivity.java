@@ -460,7 +460,7 @@ public class MainActivity extends BaseActivity {
                 break;
             case R.id.tv_add_balance:
                 Intent intent = new Intent(mContext, PayActivity.class);
-                intent.putExtra("payState", Constant.PAY_STATE_ADD_ACCOUNT);
+                intent.putExtra(PayActivity.PAY_STATE, Constant.PAY_STATE_ADD_ACCOUNT);
                 startActivity(intent);
                 break;
             default:

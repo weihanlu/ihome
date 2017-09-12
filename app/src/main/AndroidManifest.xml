@@ -57,7 +57,6 @@
             android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -101,7 +100,6 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name=".activity.ReserveListActivity" />
         <activity android:name=".activity.SettingActivity" />
         <activity android:name=".activity.MapSearchActivity" />
         <activity android:name=".activity.ServiceContractActivity" />
@@ -151,7 +149,7 @@
             android:exported="false" />
 
         <activity android:name=".activity.ReserveActivity" />
-        <activity android:name=".activity.PaySuccessActivity"></activity>
+        <activity android:name=".activity.PayResultActivity" />
     </application>
 
 </manifest>

@@ -139,9 +139,9 @@ public class ReserveActivity extends BaseActivity {
 
         mContext = this;
         initToolbar();
+        initTabLayout();
         initSwiperRefreshLayout();
         initRecyclerView();
-        initTabLayout();
 
         mNavi = NaviUtil.getInstance();
         mNavi.setmContext(mContext);
@@ -165,7 +165,7 @@ public class ReserveActivity extends BaseActivity {
         mTbReserve.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish();
+                MainActivity.start(mContext);
             }
         });
     }
@@ -257,9 +257,7 @@ public class ReserveActivity extends BaseActivity {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     mOrderBeanList = response.body().getData().getOrderList();
                     if (mOrderBeanList.get(0).getState() == Constant.ORDER_STATE_RESERVED || mOrderBeanList.get(0).getState() == Constant.ORDER_STATE_PARKED) {
-                        Bundle bundle = new Bundle();
-                        bundle.putSerializable("order", mOrderBeanList.get(0));
-                        mEstateMapFragment.setArguments(bundle);
+                        mEstateMapFragment.setOrderListBean(mOrderBeanList.get(0));
                         mSrlReserve.setVisibility(View.GONE);
                         mLlReserveUse.setVisibility(View.VISIBLE);
                         mTvItemReserveParking.setText(mOrderBeanList.get(0).getEstate().getName());
@@ -403,10 +401,10 @@ public class ReserveActivity extends BaseActivity {
                     mOrderBeanList.get(index).setState(Constant.ORDER_STATE_CANCEL);
                     updateData();
                     refreshActivity();
-                    new MaterialDialog.Builder(mContext)
-                            .content("您的预约已取消")
-                            .negativeText("确定")
-                            .show();
+//                    new MaterialDialog.Builder(mContext)
+//                            .content("您的预约已取消")
+//                            .negativeText("确定")
+//                            .show();
                 }
             }
 
@@ -652,4 +650,9 @@ public class ReserveActivity extends BaseActivity {
         mRvAdapter.cancelTimer();
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        MainActivity.start(mContext);
+    }
 }
