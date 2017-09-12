@@ -131,6 +131,8 @@ public class ReserveActivity extends BaseActivity {
     EstateMapFragment mEstateMapFragment;
     EstatePassFragment mEstatePassFragment;
 
+    private boolean mJumpToPay = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -256,6 +258,11 @@ public class ReserveActivity extends BaseActivity {
             public void onResponse(@NonNull Call<OrderResponse> call, @NonNull Response<OrderResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     mOrderBeanList = response.body().getData().getOrderList();
+                    if (mOrderBeanList.get(0).getState() == Constant.ORDER_STATE_NOT_PAID && mJumpToPay){
+                        mJumpToPay = false;
+                        Pay(0, Constant.PAY_STATE_TOTAL);
+                    }
+
                     if (mOrderBeanList.get(0).getState() == Constant.ORDER_STATE_RESERVED || mOrderBeanList.get(0).getState() == Constant.ORDER_STATE_PARKED) {
                         mEstateMapFragment.setOrderListBean(mOrderBeanList.get(0));
                         mSrlReserve.setVisibility(View.GONE);
@@ -292,7 +299,8 @@ public class ReserveActivity extends BaseActivity {
                     Button btnFunction2 = (Button) viewStubContent.findViewById(R.id.btn_nonetwork_function2);
                     switch (SharedPreferenceUtil.getInt(mContext, Constant.ORDER_STATE, 0)) {
                         case Constant.ORDER_STATE_RESERVED:
-                            if (SharedPreferenceUtil.getLong(mContext, Constant.PARKING_START_TIME, 0) >= System.currentTimeMillis()){
+                            long startTimeMillis = SharedPreferenceUtil.getLong(mContext, Constant.PARKING_START_TIME, 0);
+                            if (startTimeMillis <= System.currentTimeMillis()){
                                 btnFunction1.setText("开始停车");
                                 btnFunction1.setOnClickListener(new View.OnClickListener() {
                                     @Override
@@ -300,10 +308,12 @@ public class ReserveActivity extends BaseActivity {
                                         LockControl(0, true);
                                     }
                                 });
-                                btnFunction1.setVisibility(View.VISIBLE);
+                                btnFunction1.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_long_button_blue));
                             }else {
-                                btnFunction1.setVisibility(View.INVISIBLE);
+                                btnFunction1.setText(END_TIME_FORMAT.format(startTimeMillis) + "后可停车");
+                                btnFunction1.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_long_button_gray));
                             }
+                            btnFunction1.setVisibility(View.VISIBLE);
                             btnFunction2.setVisibility(View.INVISIBLE);
                             break;
                         case Constant.ORDER_STATE_PARKED:
@@ -328,6 +338,7 @@ public class ReserveActivity extends BaseActivity {
                             break;
                         default:
                             btnFunction1.setVisibility(View.INVISIBLE);
+                            btnFunction2.setVisibility(View.INVISIBLE);
                             break;
                     }
 
@@ -545,6 +556,7 @@ public class ReserveActivity extends BaseActivity {
                     public void onResponse(Call<ChargeResponse> call, Response<ChargeResponse> response) {
                         if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                             SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_LEAVE_TIME, false);
+                            mJumpToPay = true;
                             refreshActivity();
                         } else {
                             ToastUtil.showToast(mContext, "发送请求失败");
@@ -655,4 +667,6 @@ public class ReserveActivity extends BaseActivity {
         super.onBackPressed();
         MainActivity.start(mContext);
     }
+
+
 }

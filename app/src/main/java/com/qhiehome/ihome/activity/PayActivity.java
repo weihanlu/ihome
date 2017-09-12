@@ -61,6 +61,8 @@ import retrofit2.Response;
 public class PayActivity extends BaseActivity {
 
     public static final String PAY_STATE = "payState";
+    public static final String ORDER_ID = "orderId";
+    public static final String FEE = "fee";
 
     @BindView(R.id.rv_pay)
     RecyclerView mRvPay;
@@ -406,7 +408,7 @@ public class PayActivity extends BaseActivity {
                     }
                     break;
                 case ACCOUNT_BALANCE:
-                    holder.iv_pay.setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_pay_account));
+                    holder.iv_pay.setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_wallet));
                     if (mIsFirstLoad) {
                         holder.tv_pay.setText("账户余额");
                         holder.tv_pay_info.setText("正在获取账户余额");
@@ -501,7 +503,7 @@ public class PayActivity extends BaseActivity {
                     if (mPayState == Constant.PAY_STATE_GUARANTEE){
                         PayGuaranteeFee();
                     }else {
-                        PayResultActivity.start(mContext, mCurrentAccount, mPayState);
+                        PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod());
                     }
                 }
             }
@@ -533,10 +535,10 @@ public class PayActivity extends BaseActivity {
                         if (mPayState == Constant.PAY_STATE_GUARANTEE) {
                             PayGuaranteeFee();
                         } else if (mPayState == Constant.PAY_STATE_ADD_ACCOUNT) {
-                            PayResultActivity.start(mContext, mCurrentAccount, mPayState);
+                            PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod());
                         } else if (mPayState == Constant.PAY_STATE_TOTAL) {
                             // TODO: 2017/9/12 有无发送什么命令
-                            PayResultActivity.start(mContext, mCurrentAccount, mPayState);
+                            PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod());
                         }
                     } else {
                         // 该笔订单真实的支付结果，需要依赖服务端的异步通知。
@@ -569,7 +571,7 @@ public class PayActivity extends BaseActivity {
                     SharedPreferenceUtil.setFloat(mContext, Constant.ESTATE_LONGITUDE, (float) response.body().getData().getEstate().getX());
                     SharedPreferenceUtil.setFloat(mContext, Constant.ESTATE_LATITUDE, (float) response.body().getData().getEstate().getY());
 
-                    PayResultActivity.start(mContext, mCurrentAccount, mPayState);
+                    PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod());
                 }
             }
 
@@ -578,6 +580,15 @@ public class PayActivity extends BaseActivity {
                 ToastUtil.showToast(mContext, "网络连接异常");
             }
         });
+    }
+
+    private int getPayMethod(){
+        for (int i = 0; i<mSelectedNum.length; i++){
+            if (mSelectedNum[i]){
+                return i;
+            }
+        }
+        return -1;
     }
 
 }
