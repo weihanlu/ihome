@@ -23,6 +23,7 @@ import com.qhiehome.ihome.network.model.inquiry.order.OrderResponse;
 import com.qhiehome.ihome.network.service.configuration.CityConfigService;
 import com.qhiehome.ihome.network.service.estate.DownloadEstateMapService;
 import com.qhiehome.ihome.util.Constant;
+import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 import com.qhiehome.ihome.view.QhDeleteItemDialog;
 
@@ -61,7 +62,8 @@ public class EstateMapFragment extends Fragment {
     private static final SimpleDateFormat END_TIME_FORMAT = new SimpleDateFormat("HH:mm", Locale.CHINA);
 
     private Context mContext;
-    private boolean mCanUse = false;
+    private boolean mCanUse;
+    private boolean mAdvancedUse;
 
 
     public EstateMapFragment() {
@@ -92,6 +94,7 @@ public class EstateMapFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        mAdvancedUse = SharedPreferenceUtil.getBoolean(mContext, Constant.ADVANCED_USE, false);
         try {
             refreshFragment();
             if (mOrderListBean.getState() == Constant.ORDER_STATE_RESERVED || mOrderListBean.getState() == Constant.ORDER_STATE_PARKED){
@@ -100,7 +103,6 @@ public class EstateMapFragment extends Fragment {
         }catch (Exception e){
             e.printStackTrace();
         }
-
     }
 
     @Override
@@ -165,20 +167,27 @@ public class EstateMapFragment extends Fragment {
         mCanUse = canUse;
     }
 
+    public void setmAdvancedUse(boolean mAdvancedUse) {
+        this.mAdvancedUse = mAdvancedUse;
+    }
+
     public void refreshFragment(){
         switch (mOrderListBean.getState()){
             case Constant.ORDER_STATE_RESERVED:
-                setRemindInfo();
                 mTvRemind.setText("正在加载...");
-                if ((mOrderListBean.getStartTime() - System.currentTimeMillis() <= 30 * 60 * 1000 && mOrderListBean.getStartTime() - System.currentTimeMillis() > 0) && !mCanUse) {
+                setRemindInfo();
+                //提前半小时可以查询车位是否闲置可用
+                if ((mOrderListBean.getStartTime() - System.currentTimeMillis() <= 30 * 60 * 1000 && mOrderListBean.getStartTime() - System.currentTimeMillis() > 0) && !mAdvancedUse) {
                     mBtnFunction2.setText("查询可否使用");
                     mBtnFunction2.setVisibility(View.VISIBLE);
                     mCanUse = false;
-                } else if (mOrderListBean.getStartTime() - System.currentTimeMillis() <= 0 || mCanUse){
+                } //已到预约时间或者可以提前使用
+                else if (mOrderListBean.getStartTime() - System.currentTimeMillis() <= 0 || mAdvancedUse){
                     mBtnFunction2.setText("开始停车");
                     mBtnFunction2.setVisibility(View.VISIBLE);
                     mCanUse = true;
-                } else {
+                } //其他时间或车位不可提前使用
+                else {
                     mBtnFunction2.setVisibility(View.INVISIBLE);
                     mCanUse = false;
                 }

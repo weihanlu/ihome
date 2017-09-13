@@ -45,9 +45,10 @@ public class Constant {
     public static final String ESTATE_LONGITUDE = "ESTATE_LONGITUDE";
     public static final String ESTATE_LATITUDE = "ESTATE_LATITUDE";
     public static final String ESTATE_NAME = "ESTATE_NAME";
-    //目前不知道有啥用，就先留着吧
+    //record order info
     public static final String ORDER_CREATE_TIME = "orderCreateTime";
     public static final String ORDER_STATE = "ORDER_STATE";
+    public static final String ORDER_ID = "order_id";
     //record enter/leave time without network
     public static final String PARKING_ENTER_TIME = "enterTime";
     public static final String PARKING_LEAVE_TIME = "leaveTime";
@@ -60,6 +61,8 @@ public class Constant {
     public static final String RESERVE_LOCK_MAC = "RESERVE_LOCK_MAC";
     public static final String RESERVE_LOCK_PWD = "RESERVE_LOCK_PWD";
     public static final String RESERVE_GATEWAY_ID = "RESERVE_GATEWAY_ID";
+    //record advanced using right
+    public static final String ADVANCED_USE = "ADVANCED_USE";
     /*******persistence data********/
 
     public static final int PAY_STATE_ADD_ACCOUNT = 0;
