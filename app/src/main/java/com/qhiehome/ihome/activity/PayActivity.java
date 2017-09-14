@@ -42,6 +42,7 @@ import com.qhiehome.ihome.pay.AliPay.PayResult;
 import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
+import com.qhiehome.ihome.util.OrderUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
@@ -61,6 +62,8 @@ import retrofit2.Response;
 public class PayActivity extends BaseActivity {
 
     public static final String PAY_STATE = "payState";
+    public static final String ORDER_ID = "orderId";
+    public static final String FEE = "fee";
 
     @BindView(R.id.rv_pay)
     RecyclerView mRvPay;
@@ -406,7 +409,7 @@ public class PayActivity extends BaseActivity {
                     }
                     break;
                 case ACCOUNT_BALANCE:
-                    holder.iv_pay.setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_pay_account));
+                    holder.iv_pay.setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_wallet));
                     if (mIsFirstLoad) {
                         holder.tv_pay.setText("账户余额");
                         holder.tv_pay_info.setText("正在获取账户余额");
@@ -501,7 +504,7 @@ public class PayActivity extends BaseActivity {
                     if (mPayState == Constant.PAY_STATE_GUARANTEE){
                         PayGuaranteeFee();
                     }else {
-                        PayResultActivity.start(mContext, mCurrentAccount, mPayState);
+                        PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod());
                     }
                 }
             }
@@ -533,10 +536,10 @@ public class PayActivity extends BaseActivity {
                         if (mPayState == Constant.PAY_STATE_GUARANTEE) {
                             PayGuaranteeFee();
                         } else if (mPayState == Constant.PAY_STATE_ADD_ACCOUNT) {
-                            PayResultActivity.start(mContext, mCurrentAccount, mPayState);
+                            PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod());
                         } else if (mPayState == Constant.PAY_STATE_TOTAL) {
                             // TODO: 2017/9/12 有无发送什么命令
-                            PayResultActivity.start(mContext, mCurrentAccount, mPayState);
+                            PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod());
                         }
                     } else {
                         // 该笔订单真实的支付结果，需要依赖服务端的异步通知。
@@ -559,17 +562,25 @@ public class PayActivity extends BaseActivity {
             @Override
             public void onResponse(Call<PayGuaranteeResponse> call, Response<PayGuaranteeResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                    SharedPreferenceUtil.setLong(mContext, Constant.PARKING_START_TIME, response.body().getData().getEstate().getParking().getShare().getStartTime());
-                    SharedPreferenceUtil.setLong(mContext, Constant.PARKING_END_TIME, response.body().getData().getEstate().getParking().getShare().getEndTime());
-                    SharedPreferenceUtil.setString(mContext, Constant.RESERVE_LOCK_MAC, response.body().getData().getEstate().getParking().getLockMac());
-                    SharedPreferenceUtil.setString(mContext, Constant.RESERVE_LOCK_PWD, response.body().getData().getEstate().getParking().getPassword());
-                    SharedPreferenceUtil.setString(mContext, Constant.RESERVE_GATEWAY_ID, response.body().getData().getEstate().getParking().getGatewayId());
-                    SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_RESERVED);
-                    SharedPreferenceUtil.setString(mContext, Constant.ESTATE_NAME, response.body().getData().getEstate().getName());
-                    SharedPreferenceUtil.setFloat(mContext, Constant.ESTATE_LONGITUDE, (float) response.body().getData().getEstate().getX());
-                    SharedPreferenceUtil.setFloat(mContext, Constant.ESTATE_LATITUDE, (float) response.body().getData().getEstate().getY());
-
-                    PayResultActivity.start(mContext, mCurrentAccount, mPayState);
+//                    SharedPreferenceUtil.setLong(mContext, Constant.PARKING_START_TIME, response.body().getData().getEstate().getParking().getShare().getStartTime());
+//                    SharedPreferenceUtil.setLong(mContext, Constant.PARKING_END_TIME, response.body().getData().getEstate().getParking().getShare().getEndTime());
+//                    SharedPreferenceUtil.setString(mContext, Constant.RESERVE_LOCK_MAC, response.body().getData().getEstate().getParking().getLockMac());
+//                    SharedPreferenceUtil.setString(mContext, Constant.RESERVE_LOCK_PWD, response.body().getData().getEstate().getParking().getPassword());
+//                    SharedPreferenceUtil.setString(mContext, Constant.RESERVE_GATEWAY_ID, response.body().getData().getEstate().getParking().getGatewayId());
+//                    SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_RESERVED);
+//                    SharedPreferenceUtil.setString(mContext, Constant.ESTATE_NAME, response.body().getData().getEstate().getName());
+//                    SharedPreferenceUtil.setFloat(mContext, Constant.ESTATE_LONGITUDE, (float) response.body().getData().getEstate().getX());
+//                    SharedPreferenceUtil.setFloat(mContext, Constant.ESTATE_LATITUDE, (float) response.body().getData().getEstate().getY());
+                    OrderUtil.getInstance().setOrderInfo(mContext, mOrderId, Constant.ORDER_STATE_RESERVED,
+                            response.body().getData().getEstate().getParking().getShare().getStartTime(),
+                            response.body().getData().getEstate().getParking().getShare().getEndTime(),
+                            response.body().getData().getEstate().getParking().getLockMac(),
+                            response.body().getData().getEstate().getParking().getPassword(),
+                            response.body().getData().getEstate().getParking().getGatewayId(),
+                            response.body().getData().getEstate().getName(),
+                            response.body().getData().getEstate().getX(),
+                            response.body().getData().getEstate().getY());
+                    PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod());
                 }
             }
 
@@ -578,6 +589,15 @@ public class PayActivity extends BaseActivity {
                 ToastUtil.showToast(mContext, "网络连接异常");
             }
         });
+    }
+
+    private int getPayMethod(){
+        for (int i = 0; i<mSelectedNum.length; i++){
+            if (mSelectedNum[i]){
+                return i;
+            }
+        }
+        return -1;
     }
 
 }

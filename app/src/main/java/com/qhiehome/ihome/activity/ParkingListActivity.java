@@ -34,10 +34,17 @@ import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyResponse;
 import com.qhiehome.ihome.network.model.park.reserve.ReserveRequest;
 import com.qhiehome.ihome.network.model.park.reserve.ReserveResponse;
+import com.qhiehome.ihome.network.model.pay.accountbalance.AccountBalanceRequest;
+import com.qhiehome.ihome.network.model.pay.accountbalance.AccountBalanceResponse;
+import com.qhiehome.ihome.network.model.pay.guarantee.PayGuaranteeRequest;
+import com.qhiehome.ihome.network.model.pay.guarantee.PayGuaranteeResponse;
 import com.qhiehome.ihome.network.service.park.ReserveService;
+import com.qhiehome.ihome.network.service.pay.AccountBalanceService;
+import com.qhiehome.ihome.network.service.pay.PayGuaranteeService;
 import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
+import com.qhiehome.ihome.util.OrderUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
@@ -360,14 +367,8 @@ public class ParkingListActivity extends BaseActivity {
                 @Override
                 public void onResponse(Call<ReserveResponse> call, Response<ReserveResponse> response) {
                     if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                        Intent intent = new Intent(ParkingListActivity.this, PayActivity.class);
-                        intent.putExtra("fee", mGuaranteeFee);
-                        intent.putExtra("payState", Constant.PAY_STATE_GUARANTEE);
-                        intent.putExtra("orderId", response.body().getData().getOrder().getId());
-                        SharedPreferenceUtil.setLong(mContext, Constant.ORDER_CREATE_TIME, System.currentTimeMillis());
-                        SharedPreferenceUtil.setInt(mContext, Constant.FREE_CANCELLATION_TIME, FREE_CANCELLATION_TIME);
-                        startActivity(intent);
-                        ToastUtil.showToast(mContext, "预约成功");
+                        payGuarFeeWithWallet(response.body().getData().getOrder().getId());
+
                     } else if (response.body().getErrcode() == UNPAY_ORDER) {
                         new MaterialDialog.Builder(mContext)
                                 .title("预约失败")
@@ -432,4 +433,69 @@ public class ParkingListActivity extends BaseActivity {
         startActivity(intent);
     }
 
+    private void payGuarFeeWithWallet(final int orderId){
+        AccountBalanceService accountBalanceService = ServiceGenerator.createService(AccountBalanceService.class);
+        AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256), -mGuaranteeFee, orderId);
+        Call<AccountBalanceResponse> call = accountBalanceService.account(accountBalanceRequest);
+        call.enqueue(new Callback<AccountBalanceResponse>() {
+            @Override
+            public void onResponse(Call<AccountBalanceResponse> call, Response<AccountBalanceResponse> response) {
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                    PayGuaranteeFee(orderId);
+                }else {
+                    Intent intent = new Intent(ParkingListActivity.this, PayActivity.class);
+                    intent.putExtra("fee", mGuaranteeFee);
+                    intent.putExtra("payState", Constant.PAY_STATE_GUARANTEE);
+                    intent.putExtra("orderId", orderId);
+                    SharedPreferenceUtil.setLong(mContext, Constant.ORDER_CREATE_TIME, System.currentTimeMillis());
+                    SharedPreferenceUtil.setInt(mContext, Constant.FREE_CANCELLATION_TIME, FREE_CANCELLATION_TIME);
+                    startActivity(intent);
+                    ToastUtil.showToast(mContext, "预约成功");
+                }
+            }
+            @Override
+            public void onFailure(Call<AccountBalanceResponse> call, Throwable t) {
+
+            }
+        });
+    }
+
+    private void PayGuaranteeFee(final int orderId){
+        PayGuaranteeService payGuaranteeService = ServiceGenerator.createService(PayGuaranteeService.class);
+        PayGuaranteeRequest payGuaranteeRequest = new PayGuaranteeRequest(orderId);
+        Call<PayGuaranteeResponse> call = payGuaranteeService.payGuarantee(payGuaranteeRequest);
+        call.enqueue(new Callback<PayGuaranteeResponse>() {
+            @Override
+            public void onResponse(Call<PayGuaranteeResponse> call, Response<PayGuaranteeResponse> response) {
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+//                    SharedPreferenceUtil.setLong(mContext, Constant.PARKING_START_TIME, response.body().getData().getEstate().getParking().getShare().getStartTime());
+//                    SharedPreferenceUtil.setLong(mContext, Constant.PARKING_END_TIME, response.body().getData().getEstate().getParking().getShare().getEndTime());
+//                    SharedPreferenceUtil.setString(mContext, Constant.RESERVE_LOCK_MAC, response.body().getData().getEstate().getParking().getLockMac());
+//                    SharedPreferenceUtil.setString(mContext, Constant.RESERVE_LOCK_PWD, response.body().getData().getEstate().getParking().getPassword());
+//                    SharedPreferenceUtil.setString(mContext, Constant.RESERVE_GATEWAY_ID, response.body().getData().getEstate().getParking().getGatewayId());
+//                    SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_RESERVED);
+//                    SharedPreferenceUtil.setString(mContext, Constant.ESTATE_NAME, response.body().getData().getEstate().getName());
+//                    SharedPreferenceUtil.setFloat(mContext, Constant.ESTATE_LONGITUDE, (float) response.body().getData().getEstate().getX());
+//                    SharedPreferenceUtil.setFloat(mContext, Constant.ESTATE_LATITUDE, (float) response.body().getData().getEstate().getY());
+                    OrderUtil.getInstance().setOrderInfo(mContext, orderId, Constant.ORDER_STATE_RESERVED,
+                            response.body().getData().getEstate().getParking().getShare().getStartTime(),
+                            response.body().getData().getEstate().getParking().getShare().getEndTime(),
+                            response.body().getData().getEstate().getParking().getLockMac(),
+                            response.body().getData().getEstate().getParking().getPassword(),
+                            response.body().getData().getEstate().getParking().getGatewayId(),
+                            response.body().getData().getEstate().getName(),
+                            response.body().getData().getEstate().getX(),
+                            response.body().getData().getEstate().getY());
+                    Intent intent = new Intent(ParkingListActivity.this, ReserveActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PayGuaranteeResponse> call, Throwable t) {
+                ToastUtil.showToast(mContext, "网络连接异常");
+            }
+        });
+    }
 }

@@ -37,6 +37,7 @@ import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.LogUtil;
+import com.qhiehome.ihome.util.OrderUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
@@ -318,16 +319,20 @@ public class LoginActivity extends BaseActivity {
                         } else {
                             OrderUsingResponse.DataBean.OrderBean orderBean = response.body().getData().getOrder();
                             OrderUsingResponse.DataBean.EstateBean estateBean = response.body().getData().getEstate();
-                            SharedPreferenceUtil.setLong(LoginActivity.this, Constant.PARKING_START_TIME, orderBean.getStartTime());
-                            SharedPreferenceUtil.setLong(LoginActivity.this, Constant.PARKING_END_TIME, orderBean.getEndTime());
-                            SharedPreferenceUtil.setString(LoginActivity.this, Constant.RESERVE_LOCK_MAC, orderBean.getParking().getLockMac());
-                            SharedPreferenceUtil.setString(LoginActivity.this, Constant.RESERVE_LOCK_PWD, orderBean.getParking().getPassword());
-                            SharedPreferenceUtil.setString(LoginActivity.this, Constant.RESERVE_GATEWAY_ID, orderBean.getParking().getGateWayId());
-                            SharedPreferenceUtil.setInt(LoginActivity.this, Constant.ORDER_STATE, orderBean.getState());
-                            SharedPreferenceUtil.setString(LoginActivity.this, Constant.ESTATE_NAME, estateBean.getName());
-                            SharedPreferenceUtil.setFloat(LoginActivity.this, Constant.ESTATE_LONGITUDE, (float) estateBean.getX());
-                            SharedPreferenceUtil.setFloat(LoginActivity.this, Constant.ESTATE_LATITUDE, (float) estateBean.getY());
-                            MainActivity.start(LoginActivity.this);
+                            OrderUtil.getInstance().setOrderInfo(mContext, orderBean.getId(), orderBean.getState(), orderBean.getStartTime(), orderBean.getEndTime(),
+                                    orderBean.getParking().getLockMac(), orderBean.getParking().getPassword(), orderBean.getParking().getGateWayId(),
+                                    estateBean.getName(), estateBean.getX(), estateBean.getY());
+//                            SharedPreferenceUtil.setInt(mContext, Constant.ORDER_ID, orderBean.getId());
+//                            SharedPreferenceUtil.setLong(mContext, Constant.PARKING_START_TIME, orderBean.getStartTime());
+//                            SharedPreferenceUtil.setLong(mContext, Constant.PARKING_END_TIME, orderBean.getEndTime());
+//                            SharedPreferenceUtil.setString(mContext, Constant.RESERVE_LOCK_MAC, orderBean.getParking().getLockMac());
+//                            SharedPreferenceUtil.setString(mContext, Constant.RESERVE_LOCK_PWD, orderBean.getParking().getPassword());
+//                            SharedPreferenceUtil.setString(mContext, Constant.RESERVE_GATEWAY_ID, orderBean.getParking().getGateWayId());
+//                            SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, orderBean.getState());
+//                            SharedPreferenceUtil.setString(mContext, Constant.ESTATE_NAME, estateBean.getName());
+//                            SharedPreferenceUtil.setFloat(mContext, Constant.ESTATE_LONGITUDE, (float) estateBean.getX());
+//                            SharedPreferenceUtil.setFloat(mContext, Constant.ESTATE_LATITUDE, (float) estateBean.getY());
+                            MainActivity.start(mContext);
                         }
                     } else {
                         ToastUtil.showToast(LoginActivity.this, "服务器繁忙，请稍后再试");
