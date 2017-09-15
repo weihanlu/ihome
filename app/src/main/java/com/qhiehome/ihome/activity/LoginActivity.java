@@ -9,6 +9,7 @@ import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -17,7 +18,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.support.v7.widget.Toolbar;
 
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.application.IhomeApplication;
@@ -137,7 +137,7 @@ public class LoginActivity extends BaseActivity {
         mTvTitle.setText(R.string.login);
         SpannableString sp = new SpannableString("点击登录，表示默认同意《服务条款》");
         sp.setSpan(new ForegroundColorSpan(
-                ContextCompat.getColor(this, R.color.theme_start_color)),
+                        ContextCompat.getColor(this, R.color.theme_start_color)),
                 11, 17, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         mTvSpecification.setText(sp);
         String phoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, "");
@@ -174,6 +174,11 @@ public class LoginActivity extends BaseActivity {
                 mEtVerify.requestFocus();
                 break;
         }
+    }
+
+    @OnClick(R.id.tv_specification)
+    public void serviceContract() {
+        ServiceContractActivity.start(mContext);
     }
 
     private static class SMSObserverHandler extends Handler {
@@ -345,7 +350,7 @@ public class LoginActivity extends BaseActivity {
         Call<OrderUsingResponse> call = orderUsingService.orderUsing(orderUsingRequest);
         call.enqueue(new Callback<OrderUsingResponse>() {
             @Override
-            public void onResponse(@NonNull Call<OrderUsingResponse> call,@NonNull Response<OrderUsingResponse> response) {
+            public void onResponse(@NonNull Call<OrderUsingResponse> call, @NonNull Response<OrderUsingResponse> response) {
                 try {
                     if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                         if (response.body().getData() == null) {
@@ -414,21 +419,23 @@ public class LoginActivity extends BaseActivity {
 
     /**
      * 登录时将锁所有的信息本地化
+     *
      * @param response network response
      */
     private void locksPersistent(@NonNull Response<ParkingOwnedResponse> response) {
-        if (response.body().getData() == null) {
-            SharedPreferenceUtil.setInt(LoginActivity.this, Constant.USER_TYPE, Constant.USER_TYPE_TEMP);
-        } else {
-            mUserLockBeanDao.deleteAll();
-            SharedPreferenceUtil.setInt(LoginActivity.this, Constant.USER_TYPE, Constant.USER_TYPE_OWNER);
-            List<ParkingResponse.DataBean.EstateBean> estateList = response.body().getData().getEstate();
-            if (estateList.size() != 0) {
+        mUserLockBeanDao.deleteAll();
+        List<ParkingResponse.DataBean.EstateBean> estateList = response.body().getData().getEstate();
+        if (estateList != null) {
+            if (estateList.size() == 0) {
+                SharedPreferenceUtil.setInt(LoginActivity.this, Constant.USER_TYPE, Constant.USER_TYPE_TEMP);
+            } else {
+                SharedPreferenceUtil.setInt(LoginActivity.this, Constant.USER_TYPE, Constant.USER_TYPE_OWNER);
                 UserLockBean userLockBean;
                 for (ParkingResponse.DataBean.EstateBean estate : estateList) {
                     for (ParkingResponse.DataBean.EstateBean.ParkingListBean parkingBean : estate.getParkingList()) {
                         userLockBean = new UserLockBean(null, estate.getName(), parkingBean.getName(), parkingBean.getId(), parkingBean.getGatewayId(),
-                                parkingBean.getLockMac(), parkingBean.getPassword(), true);
+                                parkingBean.getLockMac(), parkingBean.getPassword(), false);
+                        LogUtil.d(TAG, userLockBean.toString());
                         mUserLockBeanDao.insertOrReplace(userLockBean);
                     }
                 }

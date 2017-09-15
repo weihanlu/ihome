@@ -454,7 +454,7 @@ public class ParkFragment extends Fragment {
         for (int i = 0; i < mEstateBeanList.size(); i++) {
             boolean hasShare = false;
             for (int j = 0; j < mEstateBeanList.get(i).getParkingList().size(); j++) {
-                if (mEstateBeanList.get(i).getParkingList().get(j).getShareList().size() != 0) {
+                if (mEstateBeanList.get(i).getParkingList().size() != 0) {
                     hasShare = true;
                     break;
                 }
@@ -470,7 +470,7 @@ public class ParkFragment extends Fragment {
                     iv_marker.setImageResource(R.drawable.img_bluemark);
                     int shareNum = 0;
                     for (int j = 0; j < mEstateBeanList.get(i).getParkingList().size(); j++) {
-                        shareNum += mEstateBeanList.get(i).getParkingList().get(j).getShareList().size();
+                        shareNum += mEstateBeanList.get(i).getParkingList().size();
                     }
                     tv_marker.setText(String.valueOf(shareNum));
                 } else {
