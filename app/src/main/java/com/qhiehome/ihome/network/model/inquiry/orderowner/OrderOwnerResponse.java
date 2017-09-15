@@ -81,7 +81,7 @@ public class OrderOwnerResponse {
             private long leaveTime;
             private long paymentTime;
             private long closeTime;
-            private int ownerFee;
+            private double ownerFee;
             private int state;
 
             public int getId() {
@@ -172,11 +172,11 @@ public class OrderOwnerResponse {
                 this.closeTime = closeTime;
             }
 
-            public int getOwnerFee() {
+            public double getOwnerFee() {
                 return ownerFee;
             }
 
-            public void setOwnerFee(int ownerFee) {
+            public void setOwnerFee(double ownerFee) {
                 this.ownerFee = ownerFee;
             }
 
