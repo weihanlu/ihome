@@ -46,7 +46,7 @@ public class ParkingEmptyResponse extends Response {
              * y : 87.654321
              * unitPrice : 10
              * guaranteeFee : 10
-             * parkingList : [{"id":123456789,"name":"xxxxxx","shareList":[{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]}]
+             * parkingList : [{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]
              */
 
             private int id;
@@ -113,16 +113,11 @@ public class ParkingEmptyResponse extends Response {
                 this.parkingList = parkingList;
             }
 
-            public static class ParkingListBean implements Serializable {
-                /**
-                 * id : 123456789
-                 * name : xxxxxx
-                 * shareList : [{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]
-                 */
+            public static class ParkingListBean implements Serializable, Comparable<ParkingListBean> {
 
                 private int id;
-                private String name;
-                private List<ShareListBean> shareList;
+                private long startTime;
+                private long endTime;
 
                 public int getId() {
                     return id;
@@ -132,68 +127,32 @@ public class ParkingEmptyResponse extends Response {
                     this.id = id;
                 }
 
-                public String getName() {
-                    return name;
+                public long getStartTime() {
+                    return startTime;
                 }
 
-                public void setName(String name) {
-                    this.name = name;
+                public void setStartTime(long startTime) {
+                    this.startTime = startTime;
                 }
 
-                public List<ShareListBean> getShareList() {
-                    return shareList;
+                public long getEndTime() {
+                    return endTime;
                 }
 
-                public void setShareList(List<ShareListBean> shareList) {
-                    this.shareList = shareList;
+                public void setEndTime(long endTime) {
+                    this.endTime = endTime;
                 }
 
-                public static class ShareListBean implements Serializable, Comparable<ShareListBean> {
-                    /**
-                     * id : 123456789
-                     * startTime : 1499826000000
-                     * endTime : 1499828000000
-                     */
-
-                    private int id;
-                    private long startTime;
-                    private long endTime;
-
-                    public int getId() {
-                        return id;
-                    }
-
-                    public void setId(int id) {
-                        this.id = id;
-                    }
-
-                    public long getStartTime() {
-                        return startTime;
-                    }
-
-                    public void setStartTime(long startTime) {
-                        this.startTime = startTime;
-                    }
-
-                    public long getEndTime() {
-                        return endTime;
-                    }
-
-                    public void setEndTime(long endTime) {
-                        this.endTime = endTime;
-                    }
-
-                    @Override
-                    public int compareTo(@NonNull ShareListBean o) {
-                        long thisStartTime = this.getStartTime();
-                        long otherStartTime = o.getStartTime();
-                        if (thisStartTime < otherStartTime) {
-                            return -1;
-                        } else if (thisStartTime > otherStartTime) {
-                            return 1;
-                        } else {
-                            return 0;
-                        }
+                @Override
+                public int compareTo(@NonNull ParkingListBean o) {
+                    long thisStartTime = this.getStartTime();
+                    long otherStartTime = o.getStartTime();
+                    if (thisStartTime < otherStartTime) {
+                        return -1;
+                    } else if (thisStartTime > otherStartTime) {
+                        return 1;
+                    } else {
+                        return 0;
                     }
                 }
             }

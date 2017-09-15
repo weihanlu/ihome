@@ -177,7 +177,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                         estateId = estateBean.getId();
                         List<ParkingResponse.DataBean.EstateBean.ParkingListBean> parkingList = estateBean.getParkingList();
                         for (ParkingResponse.DataBean.EstateBean.ParkingListBean parkingBean : parkingList) {
-                            mParkingItems.add(new ParkingItem(parkingBean.getId() + "", estateId));
+                            mParkingItems.add(new ParkingItem(parkingBean.getId() + "", estateId, parkingBean.getPassword()));
                             mSelected.add(false);
                             List<ParkingResponse.DataBean.EstateBean.ParkingListBean.ShareListBean> shareList = parkingBean.getShareList();
                             for (ParkingResponse.DataBean.EstateBean.ParkingListBean.ShareListBean shareBean : shareList) {
@@ -245,7 +245,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                     @Override
                     public void onSure(View view) {
                         PublishCallbackService publishCallbackService = ServiceGenerator.createService(PublishCallbackService.class);
-                                PublishCancelRequest publishCancelRequest = new PublishCancelRequest(shareId, Constant.DEFAULT_PASSWORD);
+                                PublishCancelRequest publishCancelRequest = new PublishCancelRequest(shareId, "123456");
                                 Call<PublishCancelResponse> call = publishCallbackService.callback(publishCancelRequest);
                                 call.enqueue(new Callback<PublishCancelResponse>() {
                                     @Override
@@ -445,10 +445,11 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
 
     private void publishParking() {
         long parkingId = Long.valueOf(mParkingItems.get(selectedPosition).getParkingId());
+        String password = mParkingItems.get(selectedPosition).getPassword();
         PublishParkService publishParkService = ServiceGenerator.createService(PublishParkService.class);
         PublishparkRequest publishparkRequest = new PublishparkRequest();
         publishparkRequest.setParkingId(parkingId);
-        publishparkRequest.setPassword(EncryptUtil.encrypt(Constant.DEFAULT_PASSWORD, EncryptUtil.ALGO.RSA));
+        publishparkRequest.setPassword(EncryptUtil.encrypt(password, EncryptUtil.ALGO.RSA));
         List<PublishparkRequest.ShareBean> share = new ArrayList<>();
         for (TimePeriod timePeriod : mTimePeriods) {
             PublishparkRequest.ShareBean shareBean = new PublishparkRequest.ShareBean();

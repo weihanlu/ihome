@@ -67,8 +67,6 @@ public class UserLockFragment extends Fragment {
 
     private long mCurrentTime;
 
-    private StringBuilder mParkingIds;
-
     private ConnectLockReceiver mReceiver;
 
     MaterialDialog mProgressDialog;
@@ -86,6 +84,9 @@ public class UserLockFragment extends Fragment {
     private String mGateWayId;
     private String mLockMac;
     private String mLockName;
+    private String mLockPassword;
+
+    private boolean isPasswordAlreadySet;
 
     @BindView(R.id.vs_user_locks)
     ViewStub mViewStub;
@@ -115,8 +116,8 @@ public class UserLockFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
+    public void onStart() {
+        super.onStart();
         mReceiver = new ConnectLockReceiver();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ConnectLockService.BROADCAST_CONNECT);
@@ -132,8 +133,8 @@ public class UserLockFragment extends Fragment {
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
+    public void onStop() {
+        super.onStop();
         mActivity.unregisterReceiver(mReceiver);
     }
 
@@ -141,55 +142,26 @@ public class UserLockFragment extends Fragment {
         DaoSession daoSession = ((IhomeApplication) getActivity().getApplicationContext()).getDaoSession();
         mUserLockBeanDao = daoSession.getUserLockBeanDao();
         mUserLockBeansQuery = mUserLockBeanDao.queryBuilder().orderAsc(UserLockBeanDao.Properties.Id).build();
-
         mUserLocks = new ArrayList<>();
-        mParkingIds = new StringBuilder();
-
         inquiryOwnedParkings();
     }
 
     private void inquiryOwnedParkings() {
         mCurrentTime = System.currentTimeMillis();
-        List<UserLockBean> list = mUserLockBeansQuery.list();
-        if (list != null && list.size() > 0) {
+        List<UserLockBean> lockList = mUserLockBeansQuery.list();
+        if (lockList != null && lockList.size() > 0) {
             mViewStub.inflate();
             RecyclerView rvUserLocks = (RecyclerView) mView.findViewById(R.id.rv_user_locks);
             rvUserLocks.setHasFixedSize(true);
             LinearLayoutManager llm = new LinearLayoutManager(mActivity);
             rvUserLocks.setLayoutManager(llm);
-            for (UserLockBean userLockBean : list) {
+            for (UserLockBean userLockBean : lockList) {
                 mUserLocks.add(userLockBean);
             }
             UserLockAdapter userLockAdapter = new UserLockAdapter(mActivity, mUserLocks);
             rvUserLocks.setAdapter(userLockAdapter);
             initListener(userLockAdapter);
         }
-    }
-
-    private void initLocks(List<ParkingResponse.DataBean.EstateBean> estateList) {
-        mUserLocks.clear();
-        UserLockBean userLockBean;
-        boolean isRented = false;
-        for (ParkingResponse.DataBean.EstateBean estate : estateList) {
-            for (ParkingResponse.DataBean.EstateBean.ParkingListBean parkingBean : estate.getParkingList()) {
-                LogUtil.d(TAG, "password is " + parkingBean.getPassword());
-                List<ParkingResponse.DataBean.EstateBean.ParkingListBean.ShareListBean> share = parkingBean.getShareList();
-                for (int i = 0; i < share.size(); i++) {
-                    ParkingResponse.DataBean.EstateBean.ParkingListBean.ShareListBean shareBean = share.get(i);
-                    long startTime = shareBean.getStartTime();
-                    long endTime = shareBean.getEndTime();
-                    if (mCurrentTime >= startTime && mCurrentTime <= endTime) {
-                        isRented = true;
-                    }
-                }
-                userLockBean = new UserLockBean(null, estate.getName(), parkingBean.getName(), parkingBean.getId(), parkingBean.getGatewayId(),
-                        parkingBean.getLockMac(), parkingBean.getPassword(), isRented);
-                mUserLocks.add(userLockBean);
-                mUserLockBeanDao.insertOrReplace(userLockBean);
-                mParkingIds.append(parkingBean.getId()).append(",");
-            }
-        }
-        SharedPreferenceUtil.setString(mActivity, Constant.OWNED_PARKING_KEY, mParkingIds.deleteCharAt(mParkingIds.length() - 1).toString());
     }
 
     @Override
@@ -209,6 +181,7 @@ public class UserLockFragment extends Fragment {
                 mGateWayId = userLockBean.getGatewayId();
                 mLockMac = userLockBean.getLockMac();
                 mLockName = userLockBean.getParkingName();
+                mLockPassword = userLockBean.getPassword();
                 if (!NetworkUtils.isConnected(mActivity)) {
                     mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
                     if (mBluetoothAdapter == null) {
@@ -247,19 +220,25 @@ public class UserLockFragment extends Fragment {
                     LogUtil.d(TAG, "password state is " + intent.getIntExtra(BLECommandIntent.EXTRA_MM_SET_ALREADY, -1));
                     LogUtil.d(TAG, "battery state is " + intent.getIntExtra(BLECommandIntent.EXTRA_BATTERY_LEVEL, -1));
                     LogUtil.d(TAG, "lock state is " + intent.getIntExtra(BLECommandIntent.EXTRA_LOCK_STATE, -1));
+
+                    isPasswordAlreadySet = intent.getIntExtra(BLECommandIntent.EXTRA_MM_SET_ALREADY, -1) == 1;
                     // send password
                     Bundle data = new Bundle();
                     int[] password = new int[6];
                     for (int i = 0; i < 6; i++) {
                         password[i] = Integer.
-                                valueOf(SharedPreferenceUtil
-                                        .getString(mActivity, Constant.LOCK_PASSWORD_KEY, Constant.DEFAULT_PASSWORD)
-                                        .substring(i, i + 1));
+                                valueOf(mLockPassword.substring(i, i + 1));
                     }
                     data.putIntArray(BLECommandIntent.EXTRA_PASSWORD, password);
                     data.putInt(BLECommandIntent.EXTRA_ROLE,
                             UserLockBean.LOCK_ROLE.OWNER.ordinal());
-                    CommunicationManager.getInstance().sendBLEEvent(getActivity(), BLECommandIntent.SETTING_PASSWORD, data);
+
+                    LogUtil.d(TAG, "isPassword already set " + isPasswordAlreadySet);
+                    if (isPasswordAlreadySet) {
+                        CommunicationManager.getInstance().sendBLEEvent(getActivity(), BLECommandIntent.CHECKING_PASSWORD, data);
+                    } else {
+                        CommunicationManager.getInstance().sendBLEEvent(getActivity(), BLECommandIntent.SETTING_PASSWORD, data);
+                    }
 
                     int state = intent.getIntExtra(BLECommandIntent.EXTRA_LOCK_STATE, 3);
                     if (state == 1) {
@@ -283,19 +262,11 @@ public class UserLockFragment extends Fragment {
                 case BLECommandIntent.RX_PASSWORD_RESULT:
                     int actionId = intent.getIntExtra(BLECommandIntent.EXTRA_PSW_ACTION, -1);
                     int result = intent.getIntExtra(BLECommandIntent.EXTRA_PSW_RESULT, -1);
-                    LogUtil.d(TAG, "actionId is " + actionId + ", result is " + result);
-                    if (actionId == 0x01) {
-                        if (result == 0x10) {
-                            // MM 代表密码
-                            LogUtil.d(TAG, "password is "
-                                    + SharedPreferenceUtil.getString(mActivity, Constant.LOCK_PASSWORD_KEY, Constant.DEFAULT_PASSWORD));
-                            Intent normal = new Intent(ConnectLockService.BROADCAST_CONNECT);
-                            mActivity.sendBroadcast(normal);
-                        } else {
-                            Intent errPassword = new Intent(ConnectLockService.BROADCAST_CONNECT);
-                            errPassword.putExtra("info", "密码错误");
-                            mActivity.sendBroadcast(errPassword);
-                        }
+                    LogUtil.d(TAG, "actionId is " + actionId + ", result is " + result + ", isPassword set " + isPasswordAlreadySet);
+                    if (actionId == 0x01) { // setting
+                        checkPassword(result);
+                    } else if (actionId == 0x02 && isPasswordAlreadySet) { // checking
+                        checkPassword(result);
                     }
                     break;
                 case CommunicationManager.ACTION_CONNECTION_STATE_CHANGE:
@@ -346,6 +317,19 @@ public class UserLockFragment extends Fragment {
                     }
                     break;
             }
+        }
+    }
+
+    private void checkPassword(int result) {
+        if (result == 0x10) {
+            // MM 代表密码
+            LogUtil.d(TAG, "password is " + mLockPassword);
+            Intent normal = new Intent(ConnectLockService.BROADCAST_CONNECT);
+            mActivity.sendBroadcast(normal);
+        } else {
+            Intent errPassword = new Intent(ConnectLockService.BROADCAST_CONNECT);
+            errPassword.putExtra("info", "密码错误");
+            mActivity.sendBroadcast(errPassword);
         }
     }
 

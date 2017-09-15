@@ -16,6 +16,7 @@ public class UserLockBean {
     private String lockEstateName;
 
     @NotNull
+    @Unique
     private String parkingName;
 
     @NotNull
@@ -25,7 +26,6 @@ public class UserLockBean {
     private String gatewayId;
 
     @NotNull
-    @Unique
     private String lockMac;
 
     @NotNull
@@ -114,6 +114,20 @@ public class UserLockBean {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    @Override
+    public String toString() {
+        return "UserLockBean{" +
+                "id=" + id +
+                ", lockEstateName='" + lockEstateName + '\'' +
+                ", parkingName='" + parkingName + '\'' +
+                ", parkingId=" + parkingId +
+                ", gatewayId='" + gatewayId + '\'' +
+                ", lockMac='" + lockMac + '\'' +
+                ", password='" + password + '\'' +
+                ", isRented=" + isRented +
+                '}';
     }
 
     public enum LOCK_ROLE {

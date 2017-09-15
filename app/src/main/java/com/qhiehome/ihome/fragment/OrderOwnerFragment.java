@@ -4,11 +4,13 @@ package com.qhiehome.ihome.fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +27,7 @@ import com.qhiehome.ihome.network.model.inquiry.orderowner.OrderOwnerResponse;
 import com.qhiehome.ihome.network.service.inquiry.OrderOwnerService;
 import com.qhiehome.ihome.persistence.DaoSession;
 import com.qhiehome.ihome.util.Constant;
+import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
 import org.greenrobot.greendao.query.Query;
@@ -41,6 +44,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class OrderOwnerFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener{
+
+    private static final String TAG = "OrderOwnerFragment";
 
     @BindView(R.id.rv_order_owner)
     RecyclerView mRvOrderOwner;
@@ -134,7 +139,7 @@ public class OrderOwnerFragment extends Fragment implements SwipeRefreshLayout.O
         Call<OrderOwnerResponse> call = orderOwnerService.orderOwner(orderOwnerRequest);
         call.enqueue(new Callback<OrderOwnerResponse>() {
             @Override
-            public void onResponse(Call<OrderOwnerResponse> call, Response<OrderOwnerResponse> response) {
+            public void onResponse(@NonNull Call<OrderOwnerResponse> call, @NonNull Response<OrderOwnerResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     mOrderBeanList.addAll(response.body().getData().getOrderList());
                     mPostTimes ++;
@@ -146,7 +151,7 @@ public class OrderOwnerFragment extends Fragment implements SwipeRefreshLayout.O
                 }
             }
             @Override
-            public void onFailure(Call<OrderOwnerResponse> call, Throwable t) {
+            public void onFailure(@NonNull Call<OrderOwnerResponse> call, @NonNull Throwable t) {
                 ToastUtil.showToast(mContext, "网络连接异常");
             }
         });

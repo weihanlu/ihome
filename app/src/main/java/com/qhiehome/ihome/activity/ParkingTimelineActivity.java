@@ -62,7 +62,7 @@ public class ParkingTimelineActivity extends BaseActivity {
     private ArrayList<Integer> mSectionPositions;
     private List<AlphabetItem> mAlphabetItems;
     private ParkingEmptyResponse.DataBean.EstateBean mEstateBean;
-    private List<ParkingEmptyResponse.DataBean.EstateBean.ParkingListBean.ShareListBean> mShareBeanList = new ArrayList<>();
+    private List<ParkingEmptyResponse.DataBean.EstateBean.ParkingListBean> mShareBeanList = new ArrayList<>();
     private List<Boolean> mSelectedList = new ArrayList<>();
     private int mSelectedNum = 0;
     private float mGruaranteeFee = 0;
@@ -244,9 +244,9 @@ public class ParkingTimelineActivity extends BaseActivity {
 
     private void initData() {
         for (int i = 0; i < mEstateBean.getParkingList().size(); i++) {
-            if (mEstateBean.getParkingList().get(i).getShareList().size() != 0) {
-                for (int j = 0; j < mEstateBean.getParkingList().get(i).getShareList().size(); j++) {
-                    mShareBeanList.add(mEstateBean.getParkingList().get(i).getShareList().get(j));
+            if (mEstateBean.getParkingList().size() != 0) {
+                for (int j = 0; j < mEstateBean.getParkingList().size(); j++) {
+                    mShareBeanList.add(mEstateBean.getParkingList().get(j));
                     mSelectedList.add(false);
                 }
             }

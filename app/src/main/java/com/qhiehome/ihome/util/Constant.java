@@ -10,8 +10,6 @@ public class Constant {
 
     public static final String UPDATE_ENABLED = "false";
 
-    public static final String DEFAULT_PASSWORD = "123456";
-
     public static final String LOCK_PASSWORD_KEY = "lockpwd";
 
     public static final String TEST_PHONE_NUM = "f8cfd23a25811570298c8773bdca4d4d538d0d7fe52f6e5b3aefd08b907c8df2";
