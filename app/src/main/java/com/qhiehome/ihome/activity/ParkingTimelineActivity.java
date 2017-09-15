@@ -62,7 +62,7 @@ public class ParkingTimelineActivity extends BaseActivity {
     private ArrayList<Integer> mSectionPositions;
     private List<AlphabetItem> mAlphabetItems;
     private ParkingEmptyResponse.DataBean.EstateBean mEstateBean;
-    private List<ParkingEmptyResponse.DataBean.EstateBean.ParkingListBean> mShareBeanList = new ArrayList<>();
+    private List<ParkingEmptyResponse.DataBean.EstateBean.ParkingListBean> mParkingListBeen = new ArrayList<>();
     private List<Boolean> mSelectedList = new ArrayList<>();
     private int mSelectedNum = 0;
     private float mGruaranteeFee = 0;
@@ -245,19 +245,17 @@ public class ParkingTimelineActivity extends BaseActivity {
     private void initData() {
         for (int i = 0; i < mEstateBean.getParkingList().size(); i++) {
             if (mEstateBean.getParkingList().size() != 0) {
-                for (int j = 0; j < mEstateBean.getParkingList().size(); j++) {
-                    mShareBeanList.add(mEstateBean.getParkingList().get(j));
-                    mSelectedList.add(false);
-                }
+                mParkingListBeen.add(mEstateBean.getParkingList().get(i));
+//                    mSelectedList.add(false);
             }
         }
-        Collections.sort(mShareBeanList);
+        Collections.sort(mParkingListBeen);
 
         //Alphabet fast scroller data
         mAlphabetItems = new ArrayList<>();
         List<String> strAlphabets = new ArrayList<>();
-        for (int i = 0; i < mShareBeanList.size(); i++) {
-            Date date = TimeUtil.getInstance().millis2Date(mShareBeanList.get(i).getStartTime());
+        for (int i = 0; i < mParkingListBeen.size(); i++) {
+            Date date = TimeUtil.getInstance().millis2Date(mParkingListBeen.get(i).getStartTime());
             String hour = HOUR_FORMAT.format(date);
             if (!strAlphabets.contains(hour)) {
                 strAlphabets.add(hour);
@@ -297,7 +295,7 @@ public class ParkingTimelineActivity extends BaseActivity {
 
         @Override
         public void onBindViewHolder(final ParkingViewHolder holder, int position) {
-            if (mShareBeanList.size() == 1 && position == 1) {//防崩溃
+            if (mParkingListBeen.size() == 1 && position == 1) {//防崩溃
                 holder.tv_time.setText("");
                 holder.tv_info.setText("");
                 holder.itemView.setVisibility(View.INVISIBLE);
@@ -310,12 +308,12 @@ public class ParkingTimelineActivity extends BaseActivity {
                         }
                     }
                 });
-                Date startDate = TimeUtil.getInstance().millis2Date(mShareBeanList.get(position).getStartTime());
-                Date endDate = TimeUtil.getInstance().millis2Date(mShareBeanList.get(position).getEndTime());
+                Date startDate = TimeUtil.getInstance().millis2Date(mParkingListBeen.get(position).getStartTime());
+                Date endDate = TimeUtil.getInstance().millis2Date(mParkingListBeen.get(position).getEndTime());
                 String startTime = TIME_FORMAT.format(startDate);
                 String endTime = TIME_FORMAT.format(endDate);
                 holder.tv_time.setText(startTime + " - " + endTime);
-                long timePeriod = mShareBeanList.get(position).getEndTime() - mShareBeanList.get(position).getStartTime();
+                long timePeriod = mParkingListBeen.get(position).getEndTime() - mParkingListBeen.get(position).getStartTime();
                 int minutes_total = (int) timePeriod / 1000 / 60;
                 int hours = minutes_total / 60;
                 int minutes = minutes_total % 60;
@@ -346,10 +344,10 @@ public class ParkingTimelineActivity extends BaseActivity {
 
         @Override
         public int getItemCount() {
-            if (mShareBeanList.size() == 1) {
+            if (mParkingListBeen.size() == 1) {
                 return 2;
             } else {
-                return mShareBeanList.size();
+                return mParkingListBeen.size();
             }
         }
 
@@ -379,8 +377,8 @@ public class ParkingTimelineActivity extends BaseActivity {
         public Object[] getSections() {
             List<String> sections = new ArrayList<>(24);
             mSectionPositions = new ArrayList<>(24);
-            for (int i = 0, size = mShareBeanList.size(); i < size; i++) {
-                String section = String.format(HOUR_FORMAT.format(mShareBeanList.get(i).getStartTime()));
+            for (int i = 0, size = mParkingListBeen.size(); i < size; i++) {
+                String section = String.format(HOUR_FORMAT.format(mParkingListBeen.get(i).getStartTime()));
                 if (!sections.contains(section)) {
                     sections.add(section);
                     mSectionPositions.add(i);

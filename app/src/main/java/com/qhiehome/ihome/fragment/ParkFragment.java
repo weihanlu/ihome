@@ -468,10 +468,7 @@ public class ParkFragment extends Fragment {
                 ImageView iv_marker = (ImageView) customMarker.findViewById(R.id.iv_marker);
                 if (mMapStateParkingNum) {
                     iv_marker.setImageResource(R.drawable.img_bluemark);
-                    int shareNum = 0;
-                    for (int j = 0; j < mEstateBeanList.get(i).getParkingList().size(); j++) {
-                        shareNum += mEstateBeanList.get(i).getParkingList().size();
-                    }
+                    int shareNum = mEstateBeanList.get(i).getParkingList().size();
                     tv_marker.setText(String.valueOf(shareNum));
                 } else {
                     iv_marker.setImageResource(R.drawable.img_redmark);

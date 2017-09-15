@@ -57,6 +57,7 @@ public class Constant {
     public static final String PARKING_END_TIME = "endTime";
     //control lock without network
     public static final String RESERVE_LOCK_MAC = "RESERVE_LOCK_MAC";
+    public static final String RESERVE_LOCK_NAME = "RESERVE_LOCK_NAME";
     public static final String RESERVE_LOCK_PWD = "RESERVE_LOCK_PWD";
     public static final String RESERVE_GATEWAY_ID = "RESERVE_GATEWAY_ID";
     //record advanced using right

@@ -1,5 +1,7 @@
 package com.qhiehome.ihome.activity;
 
+import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -35,9 +37,14 @@ import com.baidu.navisdk.adapter.BNRoutePlanNode;
 import com.baidu.navisdk.adapter.BaiduNaviManager;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.adapter.ReserveListAdapter;
+import com.qhiehome.ihome.bean.UserLockBean;
 import com.qhiehome.ihome.fragment.EstateMapFragment;
 import com.qhiehome.ihome.fragment.EstatePassFragment;
+import com.qhiehome.ihome.fragment.UserLockFragment;
 import com.qhiehome.ihome.lock.ConnectLockService;
+import com.qhiehome.ihome.lock.ble.CommunicationManager;
+import com.qhiehome.ihome.lock.ble.profile.BLECommandIntent;
+import com.qhiehome.ihome.lock.bluetooth.BluetoothClient;
 import com.qhiehome.ihome.manager.ActivityManager;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.inquiry.order.OrderRequest;
@@ -65,6 +72,7 @@ import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 import com.qhiehome.ihome.view.QhAvatarSelectDialog;
 import com.qhiehome.ihome.view.QhDeleteItemDialog;
+import com.qhiehome.ihome.view.QhLockConnectDialog;
 import com.qhiehome.ihome.view.RecyclerViewEmptySupport;
 
 import java.text.SimpleDateFormat;
@@ -79,6 +87,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class ReserveActivity extends BaseActivity {
+
+    private static final String TAG = "ReserveActivity";
 
     @BindView(R.id.toolbar_center)
     Toolbar mTbReserve;
@@ -121,6 +131,8 @@ public class ReserveActivity extends BaseActivity {
     private final static int authBaseRequestCode = 1;
     private final static int authComRequestCode = 2;
 
+    private static final int REQUEST_ENABLE_BT = 3;
+
     private static final int PARKING_USING = 201;
 
     private Button mBtnFunction1;
@@ -130,6 +142,21 @@ public class ReserveActivity extends BaseActivity {
     TabLayout mTlReserve;
     @BindView(R.id.vp_reserve)
     ViewPager mVpReserve;
+
+    QhLockConnectDialog mControlLockDialog;
+
+    private String mGatewayId;
+    private String mLockMac;
+    private String mLockPwd;
+    private String mLockName;
+
+    private boolean mDownLock;
+
+    private int mLockState;
+
+    private boolean isPasswordAlreadySet;
+
+    private boolean isTempParking;
 
     private ArrayList<String> mTitles;
     private ArrayList<Fragment> mFragments;
@@ -160,6 +187,41 @@ public class ReserveActivity extends BaseActivity {
                 mNavi.initNavi();
             }
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mReceiver = new ConnectLockReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ConnectLockService.BROADCAST_CONNECT);
+        intentFilter.addAction(BLECommandIntent.RX_CURRENT_STATUS);
+        intentFilter.addAction(BLECommandIntent.RX_PASSWORD_RESULT);
+        intentFilter.addAction(CommunicationManager.ACTION_CONNECTION_STATE_CHANGE);
+        intentFilter.addAction(BLECommandIntent.RX_LOCK_RESULT);
+        // rf
+        intentFilter.addAction(BLECommandIntent.RX_LOCK_RF_START_UP);
+        intentFilter.addAction(BLECommandIntent.RX_LOCK_RF_STOP_UP);
+        intentFilter.addAction(BLECommandIntent.RX_LOCK_RF_LOCK_STATE);
+        registerReceiver(mReceiver, intentFilter);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        orderRequest();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mRvAdapter.cancelTimer();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unregisterReceiver(mReceiver);
     }
 
     private void initToolbar() {
@@ -328,7 +390,8 @@ public class ReserveActivity extends BaseActivity {
                             mBtnFunction1.setOnClickListener(new Button.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    LockControl(0, true);
+                                    mDownLock = true;
+                                    LockControl();
                                 }
                             });
                             mBtnFunction1.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_long_button_blue));
@@ -344,7 +407,8 @@ public class ReserveActivity extends BaseActivity {
                         mBtnFunction1.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                LockControl(0, false);
+                                mDownLock = false;
+                                LockControl();
                             }
                         });
                         mBtnFunction1.setVisibility(View.VISIBLE);
@@ -425,7 +489,7 @@ public class ReserveActivity extends BaseActivity {
         Call<ReserveCancelResponse> call = reserveCancelService.reserve(new ReserveCancelRequest(orderId));
         call.enqueue(new Callback<ReserveCancelResponse>() {
             @Override
-            public void onResponse(Call<ReserveCancelResponse> call, Response<ReserveCancelResponse> response) {
+            public void onResponse(@NonNull Call<ReserveCancelResponse> call, @NonNull Response<ReserveCancelResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     mOrderBeanList.get(index).setState(Constant.ORDER_STATE_CANCEL);
                     updateData();
@@ -438,7 +502,7 @@ public class ReserveActivity extends BaseActivity {
             }
 
             @Override
-            public void onFailure(Call<ReserveCancelResponse> call, Throwable t) {
+            public void onFailure(@NonNull Call<ReserveCancelResponse> call, @NonNull Throwable t) {
                 ToastUtil.showToast(mContext, "网络连接异常");
             }
         });
@@ -478,58 +542,15 @@ public class ReserveActivity extends BaseActivity {
     /**
      * 开始停车&确认离开
      *
-     * @param index    列表位置，目前仅为0
-     * @param downLock true-降车位锁
      * 停车与离开后将订单状态记录在本地
      */
-    public void LockControl(int index, final boolean downLock) {
-        if (!downLock) {
+    public void LockControl() {
+        isTempParking = false;
+        if (!mDownLock) {
             Log.e("downLock", "升车位锁");
         }
-        final String gateWayId = SharedPreferenceUtil.getString(this, Constant.RESERVE_GATEWAY_ID, "");
-        final String lockMac = SharedPreferenceUtil.getString(this, Constant.RESERVE_LOCK_MAC, "");
-        final String lockPwd = SharedPreferenceUtil.getString(this, Constant.RESERVE_LOCK_PWD, "");
-        if (mProgressDialog == null) {
-            mProgressDialog = new MaterialDialog.Builder(mContext)
-                    .title("连接中")
-                    .content("请等待...")
-                    .progress(true, 0)
-                    .showListener(new DialogInterface.OnShowListener() {
-                        @Override
-                        public void onShow(DialogInterface dialog) {
-                            Intent connectLock = new Intent(mContext, ConnectLockService.class);
-                            if (NetworkUtils.isConnected(mContext)) {
-                                connectLock.setAction(ConnectLockService.ACTION_GATEWAY_CONNECT);
-                                connectLock.putExtra(ConnectLockService.EXTRA_GATEWAY_ID, gateWayId);
-                            } else {
-                                if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-                                    ToastUtil.showToast(mContext, "不支持蓝牙低能耗特性");
-                                    dialog.dismiss();
-                                } else {
-                                    connectLock.setAction(ConnectLockService.ACTION_BLUETOOTH_CONNECT);
-                                }
-                            }
-                            connectLock.putExtra(ConnectLockService.EXTRA_LOCK_MAC, lockMac);
-                            startService(connectLock);
-                        }
-                    }).dismissListener(new DialogInterface.OnDismissListener() {
-                        @Override
-                        public void onDismiss(DialogInterface dialog) {
-                            if (downLock) {
-                                Intent downLock = new Intent(mContext, ConnectLockService.class);
-                                downLock.setAction(ConnectLockService.ACTION_DOWN_LOCK);
-                                startService(downLock);
-                            } else {
-                                Intent upLock = new Intent(mContext, ConnectLockService.class);
-                                upLock.setAction(ConnectLockService.ACTION_UP_LOCK);
-                                startService(upLock);
-                            }
-                        }
-                    }).build();
-        }
-        mProgressDialog.show();
-
-        if (downLock) {  //++降车位锁消息发送成功
+        connectToLock();
+        if (mDownLock) {  //++降车位锁消息发送成功
             Long currentTime = System.currentTimeMillis();
             //如果有网络尽快发送停车信息，没有网络则暂存本地，有网络时尽快发送
             SharedPreferenceUtil.setLong(mContext, Constant.PARKING_ENTER_TIME, currentTime);
@@ -564,7 +585,7 @@ public class ReserveActivity extends BaseActivity {
             }
             updateData();
         }
-        if (!downLock) {  //++升车位锁消息发送成功
+        if (!mDownLock) {  //++升车位锁消息发送成功
             Long currentTime = System.currentTimeMillis();
             SharedPreferenceUtil.setLong(mContext, Constant.PARKING_LEAVE_TIME, currentTime);
             SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_NOT_PAID);
@@ -601,9 +622,89 @@ public class ReserveActivity extends BaseActivity {
         }
     }
 
+    private void connectToLock() {
+        mGatewayId = SharedPreferenceUtil.getString(this, Constant.RESERVE_GATEWAY_ID, "");
+        mLockMac = SharedPreferenceUtil.getString(this, Constant.RESERVE_LOCK_MAC, "");
+        mLockPwd = SharedPreferenceUtil.getString(this, Constant.RESERVE_LOCK_PWD, "");
+        mLockName = SharedPreferenceUtil.getString(this, Constant.RESERVE_LOCK_NAME, "");
+        if (!NetworkUtils.isConnected(mContext)) {
+            BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            if (bluetoothAdapter == null) {
+                ToastUtil.showToast(mContext, "初始化蓝牙失败");
+            } else {
+                if (!bluetoothAdapter.isEnabled()) {
+                    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                    startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                } else {
+                    showProgressDialog();
+                }
+            }
+        } else {
+            showProgressDialog();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_ENABLE_BT && resultCode == RESULT_OK) {
+            showProgressDialog();
+        }
+    }
+
+    private void showProgressDialog() {
+        if (mProgressDialog == null) {
+            mProgressDialog = new MaterialDialog.Builder(mContext)
+                    .title("连接中")
+                    .content("请等待...")
+                    .progress(true, 0)
+                    .showListener(new DialogInterface.OnShowListener() {
+                        @Override
+                        public void onShow(DialogInterface dialog) {
+                            Intent connectLock = new Intent(mContext, ConnectLockService.class);
+                            if (NetworkUtils.isConnected(mContext)) {
+                                connectLock.setAction(ConnectLockService.ACTION_GATEWAY_CONNECT);
+                                connectLock.putExtra(ConnectLockService.EXTRA_GATEWAY_ID, mGatewayId);
+                                connectLock.putExtra(ConnectLockService.EXTRA_LOCK_MAC, mLockMac);
+                            } else {
+                                if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+                                    ToastUtil.showToast(mContext, "不支持蓝牙低能耗特性");
+                                    dialog.dismiss();
+                                } else {
+                                    connectLock.setAction(ConnectLockService.ACTION_BLUETOOTH_CONNECT);
+                                    connectLock.putExtra(ConnectLockService.EXTRA_LOCK_NAME, mLockName);
+                                }
+                            }
+                            startService(connectLock);
+                        }
+                    }).dismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialog) {
+                            if (!isTempParking) {
+                                if (mDownLock) {
+                                    Intent downLock = new Intent(mContext, ConnectLockService.class);
+                                    downLock.setAction(ConnectLockService.ACTION_DOWN_LOCK);
+                                    LogUtil.d(TAG,"lockState is " + mLockState);
+                                    downLock.putExtra(ConnectLockService.ACTION_LOCK_STATE, mLockState);
+                                    startService(downLock);
+                                } else {
+                                    Intent upLock = new Intent(mContext, ConnectLockService.class);
+                                    upLock.setAction(ConnectLockService.ACTION_UP_LOCK);
+                                    LogUtil.d(TAG,"lockState is " + mLockState);
+                                    upLock.putExtra(ConnectLockService.ACTION_LOCK_STATE, mLockState);
+                                    startService(upLock);
+                                }
+                            }
+                        }
+                    }).build();
+        }
+        mProgressDialog.show();
+    }
+
 
     public void LockControlSelf() {
-        // TODO: 2017/8/24 增加用户自己控制车位锁界面
+        isTempParking = true;
+        connectToLock();
     }
 
     /**
@@ -664,27 +765,129 @@ public class ReserveActivity extends BaseActivity {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (mProgressDialog != null && mProgressDialog.isShowing()) {
-                mProgressDialog.dismiss();
+            switch (intent.getAction()) {
+                case BLECommandIntent.RX_CURRENT_STATUS:
+                    // EVENT_TYPE_CURRENT_STATUS
+                    // passwordState: 1: set ; 0: not set
+                    // battery:       1
+                    // lockState:    1: low ; 2: mid 3: high
+                    LogUtil.d(TAG, "password state is " + intent.getIntExtra(BLECommandIntent.EXTRA_MM_SET_ALREADY, -1));
+                    LogUtil.d(TAG, "battery state is " + intent.getIntExtra(BLECommandIntent.EXTRA_BATTERY_LEVEL, -1));
+                    LogUtil.d(TAG, "lock state is " + intent.getIntExtra(BLECommandIntent.EXTRA_LOCK_STATE, -1));
+
+                    isPasswordAlreadySet = intent.getIntExtra(BLECommandIntent.EXTRA_MM_SET_ALREADY, -1) == 1;
+                    // send password
+                    Bundle data = new Bundle();
+                    int[] password = new int[6];
+                    for (int i = 0; i < 6; i++) {
+                        password[i] = Integer.
+                                valueOf(mLockPwd.substring(i, i + 1));
+                    }
+                    data.putIntArray(BLECommandIntent.EXTRA_PASSWORD, password);
+                    data.putInt(BLECommandIntent.EXTRA_ROLE,
+                            UserLockBean.LOCK_ROLE.OWNER.ordinal());
+
+                    LogUtil.d(TAG, "isPassword already set " + isPasswordAlreadySet);
+                    if (isPasswordAlreadySet) {
+                        CommunicationManager.getInstance().sendBLEEvent(mContext, BLECommandIntent.CHECKING_PASSWORD, data);
+                    } else {
+                        CommunicationManager.getInstance().sendBLEEvent(mContext, BLECommandIntent.SETTING_PASSWORD, data);
+                    }
+
+                    int state = intent.getIntExtra(BLECommandIntent.EXTRA_LOCK_STATE, 3);
+                    if (state == 1) {
+                        mLockState = BluetoothClient.LOCK_STATE.DOWN.ordinal();
+                    } else {
+                        mLockState = BluetoothClient.LOCK_STATE.UP.ordinal();
+                    }
+
+                    break;
+                case ConnectLockService.BROADCAST_CONNECT:
+                    String info = intent.getStringExtra("info");
+                    if (mProgressDialog != null && mProgressDialog.isShowing()) {
+                        mProgressDialog.dismiss();
+                        if (info != null) {
+                            ToastUtil.showToast(mContext, info);
+                        } else {
+                            // judge whether is temp parking
+                            if (isTempParking) {
+                                showControlLockDialog();
+                            }
+                        }
+                    }
+                    break;
+                case BLECommandIntent.RX_PASSWORD_RESULT:
+                    int actionId = intent.getIntExtra(BLECommandIntent.EXTRA_PSW_ACTION, -1);
+                    int result = intent.getIntExtra(BLECommandIntent.EXTRA_PSW_RESULT, -1);
+                    LogUtil.d(TAG, "actionId is " + actionId + ", result is " + result + ", isPassword set " + isPasswordAlreadySet);
+                    if (actionId == 0x01) { // setting
+                        checkPassword(result);
+                    } else if (actionId == 0x02 && isPasswordAlreadySet) { // checking
+                        checkPassword(result);
+                    }
+                    break;
+                case CommunicationManager.ACTION_CONNECTION_STATE_CHANGE:
+                    int status = intent.getIntExtra(
+                            CommunicationManager.EXTRA_CONNECTION_STATE_NEW,
+                            CommunicationManager.STATE_INIT);
+                    if (status == CommunicationManager.BLE_DISCONNECTTED) {
+                        if (mControlLockDialog != null && mControlLockDialog.isShowing()) {
+                            mControlLockDialog.dismiss();
+                        }
+                    }
+                    break;
+                case BLECommandIntent.RX_LOCK_RESULT:
+                    int lockResult = intent.getIntExtra(BLECommandIntent.EXTRA_LOCK_RESULT, 10);
+                    if (lockResult == 0x10 || lockResult == 0x20) {
+                        if (mLockState == BluetoothClient.LOCK_STATE.UPPING.ordinal()) {
+                            mLockState = BluetoothClient.LOCK_STATE.UP.ordinal();
+                        } else {
+                            mLockState = BluetoothClient.LOCK_STATE.DOWN.ordinal();
+                        }
+                    } else if (lockResult == 0x30) {
+                        mLockState = BluetoothClient.LOCK_STATE.ERROR.ordinal();
+                        if (mLockState == BluetoothClient.LOCK_STATE.DOWNING.ordinal()) {
+                            ToastUtil.showToast(mContext, "降锁错误");
+                        } else {
+                            ToastUtil.showToast(mContext, "升锁错误");
+                        }
+                    }
+                    LogUtil.d(TAG, "RX_LOCK_RESULT is " + lockResult);
+                    break;
+                case BLECommandIntent.RX_LOCK_RF_START_UP:
+                    mLockState = BluetoothClient.LOCK_STATE.UPPING.ordinal();
+                    break;
+                case BLECommandIntent.RX_LOCK_RF_STOP_UP:
+                    boolean success = intent.getBooleanExtra(BLECommandIntent.EXTRA_LOCK_STOP_UP, false);
+                    if (success) {
+                        mLockState = BluetoothClient.LOCK_STATE.UP.ordinal();
+                    } else {
+                        mLockState = BluetoothClient.LOCK_STATE.ERROR.ordinal();
+                    }
+                    break;
+                case BLECommandIntent.RX_LOCK_RF_LOCK_STATE:
+                    boolean isDown = intent.getBooleanExtra(BLECommandIntent.EXTRA_LOCK_RF_LOCK_STATE, false);
+                    if (isDown) {
+                        mLockState = BluetoothClient.LOCK_STATE.DOWN.ordinal();
+                    } else {
+                        mLockState = BluetoothClient.LOCK_STATE.UP.ordinal();
+                    }
+                    break;
             }
         }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        mReceiver = new ConnectLockReceiver();
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(ConnectLockService.BROADCAST_CONNECT);
-        registerReceiver(mReceiver, intentFilter);
-        orderRequest();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        unregisterReceiver(mReceiver);
-        mRvAdapter.cancelTimer();
+    private void checkPassword(int result) {
+        if (result == 0x10) {
+            // MM 代表密码
+            LogUtil.d(TAG, "password is " + mLockPwd);
+            Intent normal = new Intent(ConnectLockService.BROADCAST_CONNECT);
+            sendBroadcast(normal);
+        } else {
+            Intent errPassword = new Intent(ConnectLockService.BROADCAST_CONNECT);
+            errPassword.putExtra("info", "密码错误");
+            sendBroadcast(errPassword);
+        }
     }
 
     @Override
@@ -693,5 +896,42 @@ public class ReserveActivity extends BaseActivity {
         MainActivity.start(mContext);
     }
 
+    public void setDownLock(boolean downLock) {
+        mDownLock = downLock;
+    }
+
+    private void showControlLockDialog() {
+        if (mControlLockDialog == null) {
+            mControlLockDialog = new QhLockConnectDialog(mContext);
+            mControlLockDialog.setOnItemClickListener(new QhLockConnectDialog.OnItemClickListener() {
+                @Override
+                public void onLockUp(View view) {
+                    Intent upLock = new Intent(mContext, ConnectLockService.class);
+                    upLock.setAction(ConnectLockService.ACTION_UP_LOCK);
+                    LogUtil.d(TAG,"lockState is " + mLockState);
+                    upLock.putExtra(ConnectLockService.ACTION_LOCK_STATE, mLockState);
+                    startService(upLock);
+                }
+
+                @Override
+                public void onLockDown(View view) {
+                    Intent downLock = new Intent(mContext, ConnectLockService.class);
+                    downLock.setAction(ConnectLockService.ACTION_DOWN_LOCK);
+                    LogUtil.d(TAG,"lockState is " + mLockState);
+                    downLock.putExtra(ConnectLockService.ACTION_LOCK_STATE, mLockState);
+                    startService(downLock);
+                }
+            });
+            mControlLockDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialog) {
+                    Intent disConnectLock = new Intent(mContext, ConnectLockService.class);
+                    disConnectLock.setAction(ConnectLockService.ACTION_DISCONNECT);
+                    startService(disConnectLock);
+                }
+            });
+        }
+        mControlLockDialog.show();
+    }
 
 }

@@ -136,7 +136,8 @@ public class EstateMapFragment extends Fragment {
                     dialog.setOnSureCallbackListener(new QhDeleteItemDialog.OnSureCallbackListener() {
                         @Override
                         public void onSure(View view) {
-                            mActivity.LockControl(0, false);
+                            mActivity.setDownLock(false);
+                            mActivity.LockControl();
                         }
                     });
                     dialog.show();
@@ -148,7 +149,8 @@ public class EstateMapFragment extends Fragment {
                     dialog.setOnSureCallbackListener(new QhDeleteItemDialog.OnSureCallbackListener() {
                         @Override
                         public void onSure(View view) {
-                            mActivity.LockControl(0, true);
+                            mActivity.setDownLock(true);
+                            mActivity.LockControl();
                             mOrderListBean.setState(Constant.ORDER_STATE_PARKED);
                         }
                     });

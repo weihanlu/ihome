@@ -571,15 +571,19 @@ public class PayActivity extends BaseActivity {
 //                    SharedPreferenceUtil.setString(mContext, Constant.ESTATE_NAME, response.body().getData().getEstate().getName());
 //                    SharedPreferenceUtil.setFloat(mContext, Constant.ESTATE_LONGITUDE, (float) response.body().getData().getEstate().getX());
 //                    SharedPreferenceUtil.setFloat(mContext, Constant.ESTATE_LATITUDE, (float) response.body().getData().getEstate().getY());
+                    PayGuaranteeResponse.DataBean.EstateBean estate = response.body().getData().getEstate();
+                    PayGuaranteeResponse.DataBean.EstateBean.ParkingBean parking = estate.getParking();
+                    PayGuaranteeResponse.DataBean.EstateBean.ParkingBean.ShareBean share = parking.getShare();
                     OrderUtil.getInstance().setOrderInfo(mContext, mOrderId, Constant.ORDER_STATE_RESERVED,
-                            response.body().getData().getEstate().getParking().getShare().getStartTime(),
-                            response.body().getData().getEstate().getParking().getShare().getEndTime(),
-                            response.body().getData().getEstate().getParking().getLockMac(),
-                            response.body().getData().getEstate().getParking().getPassword(),
-                            response.body().getData().getEstate().getParking().getGatewayId(),
-                            response.body().getData().getEstate().getName(),
-                            response.body().getData().getEstate().getX(),
-                            response.body().getData().getEstate().getY());
+                            share.getStartTime(),
+                            share.getEndTime(),
+                            parking.getPassword(),
+                            parking.getLockMac(),
+                            parking.getPassword(),
+                            parking.getGatewayId(),
+                            estate.getName(),
+                            estate.getX(),
+                            estate.getY());
                     PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod());
                 }
             }
