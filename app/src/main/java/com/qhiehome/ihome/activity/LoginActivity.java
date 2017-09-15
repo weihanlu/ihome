@@ -8,19 +8,24 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.ActionBar;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
-import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.support.v7.widget.Toolbar;
 
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.application.IhomeApplication;
+import com.qhiehome.ihome.bean.UserLockBean;
+import com.qhiehome.ihome.bean.UserLockBeanDao;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.SMS.SMSResponse;
+import com.qhiehome.ihome.network.model.base.ParkingResponse;
 import com.qhiehome.ihome.network.model.inquiry.orderusing.OrderUsingRequest;
 import com.qhiehome.ihome.network.model.inquiry.orderusing.OrderUsingResponse;
 import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedRequest;
@@ -33,6 +38,7 @@ import com.qhiehome.ihome.network.service.inquiry.OrderUsingService;
 import com.qhiehome.ihome.network.service.inquiry.ParkingOwnedService;
 import com.qhiehome.ihome.network.service.signin.SigninService;
 import com.qhiehome.ihome.observer.SMSContentObserver;
+import com.qhiehome.ihome.persistence.DaoSession;
 import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
@@ -45,6 +51,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -80,6 +87,10 @@ public class LoginActivity extends BaseActivity {
     String login_getVerification;
     @BindString(R.string.login_successGetVerification)
     String login_successGetVerification;
+    @BindView(R.id.toolbar_center)
+    Toolbar mToolbar;
+
+    private UserLockBeanDao mUserLockBeanDao;
 
     private static final int DEFAULT_PHONE_LEN = 11;
 
@@ -114,6 +125,12 @@ public class LoginActivity extends BaseActivity {
         LoginActivity.this.getContentResolver().registerContentObserver(
                 Uri.parse("content://sms/"), true, sco);
         initView();
+        initData();
+    }
+
+    private void initData() {
+        DaoSession daoSession = ((IhomeApplication) getApplicationContext()).getDaoSession();
+        mUserLockBeanDao = daoSession.getUserLockBeanDao();
     }
 
     private void initView() {
@@ -128,6 +145,23 @@ public class LoginActivity extends BaseActivity {
             mEtPhone.setText(SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, ""));
             mEtVerify.requestFocus();
         }
+        initToolbar();
+    }
+
+    private void initToolbar() {
+        setSupportActionBar(mToolbar);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setDisplayShowTitleEnabled(false);
+        }
+        mToolbar.setTitle("");
+        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
     }
 
     @OnClick({R.id.ll_phone, R.id.rl_verify_code})
@@ -171,7 +205,7 @@ public class LoginActivity extends BaseActivity {
 
     private void webLogin() {
         SigninService signinService = ServiceGenerator.createService(SigninService.class);
-        SigninRequest signinRequest = new SigninRequest(EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.SHA_256));
+        SigninRequest signinRequest = new SigninRequest(EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.RSA));
         Call<SigninResponse> call = signinService.signin(signinRequest);
         call.enqueue(new Callback<SigninResponse>() {
             @Override
@@ -307,11 +341,11 @@ public class LoginActivity extends BaseActivity {
     /********重新登录时恢复用户订单数据********/
     private void getOrderInfo() {
         OrderUsingService orderUsingService = ServiceGenerator.createService(OrderUsingService.class);
-        OrderUsingRequest orderUsingRequest = new OrderUsingRequest(EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.SHA_256));
+        OrderUsingRequest orderUsingRequest = new OrderUsingRequest(EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.RSA));
         Call<OrderUsingResponse> call = orderUsingService.orderUsing(orderUsingRequest);
         call.enqueue(new Callback<OrderUsingResponse>() {
             @Override
-            public void onResponse(Call<OrderUsingResponse> call, Response<OrderUsingResponse> response) {
+            public void onResponse(@NonNull Call<OrderUsingResponse> call,@NonNull Response<OrderUsingResponse> response) {
                 try {
                     if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                         if (response.body().getData() == null) {
@@ -345,7 +379,7 @@ public class LoginActivity extends BaseActivity {
             }
 
             @Override
-            public void onFailure(Call<OrderUsingResponse> call, Throwable t) {
+            public void onFailure(@NonNull Call<OrderUsingResponse> call, @NonNull Throwable t) {
                 ToastUtil.showToast(LoginActivity.this, "网络连接异常");
             }
         });
@@ -355,18 +389,14 @@ public class LoginActivity extends BaseActivity {
     /********检查用户类型：临时/业主********/
     private void getOwnerParking() {
         ParkingOwnedService parkingOwnedService = ServiceGenerator.createService(ParkingOwnedService.class);
-        ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.SHA_256));
+        ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.RSA));
         Call<ParkingOwnedResponse> call = parkingOwnedService.parkingOwned(parkingOwnedRequest);
         call.enqueue(new Callback<ParkingOwnedResponse>() {
             @Override
-            public void onResponse(Call<ParkingOwnedResponse> call, Response<ParkingOwnedResponse> response) {
+            public void onResponse(@NonNull Call<ParkingOwnedResponse> call, @NonNull Response<ParkingOwnedResponse> response) {
                 try {
                     if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                        if (response.body().getData() == null) {
-                            SharedPreferenceUtil.setInt(LoginActivity.this, Constant.USER_TYPE, Constant.USER_TYPE_TEMP);
-                        } else {
-                            SharedPreferenceUtil.setInt(LoginActivity.this, Constant.USER_TYPE, Constant.USER_TYPE_OWNER);
-                        }
+                        locksPersistent(response);
                         getOrderInfo();
                     }
                 } catch (Exception e) {
@@ -376,10 +406,34 @@ public class LoginActivity extends BaseActivity {
             }
 
             @Override
-            public void onFailure(Call<ParkingOwnedResponse> call, Throwable t) {
+            public void onFailure(@NonNull Call<ParkingOwnedResponse> call, @NonNull Throwable t) {
                 ToastUtil.showToast(LoginActivity.this, "网络连接异常");
             }
         });
+    }
+
+    /**
+     * 登录时将锁所有的信息本地化
+     * @param response network response
+     */
+    private void locksPersistent(@NonNull Response<ParkingOwnedResponse> response) {
+        if (response.body().getData() == null) {
+            SharedPreferenceUtil.setInt(LoginActivity.this, Constant.USER_TYPE, Constant.USER_TYPE_TEMP);
+        } else {
+            mUserLockBeanDao.deleteAll();
+            SharedPreferenceUtil.setInt(LoginActivity.this, Constant.USER_TYPE, Constant.USER_TYPE_OWNER);
+            List<ParkingResponse.DataBean.EstateBean> estateList = response.body().getData().getEstate();
+            if (estateList.size() != 0) {
+                UserLockBean userLockBean;
+                for (ParkingResponse.DataBean.EstateBean estate : estateList) {
+                    for (ParkingResponse.DataBean.EstateBean.ParkingListBean parkingBean : estate.getParkingList()) {
+                        userLockBean = new UserLockBean(null, estate.getName(), parkingBean.getName(), parkingBean.getId(), parkingBean.getGatewayId(),
+                                parkingBean.getLockMac(), parkingBean.getPassword(), true);
+                        mUserLockBeanDao.insertOrReplace(userLockBean);
+                    }
+                }
+            }
+        }
     }
 
 }

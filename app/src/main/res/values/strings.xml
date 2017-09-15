@@ -6,6 +6,7 @@
     <string name="device_connected">Connected</string>
     <string name="device_connecting">Connecting</string>
     <string name="device_disconnected">Disconnected</string>
+    <string name="device_connect">connect</string>
 
     <!--LoginActivity-->
     <string name="login_mobile">Mobile</string>

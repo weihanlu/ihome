@@ -78,7 +78,6 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
 
     private static final String TAG = PublishParkingActivity.class.getSimpleName();
 
-
     @BindView(R.id.iv_fab)
     ImageView mFab;
 
@@ -165,7 +164,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
         mParkingItems.clear();
         mPublishList.clear();
         ParkingOwnedService parkingOwnedService = ServiceGenerator.createService(ParkingOwnedService.class);
-        ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(mPhoneNum);
+        ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.RSA));
         Call<ParkingOwnedResponse> call = parkingOwnedService.parkingOwned(parkingOwnedRequest);
         call.enqueue(new Callback<ParkingOwnedResponse>() {
             @Override
@@ -449,7 +448,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
         PublishParkService publishParkService = ServiceGenerator.createService(PublishParkService.class);
         PublishparkRequest publishparkRequest = new PublishparkRequest();
         publishparkRequest.setParkingId(parkingId);
-        publishparkRequest.setPassword(EncryptUtil.encrypt(Constant.DEFAULT_PASSWORD, EncryptUtil.ALGO.SHA_256));
+        publishparkRequest.setPassword(EncryptUtil.encrypt(Constant.DEFAULT_PASSWORD, EncryptUtil.ALGO.RSA));
         List<PublishparkRequest.ShareBean> share = new ArrayList<>();
         for (TimePeriod timePeriod : mTimePeriods) {
             PublishparkRequest.ShareBean shareBean = new PublishparkRequest.ShareBean();

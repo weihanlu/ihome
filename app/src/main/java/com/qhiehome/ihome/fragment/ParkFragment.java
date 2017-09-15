@@ -61,7 +61,6 @@ import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.NaviUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
-import com.qhiehome.ihome.view.SharePopupWindow;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -646,16 +645,6 @@ public class ParkFragment extends Fragment {
         ((MainActivity) getActivity()).openDrawer();
     }
 
-    /**
-     * remain for future use
-     */
-    private void showPopFormBottom() {
-        SharePopupWindow sharePopupWindow = new SharePopupWindow(mContext, getActivity(), 200);
-        //showAtLocation(View parent, int gravity, int x, int y)
-        sharePopupWindow.showAtLocation(mView, Gravity.BOTTOM, 0, 0);
-    }
-
-
     @OnClick(R.id.iv_map_navi)
     public void onNaviClicked() {
         if (BaiduNaviManager.isNaviInited()) {
@@ -733,7 +722,7 @@ public class ParkFragment extends Fragment {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext);
 
         // 设置通知的基本信息：icon、标题、内容
-        builder.setSmallIcon(R.drawable.ic_logo);
+        builder.setSmallIcon(R.mipmap.ic_launcher_logo);
         builder.setContentTitle("爱车位");
         builder.setContentText("您已离开车位1km，是否忘记确认离开");
 

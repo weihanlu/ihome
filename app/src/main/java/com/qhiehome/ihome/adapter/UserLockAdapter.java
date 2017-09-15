@@ -37,22 +37,12 @@ public class UserLockAdapter extends RecyclerView.Adapter<UserLockAdapter.UserLo
         holder.mTvLockEstateName.setSelected(true);
         final boolean isRented = userLockBean.getIsRented();
         holder.mTvRentalStatus.setText(isRented? "已租用": "可使用");
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
+        holder.mBtnConnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (onItemClickListener != null) {
                     if (!isRented) {
-                        onItemClickListener.onClick(holder.itemView, holder.getLayoutPosition());
-                    }
-                }
-            }
-        });
-        holder.mBtModifyPwd.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (onItemClickListener != null) {
-                    if (!isRented) {
-                        onItemClickListener.onButtonClick(holder.mBtModifyPwd, holder.getLayoutPosition());
+                        onItemClickListener.onButtonClick(holder.mBtnConnect, holder.getLayoutPosition());
                     }
                 }
             }
@@ -69,19 +59,19 @@ public class UserLockAdapter extends RecyclerView.Adapter<UserLockAdapter.UserLo
         TextView mTvLockName;
         TextView mTvLockEstateName;
         TextView mTvRentalStatus;
-        Button mBtModifyPwd;
+        Button mBtnConnect;
 
         public UserLockHolder(View itemView) {
             super(itemView);
             mTvLockName = (TextView) itemView.findViewById(R.id.tv_lock_name);
             mTvLockEstateName = (TextView) itemView.findViewById(R.id.tv_lock_estate_name);
             mTvRentalStatus = (TextView) itemView.findViewById(R.id.tv_rental_status);
-            mBtModifyPwd = (Button) itemView.findViewById(R.id.bt_modify_pwd);
+            mBtnConnect = (Button) itemView.findViewById(R.id.bt_connect);
         }
     }
 
     public interface OnItemClickListener {
-        void onClick(View view, int i);
+//        void onClick(View view, int i);
         void onButtonClick(View view, int i);
     }
 

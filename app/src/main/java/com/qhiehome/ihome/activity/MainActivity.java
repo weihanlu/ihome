@@ -173,7 +173,7 @@ public class MainActivity extends BaseActivity {
 
     private void initBalance() {
         AccountBalanceService accountBalanceService = ServiceGenerator.createService(AccountBalanceService.class);
-        AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.SHA_256), 0.0);
+        AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.RSA), 0.0);
         Call<AccountBalanceResponse> call = accountBalanceService.account(accountBalanceRequest);
         call.enqueue(new Callback<AccountBalanceResponse>() {
             @Override
@@ -563,7 +563,7 @@ public class MainActivity extends BaseActivity {
         File avatarDir = mAvatarFile.getParentFile();
         if (avatarDir.isDirectory() && avatarDir.listFiles().length != 0) {
             UploadAvatarService uploadAvatarService = ServiceGenerator.createService(UploadAvatarService.class);
-            RequestBody requestPhone = RequestBody.create(MediaType.parse("multipart/form-data"), EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.SHA_256));
+            RequestBody requestPhone = RequestBody.create(MediaType.parse("multipart/form-data"), EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.RSA));
             final RequestBody requestAvatar = RequestBody.create(MediaType.parse("multipart/form-data"), mAvatarFile);
             LogUtil.d(TAG, "file length is " + mAvatarFile.length());
             String encryptedAvatarName = EncryptUtil.encrypt(mAvatarName, EncryptUtil.ALGO.MD5);

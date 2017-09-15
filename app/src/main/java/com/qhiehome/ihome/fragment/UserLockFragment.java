@@ -14,16 +14,10 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
-import android.widget.EditText;
-import android.widget.ImageView;
-
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.GravityEnum;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.adapter.UserLockAdapter;
@@ -39,19 +33,15 @@ import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.base.ParkingResponse;
 import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedRequest;
 import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedResponse;
-import com.qhiehome.ihome.network.model.lock.updatepwd.UpdateLockPwdRequest;
-import com.qhiehome.ihome.network.model.lock.updatepwd.UpdateLockPwdResponse;
 import com.qhiehome.ihome.network.service.inquiry.ParkingOwnedService;
-import com.qhiehome.ihome.network.service.lock.UpdateLockPwdService;
 import com.qhiehome.ihome.persistence.DaoSession;
-import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
+import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.NetworkUtils;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 import com.qhiehome.ihome.view.QhLockConnectDialog;
-import com.qhiehome.ihome.view.QhModifyPasswordDialog;
 
 import org.greenrobot.greendao.query.Query;
 
@@ -151,60 +141,28 @@ public class UserLockFragment extends Fragment {
         DaoSession daoSession = ((IhomeApplication) getActivity().getApplicationContext()).getDaoSession();
         mUserLockBeanDao = daoSession.getUserLockBeanDao();
         mUserLockBeansQuery = mUserLockBeanDao.queryBuilder().orderAsc(UserLockBeanDao.Properties.Id).build();
-        String phoneNum = SharedPreferenceUtil.getString(mActivity, Constant.PHONE_KEY, "");
 
         mUserLocks = new ArrayList<>();
         mParkingIds = new StringBuilder();
 
-        inquiryOwnedParkings(phoneNum);
+        inquiryOwnedParkings();
     }
 
-    private void inquiryOwnedParkings(String phoneNum) {
+    private void inquiryOwnedParkings() {
         mCurrentTime = System.currentTimeMillis();
-        if (NetworkUtils.isConnected(mActivity)) {
-            ParkingOwnedService parkingOwnedService = ServiceGenerator.createService(ParkingOwnedService.class);
-            ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(phoneNum);
-            Call<ParkingOwnedResponse> call = parkingOwnedService.parkingOwned(parkingOwnedRequest);
-            call.enqueue(new Callback<ParkingOwnedResponse>() {
-                @Override
-                public void onResponse(@NonNull Call<ParkingOwnedResponse> call, @NonNull Response<ParkingOwnedResponse> response) {
-                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                        // success and then inflate ViewStub
-                        List<ParkingResponse.DataBean.EstateBean> estateList = response.body().getData().getEstate();
-                        if (estateList.size() != 0) {
-                            mViewStub.inflate();
-                            RecyclerView rvUserLocks = (RecyclerView) mView.findViewById(R.id.rv_user_locks);
-                            rvUserLocks.setHasFixedSize(true);
-                            LinearLayoutManager llm = new LinearLayoutManager(mActivity);
-                            rvUserLocks.setLayoutManager(llm);
-                            initLocks(estateList);
-                            UserLockAdapter userLockAdapter = new UserLockAdapter(mActivity, mUserLocks);
-                            rvUserLocks.setAdapter(userLockAdapter);
-                            initListener(userLockAdapter);
-                        }
-                    }
-                }
-
-                @Override
-                public void onFailure(@NonNull Call<ParkingOwnedResponse> call, @NonNull Throwable t) {
-
-                }
-            });
-        } else {
-            List<UserLockBean> list = mUserLockBeansQuery.list();
-            if (list != null && list.size() > 0) {
-                mViewStub.inflate();
-                RecyclerView rvUserLocks = (RecyclerView) mView.findViewById(R.id.rv_user_locks);
-                rvUserLocks.setHasFixedSize(true);
-                LinearLayoutManager llm = new LinearLayoutManager(mActivity);
-                rvUserLocks.setLayoutManager(llm);
-                for (UserLockBean userLockBean : list) {
-                    mUserLocks.add(userLockBean);
-                }
-                UserLockAdapter userLockAdapter = new UserLockAdapter(mActivity, mUserLocks);
-                rvUserLocks.setAdapter(userLockAdapter);
-                initListener(userLockAdapter);
+        List<UserLockBean> list = mUserLockBeansQuery.list();
+        if (list != null && list.size() > 0) {
+            mViewStub.inflate();
+            RecyclerView rvUserLocks = (RecyclerView) mView.findViewById(R.id.rv_user_locks);
+            rvUserLocks.setHasFixedSize(true);
+            LinearLayoutManager llm = new LinearLayoutManager(mActivity);
+            rvUserLocks.setLayoutManager(llm);
+            for (UserLockBean userLockBean : list) {
+                mUserLocks.add(userLockBean);
             }
+            UserLockAdapter userLockAdapter = new UserLockAdapter(mActivity, mUserLocks);
+            rvUserLocks.setAdapter(userLockAdapter);
+            initListener(userLockAdapter);
         }
     }
 
@@ -214,6 +172,7 @@ public class UserLockFragment extends Fragment {
         boolean isRented = false;
         for (ParkingResponse.DataBean.EstateBean estate : estateList) {
             for (ParkingResponse.DataBean.EstateBean.ParkingListBean parkingBean : estate.getParkingList()) {
+                LogUtil.d(TAG, "password is " + parkingBean.getPassword());
                 List<ParkingResponse.DataBean.EstateBean.ParkingListBean.ShareListBean> share = parkingBean.getShareList();
                 for (int i = 0; i < share.size(); i++) {
                     ParkingResponse.DataBean.EstateBean.ParkingListBean.ShareListBean shareBean = share.get(i);
@@ -224,7 +183,7 @@ public class UserLockFragment extends Fragment {
                     }
                 }
                 userLockBean = new UserLockBean(null, estate.getName(), parkingBean.getName(), parkingBean.getId(), parkingBean.getGatewayId(),
-                        parkingBean.getLockMac(), isRented);
+                        parkingBean.getLockMac(), parkingBean.getPassword(), isRented);
                 mUserLocks.add(userLockBean);
                 mUserLockBeanDao.insertOrReplace(userLockBean);
                 mParkingIds.append(parkingBean.getId()).append(",");
@@ -243,8 +202,9 @@ public class UserLockFragment extends Fragment {
 
     private void initListener(final UserLockAdapter userLockAdapter) {
         userLockAdapter.setOnItemClickListener(new UserLockAdapter.OnItemClickListener() {
+
             @Override
-            public void onClick(View view, int i) {
+            public void onButtonClick(View view, int i) {
                 UserLockBean userLockBean = mUserLocks.get(i);
                 mGateWayId = userLockBean.getGatewayId();
                 mLockMac = userLockBean.getLockMac();
@@ -264,60 +224,6 @@ public class UserLockFragment extends Fragment {
                 } else {
                     showProgressDialog();
                 }
-            }
-
-            @Override
-            public void onButtonClick(View view, int i) {
-                final UserLockBean userLockBean = mUserLocks.get(i);
-                QhModifyPasswordDialog dialog = new QhModifyPasswordDialog(mActivity);
-                View customView = dialog.getCustomView();
-                final EditText oldPassoword = (EditText) customView.findViewById(R.id.et_old_password);
-                dialog.setOnItemClickListener(new QhModifyPasswordDialog.OnItemClickListener() {
-                    @Override
-                    public void onCofirm(String oldPassword, String newPassword, String confirmPassword) {
-                        int parkingId = userLockBean.getParkingId();
-                        if (TextUtils.isEmpty(oldPassword) || TextUtils.isEmpty(newPassword) || TextUtils.isEmpty(confirmPassword)) {
-                            ToastUtil.showToast(mActivity, "密码输入框不能为空");
-                        } else if (newPassword.equals(oldPassword)) {
-                            ToastUtil.showToast(mActivity, "新密码与旧密码不能相同");
-                        } else if (newPassword.length() != 6 || oldPassword.length() != 6) {
-                            ToastUtil.showToast(mActivity, "新密码或旧密码不是6位");
-                        } else if (!newPassword.equals(confirmPassword)) {
-                            ToastUtil.showToast(mActivity, "确认密码与新密码不一致");
-                        } else {
-                            modifyLockPwd(parkingId, oldPassword, newPassword);
-                        }
-                    }
-                });
-                dialog.show();
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        CommonUtil.showSoftKeyboard(oldPassoword, getActivity());
-                    }
-                }, 100);
-            }
-        });
-    }
-
-    private void modifyLockPwd(int parkingId, String oldPwd, final String newPwd) {
-        UpdateLockPwdService updateLockPwdService = ServiceGenerator.createService(UpdateLockPwdService.class);
-        UpdateLockPwdRequest updateLockPwdRequest = new UpdateLockPwdRequest(parkingId, oldPwd, newPwd);
-        Call<UpdateLockPwdResponse> call = updateLockPwdService.updateLockPwd(updateLockPwdRequest);
-        call.enqueue(new Callback<UpdateLockPwdResponse>() {
-            @Override
-            public void onResponse(@NonNull Call<UpdateLockPwdResponse> call, @NonNull Response<UpdateLockPwdResponse> response) {
-                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                    ToastUtil.showToast(mActivity, "修改密码成功");
-                    SharedPreferenceUtil.setString(mActivity, Constant.LOCK_PASSWORD_KEY, newPwd);
-                } else {
-                    ToastUtil.showToast(mActivity, "密码错误或修改失败");
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<UpdateLockPwdResponse> call, @NonNull Throwable t) {
-                ToastUtil.showToast(mActivity, "请检查您的网络");
             }
         });
     }
@@ -381,7 +287,6 @@ public class UserLockFragment extends Fragment {
                     if (actionId == 0x01) {
                         if (result == 0x10) {
                             // MM 代表密码
-                            // go main
                             LogUtil.d(TAG, "password is "
                                     + SharedPreferenceUtil.getString(mActivity, Constant.LOCK_PASSWORD_KEY, Constant.DEFAULT_PASSWORD));
                             Intent normal = new Intent(ConnectLockService.BROADCAST_CONNECT);

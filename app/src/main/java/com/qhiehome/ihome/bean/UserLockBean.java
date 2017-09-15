@@ -29,18 +29,22 @@ public class UserLockBean {
     private String lockMac;
 
     @NotNull
+    private String password;
+
+    @NotNull
     private boolean isRented;
 
-    @Generated(hash = 502793901)
+    @Generated(hash = 321619495)
     public UserLockBean(Long id, @NotNull String lockEstateName,
             @NotNull String parkingName, int parkingId, @NotNull String gatewayId,
-            @NotNull String lockMac, boolean isRented) {
+            @NotNull String lockMac, @NotNull String password, boolean isRented) {
         this.id = id;
         this.lockEstateName = lockEstateName;
         this.parkingName = parkingName;
         this.parkingId = parkingId;
         this.gatewayId = gatewayId;
         this.lockMac = lockMac;
+        this.password = password;
         this.isRented = isRented;
     }
 
@@ -104,7 +108,15 @@ public class UserLockBean {
         this.isRented = isRented;
     }
 
-    public static enum LOCK_ROLE {
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public enum LOCK_ROLE {
         CUSTOMER,
         OWNER
     }

@@ -115,6 +115,7 @@ public class ParkingResponse extends Response {
                  * name : xxxxxx
                  * gatewayId : xxxxxx
                  * lockMac : xxxxxx
+                 * password: xxxxx
                  * shareList : [{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]
                  */
 
@@ -122,6 +123,7 @@ public class ParkingResponse extends Response {
                 private String name;
                 private String gatewayId;
                 private String lockMac;
+                private String password;
                 private List<ShareListBean> shareList;
 
                 public int getId() {
@@ -154,6 +156,14 @@ public class ParkingResponse extends Response {
 
                 public void setLockMac(String lockMac) {
                     this.lockMac = lockMac;
+                }
+
+                public String getPassword() {
+                    return password;
+                }
+
+                public void setPassword(String password) {
+                    this.password = password;
                 }
 
                 public List<ShareListBean> getShareList() {

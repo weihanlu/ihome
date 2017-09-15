@@ -244,7 +244,7 @@ public class PayActivity extends BaseActivity {
                     AccountBalanceRequest accountBalanceRequest =
                             new AccountBalanceRequest(EncryptUtil.
                                     encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""),
-                                            EncryptUtil.ALGO.SHA_256), Double.valueOf(mPriceList[mButtonClicked - 1]));
+                                            EncryptUtil.ALGO.RSA), Double.valueOf(mPriceList[mButtonClicked - 1]));
                     Call<AccountBalanceResponse> call = accountBalanceService.account(accountBalanceRequest);
                     call.enqueue(new Callback<AccountBalanceResponse>() {
                         @Override
@@ -389,7 +389,7 @@ public class PayActivity extends BaseActivity {
             });
             switch (position) {
                 case ALI_PAY:
-                    holder.iv_pay.setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_pay_alipay));
+                    holder.iv_pay.setBackground(ContextCompat.getDrawable(mContext, R.drawable.img_pay_alipay));
                     holder.tv_pay.setText("支付宝");
                     holder.tv_pay_info.setText("数亿用户都在用，安全可托付");
                     if (mSelectedNum[0]) {
@@ -399,7 +399,7 @@ public class PayActivity extends BaseActivity {
                     }
                     break;
                 case WECHAT_PAY:
-                    holder.iv_pay.setBackground(ContextCompat.getDrawable(mContext, R.drawable.ic_pay_wechat));
+                    holder.iv_pay.setBackground(ContextCompat.getDrawable(mContext, R.drawable.img_pay_wechat));
                     holder.tv_pay.setText("微信");
                     holder.tv_pay_info.setText("推荐安装微信5.0以上版本的用户使用");
                     if (mSelectedNum[1]) {
@@ -470,7 +470,7 @@ public class PayActivity extends BaseActivity {
      */
     private void changeAccountBalance(final PayListAdapter.PayListHolder holder, final double change) {
         AccountBalanceService accountBalanceService = ServiceGenerator.createService(AccountBalanceService.class);
-        AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256), change);
+        AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.RSA), change);
         Call<AccountBalanceResponse> call = accountBalanceService.account(accountBalanceRequest);
         call.enqueue(new Callback<AccountBalanceResponse>() {
             @Override
@@ -495,7 +495,7 @@ public class PayActivity extends BaseActivity {
 
     private void payWithAccount(){
         AccountBalanceService accountBalanceService = ServiceGenerator.createService(AccountBalanceService.class);
-        AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256), -mFee, mOrderId);
+        AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.RSA), -mFee, mOrderId);
         Call<AccountBalanceResponse> call = accountBalanceService.account(accountBalanceRequest);
         call.enqueue(new Callback<AccountBalanceResponse>() {
             @Override

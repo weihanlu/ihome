@@ -91,7 +91,7 @@ public class NaviGuideActivity extends BaseActivity {
         BNRouteGuideManager.CustomizedLayerItem item1 = null;
         if (mBNRoutePlanNode != null) {
             item1 = new BNRouteGuideManager.CustomizedLayerItem(mBNRoutePlanNode.getLongitude(), mBNRoutePlanNode.getLatitude(),
-                    mBNRoutePlanNode.getCoordinateType(), getResources().getDrawable(R.drawable.ico_car), BNRouteGuideManager.CustomizedLayerItem.ALIGN_CENTER);
+                    mBNRoutePlanNode.getCoordinateType(), getResources().getDrawable(R.drawable.ic_car_publish), BNRouteGuideManager.CustomizedLayerItem.ALIGN_CENTER);
             items.add(item1);
 
             BNRouteGuideManager.getInstance().setCustomizedLayerItems(items);

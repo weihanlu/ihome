@@ -361,7 +361,7 @@ public class ParkingListActivity extends BaseActivity {
                     .show();
         } else {
             ReserveService reserveService = ServiceGenerator.createService(ReserveService.class);
-            final ReserveRequest reserveRequest = new ReserveRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, Constant.TEST_PHONE_NUM), EncryptUtil.ALGO.SHA_256), mEstateBean.getId(), mStartSelectionMillis.get(mStartSelectIndex), mEndSelectionMillis.get(mEndSelectIndex));
+            final ReserveRequest reserveRequest = new ReserveRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, Constant.TEST_PHONE_NUM), EncryptUtil.ALGO.RSA), mEstateBean.getId(), mStartSelectionMillis.get(mStartSelectIndex), mEndSelectionMillis.get(mEndSelectIndex));
             Call<ReserveResponse> call = reserveService.reserve(reserveRequest);
             call.enqueue(new Callback<ReserveResponse>() {
                 @Override
@@ -435,7 +435,7 @@ public class ParkingListActivity extends BaseActivity {
 
     private void payGuarFeeWithWallet(final int orderId){
         AccountBalanceService accountBalanceService = ServiceGenerator.createService(AccountBalanceService.class);
-        AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256), -mGuaranteeFee, orderId);
+        AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.RSA), -mGuaranteeFee, orderId);
         Call<AccountBalanceResponse> call = accountBalanceService.account(accountBalanceRequest);
         call.enqueue(new Callback<AccountBalanceResponse>() {
             @Override

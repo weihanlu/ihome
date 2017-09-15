@@ -65,6 +65,7 @@ import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 import com.qhiehome.ihome.view.QhAvatarSelectDialog;
 import com.qhiehome.ihome.view.QhDeleteItemDialog;
+import com.qhiehome.ihome.view.RecyclerViewEmptySupport;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -101,6 +102,8 @@ public class ReserveActivity extends BaseActivity {
     TextView mTvItemReserveFee;
     @BindView(R.id.ll_reserve_use)
     LinearLayout mLlReserveUse;
+    @BindView(R.id.ll_reserve_empty)
+    LinearLayout mLlReserveEmpty;
 
     private Context mContext;
     private NaviUtil mNavi;
@@ -255,46 +258,49 @@ public class ReserveActivity extends BaseActivity {
     private void orderRequest() {
         OrderService orderService = ServiceGenerator.createService(OrderService.class);
         String phoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, Constant.TEST_PHONE_NUM);
-        final OrderRequest orderRequest = new OrderRequest(EncryptUtil.encrypt(phoneNum, EncryptUtil.ALGO.SHA_256));
+        final OrderRequest orderRequest = new OrderRequest(EncryptUtil.encrypt(phoneNum, EncryptUtil.ALGO.RSA));
         Call<OrderResponse> call = orderService.order(orderRequest);
         call.enqueue(new Callback<OrderResponse>() {
             @Override
             public void onResponse(@NonNull Call<OrderResponse> call, @NonNull Response<OrderResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     mOrderBeanList = response.body().getData().getOrderList();
-                    int orderState = mOrderBeanList.get(0).getState();
-                    if (orderState == Constant.ORDER_STATE_NOT_PAID && mJumpToPay){
-                        mJumpToPay = false;
-                        Pay(0, Constant.PAY_STATE_TOTAL);
-                    }
-                    if (orderState == Constant.ORDER_STATE_CANCEL ||
-                            orderState == Constant.ORDER_STATE_TIMEOUT ||
-                            mOrderBeanList.get(0).getId() != SharedPreferenceUtil.getInt(mContext, Constant.ORDER_ID, 0)){
-                        SharedPreferenceUtil.setBoolean(mContext, Constant.ADVANCED_USE, false);
-                    }//订单取消、超时、更新后，重置"提前使用"信息
-
-                    if (mOrderBeanList.get(0).getState() == Constant.ORDER_STATE_RESERVED || mOrderBeanList.get(0).getState() == Constant.ORDER_STATE_PARKED) {
-                        mEstateMapFragment.setOrderListBean(mOrderBeanList.get(0));
-                        mSrlReserve.setVisibility(View.GONE);
-                        mLlReserveUse.setVisibility(View.VISIBLE);
-                        mTvItemReserveParking.setText(mOrderBeanList.get(0).getEstate().getName());
-                        mTvItemReserveOrderid.setText("订单号："+mOrderBeanList.get(0).getId());
-                        mTvItemReserveTime.setText(START_TIME_FORMAT.format(mOrderBeanList.get(0).getStartTime()) + "-" + END_TIME_FORMAT.format(mOrderBeanList.get(0).getEndTime()));
-                        mTvItemReserveFee.setText("请停车结束后后务必点击确认离开");
-                        mTvItemReserveState.setBackground(ContextCompat.getDrawable(mContext, R.drawable.blue_rect_reserve));
-                        mTvItemReserveState.setText("进行中");
-                    }else {
-                        mSrlReserve.setVisibility(View.VISIBLE);
-                        mLlReserveUse.setVisibility(View.GONE);
-                        updateData();
-                    }
-
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mSrlReserve.setRefreshing(false);
+                    if (mOrderBeanList != null && mOrderBeanList.size() > 0) {
+                        mLlReserveEmpty.setVisibility(View.INVISIBLE);
+                        int orderState = mOrderBeanList.get(0).getState();
+                        if (orderState == Constant.ORDER_STATE_NOT_PAID && mJumpToPay){
+                            mJumpToPay = false;
+                            Pay(0, Constant.PAY_STATE_TOTAL);
                         }
-                    });
+                        if (orderState == Constant.ORDER_STATE_CANCEL ||
+                                orderState == Constant.ORDER_STATE_TIMEOUT ||
+                                mOrderBeanList.get(0).getId() != SharedPreferenceUtil.getInt(mContext, Constant.ORDER_ID, 0)){
+                            SharedPreferenceUtil.setBoolean(mContext, Constant.ADVANCED_USE, false);
+                        }//订单取消、超时、更新后，重置"提前使用"信息
+
+                        if (mOrderBeanList.get(0).getState() == Constant.ORDER_STATE_RESERVED || mOrderBeanList.get(0).getState() == Constant.ORDER_STATE_PARKED) {
+                            mEstateMapFragment.setOrderListBean(mOrderBeanList.get(0));
+                            mSrlReserve.setVisibility(View.GONE);
+                            mLlReserveUse.setVisibility(View.VISIBLE);
+                            mTvItemReserveParking.setText(mOrderBeanList.get(0).getEstate().getName());
+                            mTvItemReserveOrderid.setText("订单号："+mOrderBeanList.get(0).getId());
+                            mTvItemReserveTime.setText(START_TIME_FORMAT.format(mOrderBeanList.get(0).getStartTime()) + "-" + END_TIME_FORMAT.format(mOrderBeanList.get(0).getEndTime()));
+                            mTvItemReserveFee.setText("请停车结束后后务必点击确认离开");
+                            mTvItemReserveState.setBackground(ContextCompat.getDrawable(mContext, R.drawable.blue_rect_reserve));
+                            mTvItemReserveState.setText("进行中");
+                        }else {
+                            mSrlReserve.setVisibility(View.VISIBLE);
+                            mLlReserveUse.setVisibility(View.GONE);
+                            updateData();
+                        }
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mSrlReserve.setRefreshing(false);
+                            }
+                        });
+                    }
                 }
             }
 
@@ -530,7 +536,7 @@ public class ReserveActivity extends BaseActivity {
             SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_PARKED);
             if (NetworkUtils.isConnected(mContext)) {
                 EnterParkingService enterParkingService = ServiceGenerator.createService(EnterParkingService.class);
-                EnterParkingRequest enterParkingRequest = new EnterParkingRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256), currentTime);
+                EnterParkingRequest enterParkingRequest = new EnterParkingRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.RSA), currentTime);
                 Call<EnterParkingResponse> call = enterParkingService.enterParking(enterParkingRequest);
                 call.enqueue(new Callback<EnterParkingResponse>() {
                     @Override
@@ -564,7 +570,7 @@ public class ReserveActivity extends BaseActivity {
             SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_NOT_PAID);
             if (NetworkUtils.isConnected(mContext)) {
                 ChargeService chargeService = ServiceGenerator.createService(ChargeService.class);
-                ChargeRequest chargeRequest = new ChargeRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256), currentTime);
+                ChargeRequest chargeRequest = new ChargeRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.RSA), currentTime);
                 Call<ChargeResponse> call = chargeService.charge(chargeRequest);
                 call.enqueue(new Callback<ChargeResponse>() {
                     @Override
@@ -605,7 +611,7 @@ public class ReserveActivity extends BaseActivity {
      */
     public void QueryParkingUsing() {
         ParkingUsingService parkingUsingService = ServiceGenerator.createService(ParkingUsingService.class);
-        ParkingUsingRequest parkingUsingRequest = new ParkingUsingRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.SHA_256));
+        ParkingUsingRequest parkingUsingRequest = new ParkingUsingRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.RSA));
         Call<ParkingUsingResponse> call = parkingUsingService.parkingUsingQuery(parkingUsingRequest);
         call.enqueue(new Callback<ParkingUsingResponse>() {
             @Override

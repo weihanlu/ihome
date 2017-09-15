@@ -2,8 +2,6 @@ package com.qhiehome.ihome.network.service.feedback;
 
 import com.qhiehome.ihome.network.model.feedback.FeedbackRequest;
 import com.qhiehome.ihome.network.model.feedback.FeedbackResponse;
-import com.qhiehome.ihome.network.model.lock.updatepwd.UpdateLockPwdRequest;
-import com.qhiehome.ihome.network.model.lock.updatepwd.UpdateLockPwdResponse;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
