@@ -24,9 +24,9 @@ public class OrderOwnerAdapter extends RecyclerView.Adapter<OrderOwnerAdapter.Or
     private Context mContext;
     private List<OrderOwnerResponse.DataBean.OrderListBean> mOrderBeanList;
 
-    private static final SimpleDateFormat START_TIME_FORMAT = new SimpleDateFormat("yyyy.MM.dd HH:mm", Locale.CHINA);
+    private static final SimpleDateFormat START_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.CHINA);
     private static final SimpleDateFormat END_TIME_FORMAT = new SimpleDateFormat("HH:mm", Locale.CHINA);
-    private static final String DECIMAL_2 = "%.2f";
+    private static final String DECIMAL_2 = "¥%.2f";
 
 
     public OrderOwnerAdapter(Context mContext, List<OrderOwnerResponse.DataBean.OrderListBean> mOrderBeanList) {
@@ -43,42 +43,59 @@ public class OrderOwnerAdapter extends RecyclerView.Adapter<OrderOwnerAdapter.Or
 
     @Override
     public void onBindViewHolder(OrderOwnerViewHolder holder, int position) {
-        String parking = mOrderBeanList.get(position).getEstate().getName() + "-" + mOrderBeanList.get(position).getParking().getName();
-        holder.tv_parking.setText(parking);
+        OrderOwnerResponse.DataBean.OrderListBean orderListBean = mOrderBeanList.get(position);
+
+        String parkingName = orderListBean.getEstate().getName();
+        holder.tvParkingName.setText(parkingName);
+
+        int orderId = orderListBean.getId();
+        holder.tvOrderId.setText(String.format(Locale.CHINA, mContext.getString(R.string.order_owner_orderId), orderId));
+
         String time = "";
         String fee = "";
         switch (mOrderBeanList.get(position).getState()){
             case Constant.ORDER_STATE_TEMP_RESERVED://state--30
-                time = START_TIME_FORMAT.format(mOrderBeanList.get(position).getStartTime()) + "-" + END_TIME_FORMAT.format(mOrderBeanList.get(position).getEndTime());
+                holder.tvParkingState.setVisibility(View.INVISIBLE);
+
+                time = START_TIME_FORMAT.format(orderListBean.getStartTime()) + "-" + END_TIME_FORMAT.format(orderListBean.getEndTime());
                 fee = "用户已预约";
                 break;
             case Constant.ORDER_STATE_RESERVED://state--31
-                time = START_TIME_FORMAT.format(mOrderBeanList.get(position).getStartTime()) + "-" + END_TIME_FORMAT.format(mOrderBeanList.get(position).getEndTime());
+                holder.tvParkingState.setVisibility(View.INVISIBLE);
+
+                time = START_TIME_FORMAT.format(orderListBean.getStartTime()) + "-" + END_TIME_FORMAT.format(orderListBean.getEndTime());
                 fee = "用户已预约";
                 break;
             case Constant.ORDER_STATE_PARKED://state--32
-                time = START_TIME_FORMAT.format(mOrderBeanList.get(position).getEnterTime()) + "-" + END_TIME_FORMAT.format(mOrderBeanList.get(position).getEndTime());
+                holder.tvParkingState.setVisibility(View.INVISIBLE);
+
+                time = START_TIME_FORMAT.format(orderListBean.getEnterTime()) + "-" + END_TIME_FORMAT.format(orderListBean.getEndTime());
                 fee = "用户正在使用...";
                 break;
             case Constant.ORDER_STATE_NOT_PAID://state--33
-                time = START_TIME_FORMAT.format(mOrderBeanList.get(position).getEnterTime()) + "-" + END_TIME_FORMAT.format(mOrderBeanList.get(position).getLeaveTime());
-                fee = "收取费用：" + String.format(Locale.CHINA, DECIMAL_2, (float) mOrderBeanList.get(position).getOwnerFee());
+                holder.tvParkingState.setVisibility(View.INVISIBLE);
+
+                time = START_TIME_FORMAT.format(orderListBean.getEnterTime()) + "-" + END_TIME_FORMAT.format(orderListBean.getLeaveTime());
+                fee = "收取费用：" + String.format(Locale.CHINA, DECIMAL_2, (float) orderListBean.getOwnerFee());
                 break;
             case Constant.ORDER_STATE_PAID://state--34
-                time = START_TIME_FORMAT.format(mOrderBeanList.get(position).getEnterTime()) + "-" + END_TIME_FORMAT.format(mOrderBeanList.get(position).getLeaveTime());
-                fee = "收取费用：" + String.format(Locale.CHINA, DECIMAL_2, (float) mOrderBeanList.get(position).getOwnerFee());
+                holder.tvParkingState.setVisibility(View.INVISIBLE);
+
+                time = START_TIME_FORMAT.format(orderListBean.getEnterTime()) + "-" + END_TIME_FORMAT.format(orderListBean.getLeaveTime());
+                fee = "收取费用：" + String.format(Locale.CHINA, DECIMAL_2, (float) orderListBean.getOwnerFee());
                 break;
             case Constant.ORDER_STATE_TIMEOUT://state--38
-                time = START_TIME_FORMAT.format(mOrderBeanList.get(position).getStartTime()) + "（超时未停车）";
-                fee = "超时补偿：" + String.format(Locale.CHINA, DECIMAL_2, (float) mOrderBeanList.get(position).getOwnerFee());
+                holder.tvParkingState.setVisibility(View.VISIBLE);
+
+                time = START_TIME_FORMAT.format(orderListBean.getStartTime());
+                fee = "超时补偿：" + String.format(Locale.CHINA, DECIMAL_2, (float) orderListBean.getOwnerFee());
                 break;
             default:
                 break;
         }
-        String orderId = "订单号：" + String.format(Locale.CHINA, "%d", mOrderBeanList.get(position).getId());
-        holder.tv_orderId.setText(orderId);
-        holder.tv_time.setText(time);
-        holder.tv_fee.setText(fee);
+
+        holder.tvTime.setText(time);
+        holder.tvFee.setText(fee);
     }
 
     @Override
@@ -88,17 +105,19 @@ public class OrderOwnerAdapter extends RecyclerView.Adapter<OrderOwnerAdapter.Or
 
     static class OrderOwnerViewHolder extends RecyclerView.ViewHolder{
 
-        TextView tv_parking;
-        TextView tv_orderId;
-        TextView tv_time;
-        TextView tv_fee;
+        TextView tvParkingName;
+        TextView tvParkingState;
+        TextView tvTime;
+        TextView tvOrderId;
+        TextView tvFee;
 
         public OrderOwnerViewHolder(View itemView) {
             super(itemView);
-            tv_parking = (TextView) itemView.findViewById(R.id.tv_item_order_owner_parking);
-            tv_orderId = (TextView) itemView.findViewById(R.id.tv_item_order_owner_id);
-            tv_time = (TextView) itemView.findViewById(R.id.tv_item_order_owner_time);
-            tv_fee = (TextView) itemView.findViewById(R.id.tv_item_order_owner_fee);
+            tvParkingName = (TextView) itemView.findViewById(R.id.tv_item_order_owner_parking);
+            tvParkingState = (TextView) itemView.findViewById(R.id.tv_item_order_owner_state);
+            tvTime = (TextView) itemView.findViewById(R.id.tv_item_order_owner_time);
+            tvOrderId = (TextView) itemView.findViewById(R.id.tv_item_order_owner_id);
+            tvFee = (TextView) itemView.findViewById(R.id.tv_item_order_owner_fee);
         }
     }
 }

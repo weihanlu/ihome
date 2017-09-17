@@ -371,6 +371,7 @@ public class ReserveActivity extends BaseActivity {
                 ToastUtil.showToast(mContext, "网络连接异常");
                 mSrlReserve.setVisibility(View.VISIBLE);
                 mSrlReserve.setRefreshing(false);
+                mLlReserveEmpty.setVisibility(View.INVISIBLE);
 
                 try {
                     View viewStubContent = mViewStub.inflate();     //inflate 方法只能被调用一次
@@ -383,9 +384,10 @@ public class ReserveActivity extends BaseActivity {
                 switch (SharedPreferenceUtil.getInt(mContext, Constant.ORDER_STATE, 0)) {
                     case Constant.ORDER_STATE_RESERVED:
                         long startTimeMillis = SharedPreferenceUtil.getLong(mContext, Constant.PARKING_START_TIME, 0);
-                        long freeCancellationTime = SharedPreferenceUtil.getLong(mContext, Constant.FREE_CANCELLATION_TIME, 0) * 60 * 1000;
-                        if ((startTimeMillis <= System.currentTimeMillis() && startTimeMillis + freeCancellationTime >= System.currentTimeMillis()) ||
-                                (startTimeMillis + freeCancellationTime >= System.currentTimeMillis() && SharedPreferenceUtil.getBoolean(mContext, Constant.ADVANCED_USE, false))){
+                        int freeCancellationTime = SharedPreferenceUtil.getInt(mContext, Constant.FREE_CANCELLATION_TIME, 0);
+                        long freeCancellationTimeMillis = freeCancellationTime * 60 * 1000;
+                        if ((startTimeMillis <= System.currentTimeMillis() && startTimeMillis + freeCancellationTimeMillis >= System.currentTimeMillis()) ||
+                                (startTimeMillis + freeCancellationTimeMillis >= System.currentTimeMillis() && SharedPreferenceUtil.getBoolean(mContext, Constant.ADVANCED_USE, false))){
                             mBtnFunction1.setText("开始停车");
                             mBtnFunction1.setOnClickListener(new Button.OnClickListener() {
                                 @Override

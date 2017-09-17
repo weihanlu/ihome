@@ -45,6 +45,8 @@ import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.OrderUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
+import com.tencent.mm.opensdk.openapi.IWXAPI;
+import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -112,6 +114,8 @@ public class PayActivity extends BaseActivity {
 
     private static final int MSG_ALIPAY = 0;
 
+    private IWXAPI mIwxApi;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -125,7 +129,8 @@ public class PayActivity extends BaseActivity {
         mIsFirstLoad = true;
         initToolbar();
         initRecyclerView();
-
+        // 初始化mIwxApi
+        mIwxApi = WXAPIFactory.createWXAPI(this, Constant.APP_ID);
         //支付
         switch (mPayState) {
             case Constant.PAY_STATE_ADD_ACCOUNT:    //充值
@@ -238,8 +243,8 @@ public class PayActivity extends BaseActivity {
     public void onViewClicked() {
         switch (mPayState) {
             case Constant.PAY_STATE_ADD_ACCOUNT:
+                mCurrentAccount = Float.valueOf(mPriceList[mButtonClicked - 1]);
                 if (mSelectedNum[0]) {
-                    mCurrentAccount = Float.valueOf(mPriceList[mButtonClicked - 1]);
                     AccountBalanceService accountBalanceService = ServiceGenerator.createService(AccountBalanceService.class);
                     AccountBalanceRequest accountBalanceRequest =
                             new AccountBalanceRequest(EncryptUtil.
@@ -276,6 +281,9 @@ public class PayActivity extends BaseActivity {
 
                         }
                     });
+                } else {
+                    // TODO: 2017/9/17 微信支付
+
                 }
                 break;
             case Constant.PAY_STATE_GUARANTEE:
@@ -316,6 +324,8 @@ public class PayActivity extends BaseActivity {
                             ToastUtil.showToast(mContext, "支付失败（服务器繁忙）");
                         }
                     });
+                } else if (mSelectedNum[1]){
+
                 } else {
                     payWithAccount();
                 }

@@ -120,7 +120,7 @@ public class ParkingListActivity extends BaseActivity {
     //configuration parameter
     private int MIN_SHARING_PERIOD;
     private int MIN_CHARGING_PERIOD;
-    private int FREE_CANCELLATION_TIME;
+    private int mFreeCancellationTime;
 
 
     @Override
@@ -134,7 +134,7 @@ public class ParkingListActivity extends BaseActivity {
         mEstateBean = (ParkingEmptyResponse.DataBean.EstateBean) bundle.getSerializable("estate");
         MIN_SHARING_PERIOD = bundle.getInt(Constant.MIN_SHARING_PERIOD);
         MIN_CHARGING_PERIOD = bundle.getInt(Constant.MIN_CHARGING_PERIOD);
-        FREE_CANCELLATION_TIME = bundle.getInt(Constant.FREE_CANCELLATION_TIME);
+        mFreeCancellationTime = bundle.getInt(Constant.FREE_CANCELLATION_TIME);
         initView();
         mUnitPrice = (float) mEstateBean.getUnitPrice();
         mGuaranteeFee = (float) mEstateBean.getGuaranteeFee();
@@ -448,7 +448,7 @@ public class ParkingListActivity extends BaseActivity {
                     intent.putExtra("payState", Constant.PAY_STATE_GUARANTEE);
                     intent.putExtra("orderId", orderId);
                     SharedPreferenceUtil.setLong(mContext, Constant.ORDER_CREATE_TIME, System.currentTimeMillis());
-                    SharedPreferenceUtil.setInt(mContext, Constant.FREE_CANCELLATION_TIME, FREE_CANCELLATION_TIME);
+                    SharedPreferenceUtil.setInt(mContext, Constant.FREE_CANCELLATION_TIME, mFreeCancellationTime);
                     startActivity(intent);
                     ToastUtil.showToast(mContext, "预约成功");
                 }

@@ -90,6 +90,10 @@ public class Constant {
     public static final String MIN_CHARGING_PERIOD = "minChargingPeriod";
     public static final String FREE_CANCELLATION_TIME = "freeCancellationTime";
 
+    // WeChat pay
+    public static final String APP_ID = "wx42a91e33c4b3a97b";
+    public static final String APP_SIGN = "b84cdbf418f8f46e5661a8a4ae510fed";
+    public static final String APP_PACKAGE = "com.qhiehome.ihome";
 
 
 }

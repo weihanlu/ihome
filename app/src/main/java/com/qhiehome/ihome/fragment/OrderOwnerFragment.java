@@ -10,7 +10,6 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,13 +20,11 @@ import com.qhiehome.ihome.application.IhomeApplication;
 import com.qhiehome.ihome.bean.UserLockBean;
 import com.qhiehome.ihome.bean.UserLockBeanDao;
 import com.qhiehome.ihome.network.ServiceGenerator;
-import com.qhiehome.ihome.network.model.inquiry.order.OrderResponse;
 import com.qhiehome.ihome.network.model.inquiry.orderowner.OrderOwnerRequest;
 import com.qhiehome.ihome.network.model.inquiry.orderowner.OrderOwnerResponse;
 import com.qhiehome.ihome.network.service.inquiry.OrderOwnerService;
 import com.qhiehome.ihome.persistence.DaoSession;
 import com.qhiehome.ihome.util.Constant;
-import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
 import org.greenrobot.greendao.query.Query;
@@ -81,12 +78,18 @@ public class OrderOwnerFragment extends Fragment implements SwipeRefreshLayout.O
         unbinder = ButterKnife.bind(this, view);
         mHandler = new OrderOwnerHandler(this);
 
-        mSrlOrderOwner.setOnRefreshListener(this);
-        mSrlOrderOwner.setRefreshing(true);
+        initSwipeRefreshLayout();
         initParkings();
         refreshData();
         initRecyclerView();
         return view;
+    }
+
+    private void initSwipeRefreshLayout() {
+        mSrlOrderOwner.setColorSchemeResources(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light, android.R.color.holo_orange_light, android.R.color.holo_red_light);
+        mSrlOrderOwner.setRefreshing(true);
+        mSrlOrderOwner.setOnRefreshListener(this);
     }
 
     @Override
@@ -98,7 +101,7 @@ public class OrderOwnerFragment extends Fragment implements SwipeRefreshLayout.O
     private static class OrderOwnerHandler extends Handler {
         private final WeakReference<OrderOwnerFragment> mFragment;
         private OrderOwnerHandler(OrderOwnerFragment orderOwnerFragment){
-            mFragment = new WeakReference<OrderOwnerFragment>(orderOwnerFragment);
+            mFragment = new WeakReference<>(orderOwnerFragment);
         }
         @Override
         public void handleMessage(android.os.Message msg)
@@ -153,6 +156,7 @@ public class OrderOwnerFragment extends Fragment implements SwipeRefreshLayout.O
             @Override
             public void onFailure(@NonNull Call<OrderOwnerResponse> call, @NonNull Throwable t) {
                 ToastUtil.showToast(mContext, "网络连接异常");
+                mSrlOrderOwner.setRefreshing(false);
             }
         });
     }

@@ -41,4 +41,6 @@
     <string name="new_password">New Password</string>
     <string name="confirm_password">Please Confirm</string>
 
+    <string name="order_owner_orderId">OrderId: %d</string>
+
 </resources>
