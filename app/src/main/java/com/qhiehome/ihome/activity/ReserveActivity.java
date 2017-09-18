@@ -221,7 +221,7 @@ public class ReserveActivity extends BaseActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        disconnectBluetooth();
+        disconnect();
         unregisterReceiver(mReceiver);
 
     }
@@ -695,6 +695,7 @@ public class ReserveActivity extends BaseActivity {
                                     upLock.putExtra(ConnectLockService.ACTION_LOCK_STATE, mLockState);
                                     startService(upLock);
                                 }
+                                disconnect();
                             }
                         }
                     }).build();
@@ -818,6 +819,7 @@ public class ReserveActivity extends BaseActivity {
                     }
                     break;
                 case BLECommandIntent.RX_PASSWORD_RESULT:
+                    LogUtil.d(TAG, "password is " + mLockPwd);
                     int actionId = intent.getIntExtra(BLECommandIntent.EXTRA_PSW_ACTION, -1);
                     int result = intent.getIntExtra(BLECommandIntent.EXTRA_PSW_RESULT, -1);
                     LogUtil.d(TAG, "actionId is " + actionId + ", result is " + result + ", isPassword set " + isPasswordAlreadySet);
@@ -926,14 +928,14 @@ public class ReserveActivity extends BaseActivity {
             mControlLockDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                 @Override
                 public void onDismiss(DialogInterface dialog) {
-                    disconnectBluetooth();
+                    disconnect();
                 }
             });
         }
         mControlLockDialog.show();
     }
 
-    private void disconnectBluetooth() {
+    private void disconnect() {
         Intent disConnectLock = new Intent(this, ConnectLockService.class);
         disConnectLock.setAction(ConnectLockService.ACTION_DISCONNECT);
         startService(disConnectLock);

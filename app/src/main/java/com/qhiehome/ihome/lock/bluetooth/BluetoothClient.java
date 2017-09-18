@@ -97,6 +97,7 @@ public class BluetoothClient extends AppClient {
 
     @Override
     public void disconnect() {
+        scanLeDevice(false);
         LogUtil.d(TAG, TAG + " disconnect to bluetooth");
         Intent intent = new Intent(mContext, HostAppService.class);
         intent.setAction(CommunicationManager.ACTION_DISCONNECT_TO_DEVICE);
@@ -110,18 +111,18 @@ public class BluetoothClient extends AppClient {
             connectToBluetooth();
             return;
         }
-        LogUtil.d(TAG, "mLockState is " + mLockState);
-        if (mLockState == LOCK_STATE.UP.ordinal()) {
-            LogUtil.i(TAG, "lock is up");
-        } else if (mLockState == LOCK_STATE.UPPING.ordinal()) {
-            LogUtil.i(TAG, "do nothing upping");
-        } else {
+//        LogUtil.d(TAG, "mLockState is " + mLockState);
+//        if (mLockState == LOCK_STATE.UP.ordinal()) {
+//            LogUtil.i(TAG, "lock is up");
+//        } else if (mLockState == LOCK_STATE.UPPING.ordinal()) {
+//            LogUtil.i(TAG, "do nothing upping");
+//        } else {
             Intent upIntent = new Intent(BLECommandIntent.SEND_BUTTON_EVENT);
             upIntent.putExtra(BLECommandIntent.EXTRA_IS_OWNER, true);
             upIntent.putExtra(BLECommandIntent.EXTRA_IS_UP, true);
             CommunicationManager.getInstance().sendBLEEvent(mContext, upIntent);
             mLockState = LOCK_STATE.UP.ordinal();
-        }
+//        }
     }
 
     @Override
@@ -131,18 +132,18 @@ public class BluetoothClient extends AppClient {
             connectToBluetooth();
             return;
         }
-        LogUtil.d(TAG, "mLockState is " + mLockState);
-        if (mLockState == LOCK_STATE.DOWN.ordinal()) {
-            LogUtil.i(TAG, "lock is down");
-        } else if (mLockState == LOCK_STATE.DOWNING.ordinal()) {
-            LogUtil.i(TAG, "do nothing downing");
-        } else {
+//        LogUtil.d(TAG, "mLockState is " + mLockState);
+//        if (mLockState == LOCK_STATE.DOWN.ordinal()) {
+//            LogUtil.i(TAG, "lock is down");
+//        } else if (mLockState == LOCK_STATE.DOWNING.ordinal()) {
+//            LogUtil.i(TAG, "do nothing downing");
+//        } else {
             Intent downIntent = new Intent(BLECommandIntent.SEND_BUTTON_EVENT);
             downIntent.putExtra(BLECommandIntent.EXTRA_IS_OWNER, true);
             downIntent.putExtra(BLECommandIntent.EXTRA_IS_UP, false);
             CommunicationManager.getInstance().sendBLEEvent(mContext, downIntent);
             mLockState = LOCK_STATE.DOWN.ordinal();
-        }
+//        }
     }
 
     private void connectToBluetooth() {

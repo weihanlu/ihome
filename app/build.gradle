@@ -9,7 +9,7 @@ android {
         applicationId "com.qhiehome.ihome"
         minSdkVersion 19
         targetSdkVersion 22
-        versionCode 30
+        versionCode 31
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -33,7 +33,6 @@ android {
 }
 
 repositories {
-    maven { url "https://jitpack.io" }
     maven {
         url "http://repo.eclipse.org/content/repositories/paho-snapshots/"
     }
