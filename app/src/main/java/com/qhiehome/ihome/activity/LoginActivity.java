@@ -173,6 +173,7 @@ public class LoginActivity extends BaseActivity {
                 break;
             case R.id.rl_verify_code:
                 mEtVerify.requestFocus();
+                CommonUtil.showSoftKeyboard(mEtVerify, mContext);
                 break;
         }
     }

@@ -79,10 +79,6 @@ public class UserLockFragment extends Fragment {
 
     private int mLockState;
 
-    public UserLockFragment() {
-        // Required empty public constructor
-    }
-
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -119,8 +115,18 @@ public class UserLockFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
-        disconnectBluetooth();
+        disconnect();
         mActivity.unregisterReceiver(mReceiver);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
+    }
+
+    public UserLockFragment() {
+        // Required empty public constructor
     }
 
     private void initData() {
@@ -184,12 +190,6 @@ public class UserLockFragment extends Fragment {
                 }
             }
         });
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
     }
 
     private class ConnectLockReceiver extends BroadcastReceiver {
@@ -373,14 +373,15 @@ public class UserLockFragment extends Fragment {
             mControlLockDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                 @Override
                 public void onDismiss(DialogInterface dialog) {
-                   disconnectBluetooth();
+                   disconnect();
                 }
             });
         }
         mControlLockDialog.show();
     }
 
-    private void disconnectBluetooth() {
+    private void disconnect() {
+        LogUtil.d(TAG, "disconnect to bluetooth or gateway");
         Intent disConnectLock = new Intent(mActivity, ConnectLockService.class);
         disConnectLock.setAction(ConnectLockService.ACTION_DISCONNECT);
         mActivity.startService(disConnectLock);
