@@ -221,7 +221,9 @@ public class ReserveActivity extends BaseActivity {
     @Override
     protected void onStop() {
         super.onStop();
+        disconnectBluetooth();
         unregisterReceiver(mReceiver);
+
     }
 
     private void initToolbar() {
@@ -278,8 +280,6 @@ public class ReserveActivity extends BaseActivity {
                 }else {
                     Pay(i, mOrderBeanList.get(i).getState() == Constant.ORDER_STATE_TEMP_RESERVED?Constant.PAY_STATE_GUARANTEE:Constant.PAY_STATE_TOTAL);
                 }
-
-
             }
         });
 //        mRvReserve.setOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -926,13 +926,17 @@ public class ReserveActivity extends BaseActivity {
             mControlLockDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                 @Override
                 public void onDismiss(DialogInterface dialog) {
-                    Intent disConnectLock = new Intent(mContext, ConnectLockService.class);
-                    disConnectLock.setAction(ConnectLockService.ACTION_DISCONNECT);
-                    startService(disConnectLock);
+                    disconnectBluetooth();
                 }
             });
         }
         mControlLockDialog.show();
+    }
+
+    private void disconnectBluetooth() {
+        Intent disConnectLock = new Intent(this, ConnectLockService.class);
+        disConnectLock.setAction(ConnectLockService.ACTION_DISCONNECT);
+        startService(disConnectLock);
     }
 
 }

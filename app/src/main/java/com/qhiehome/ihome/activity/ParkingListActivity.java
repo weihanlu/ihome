@@ -484,7 +484,7 @@ public class ParkingListActivity extends BaseActivity {
                     OrderUtil.getInstance().setOrderInfo(mContext, orderId, Constant.ORDER_STATE_RESERVED,
                             shareBean.getStartTime(),
                             shareBean.getEndTime(),
-                            parkingBean.getPassword(),
+                            parkingBean.getName(),
                             parkingBean.getLockMac(),
                             parkingBean.getPassword(),
                             parkingBean.getGatewayId(),

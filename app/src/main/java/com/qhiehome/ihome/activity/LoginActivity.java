@@ -360,7 +360,7 @@ public class LoginActivity extends BaseActivity {
                             OrderUsingResponse.DataBean.OrderBean orderBean = data.getOrder();
                             OrderUsingResponse.DataBean.EstateBean estateBean = data.getEstate();
                             OrderUtil.getInstance().setOrderInfo(mContext, orderBean.getId(), orderBean.getState(), orderBean.getStartTime(), orderBean.getEndTime(),
-                                    orderBean.getParking().getPassword(), orderBean.getParking().getLockMac(), orderBean.getParking().getPassword(), orderBean.getParking().getGateWayId(),
+                                    orderBean.getParking().getName(), orderBean.getParking().getLockMac(), orderBean.getParking().getPassword(), orderBean.getParking().getGateWayId(),
                                     estateBean.getName(), estateBean.getX(), estateBean.getY());
 //                            SharedPreferenceUtil.setInt(mContext, Constant.ORDER_ID, orderBean.getId());
 //                            SharedPreferenceUtil.setLong(mContext, Constant.PARKING_START_TIME, orderBean.getStartTime());

@@ -133,6 +133,7 @@ public class UserLockFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
+        disconnectBluetooth();
         mActivity.unregisterReceiver(mReceiver);
     }
 
@@ -386,12 +387,16 @@ public class UserLockFragment extends Fragment {
             mControlLockDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                 @Override
                 public void onDismiss(DialogInterface dialog) {
-                    Intent disConnectLock = new Intent(mActivity, ConnectLockService.class);
-                    disConnectLock.setAction(ConnectLockService.ACTION_DISCONNECT);
-                    mActivity.startService(disConnectLock);
+                   disconnectBluetooth();
                 }
             });
         }
         mControlLockDialog.show();
+    }
+
+    private void disconnectBluetooth() {
+        Intent disConnectLock = new Intent(mActivity, ConnectLockService.class);
+        disConnectLock.setAction(ConnectLockService.ACTION_DISCONNECT);
+        mActivity.startService(disConnectLock);
     }
 }

@@ -587,7 +587,7 @@ public class PayActivity extends BaseActivity {
                     OrderUtil.getInstance().setOrderInfo(mContext, mOrderId, Constant.ORDER_STATE_RESERVED,
                             share.getStartTime(),
                             share.getEndTime(),
-                            parking.getPassword(),
+                            parking.getName(),
                             parking.getLockMac(),
                             parking.getPassword(),
                             parking.getGatewayId(),
