@@ -115,6 +115,7 @@ public class ParkingListActivity extends BaseActivity {
     private final static int UNPAY_ORDER = 300;
     private final static int RESERVED_ORDER = 301;
     private final static int RESERVE_ERROR = 203;
+    private final static int ERROR_CODE_INSUFFICIENT = 302;
 
 
     //configuration parameter
@@ -442,7 +443,7 @@ public class ParkingListActivity extends BaseActivity {
             public void onResponse(Call<AccountBalanceResponse> call, Response<AccountBalanceResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     PayGuaranteeFee(orderId);
-                }else {
+                }else if (response.body().getErrcode() == ERROR_CODE_INSUFFICIENT){
                     Intent intent = new Intent(ParkingListActivity.this, PayActivity.class);
                     intent.putExtra("fee", mGuaranteeFee);
                     intent.putExtra("payState", Constant.PAY_STATE_GUARANTEE);

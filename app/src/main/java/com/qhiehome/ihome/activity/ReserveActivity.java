@@ -355,14 +355,13 @@ public class ReserveActivity extends BaseActivity {
                             mLlReserveUse.setVisibility(View.GONE);
                             updateData();
                         }
-
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                mSrlReserve.setRefreshing(false);
-                            }
-                        });
                     }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mSrlReserve.setRefreshing(false);
+                        }
+                    });
                 }
             }
 
@@ -380,7 +379,7 @@ public class ReserveActivity extends BaseActivity {
                 } catch (Exception e) {
                     mViewStub.setVisibility(View.VISIBLE);
                 }
-
+                mLlReserveEmpty.setVisibility(View.INVISIBLE);
                 switch (SharedPreferenceUtil.getInt(mContext, Constant.ORDER_STATE, 0)) {
                     case Constant.ORDER_STATE_RESERVED:
                         long startTimeMillis = SharedPreferenceUtil.getLong(mContext, Constant.PARKING_START_TIME, 0);

@@ -95,5 +95,4 @@ public class Constant {
     public static final String APP_SIGN = "b84cdbf418f8f46e5661a8a4ae510fed";
     public static final String APP_PACKAGE = "com.qhiehome.ihome";
 
-
 }
