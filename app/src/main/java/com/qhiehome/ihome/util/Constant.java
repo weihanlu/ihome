@@ -89,6 +89,4 @@ public class Constant {
     public static final String MIN_CHARGING_PERIOD = "minChargingPeriod";
     public static final String FREE_CANCELLATION_TIME = "freeCancellationTime";
 
-
-
 }
