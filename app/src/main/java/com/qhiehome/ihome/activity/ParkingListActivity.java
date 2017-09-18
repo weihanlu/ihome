@@ -121,7 +121,7 @@ public class ParkingListActivity extends BaseActivity {
     //configuration parameter
     private int MIN_SHARING_PERIOD;
     private int MIN_CHARGING_PERIOD;
-    private int FREE_CANCELLATION_TIME;
+    private int mFreeCancellationTime;
 
 
     @Override
@@ -135,7 +135,7 @@ public class ParkingListActivity extends BaseActivity {
         mEstateBean = (ParkingEmptyResponse.DataBean.EstateBean) bundle.getSerializable("estate");
         MIN_SHARING_PERIOD = bundle.getInt(Constant.MIN_SHARING_PERIOD);
         MIN_CHARGING_PERIOD = bundle.getInt(Constant.MIN_CHARGING_PERIOD);
-        FREE_CANCELLATION_TIME = bundle.getInt(Constant.FREE_CANCELLATION_TIME);
+        mFreeCancellationTime = bundle.getInt(Constant.FREE_CANCELLATION_TIME);
         initView();
         mUnitPrice = (float) mEstateBean.getUnitPrice();
         mGuaranteeFee = (float) mEstateBean.getGuaranteeFee();
@@ -449,7 +449,7 @@ public class ParkingListActivity extends BaseActivity {
                     intent.putExtra("payState", Constant.PAY_STATE_GUARANTEE);
                     intent.putExtra("orderId", orderId);
                     SharedPreferenceUtil.setLong(mContext, Constant.ORDER_CREATE_TIME, System.currentTimeMillis());
-                    SharedPreferenceUtil.setInt(mContext, Constant.FREE_CANCELLATION_TIME, FREE_CANCELLATION_TIME);
+                    SharedPreferenceUtil.setInt(mContext, Constant.FREE_CANCELLATION_TIME, mFreeCancellationTime);
                     startActivity(intent);
                     ToastUtil.showToast(mContext, "预约成功");
                 }
@@ -478,15 +478,19 @@ public class ParkingListActivity extends BaseActivity {
 //                    SharedPreferenceUtil.setString(mContext, Constant.ESTATE_NAME, response.body().getData().getEstate().getName());
 //                    SharedPreferenceUtil.setFloat(mContext, Constant.ESTATE_LONGITUDE, (float) response.body().getData().getEstate().getX());
 //                    SharedPreferenceUtil.setFloat(mContext, Constant.ESTATE_LATITUDE, (float) response.body().getData().getEstate().getY());
+                    PayGuaranteeResponse.DataBean.EstateBean estateBean = response.body().getData().getEstate();
+                    PayGuaranteeResponse.DataBean.EstateBean.ParkingBean parkingBean = estateBean.getParking();
+                    PayGuaranteeResponse.DataBean.EstateBean.ParkingBean.ShareBean shareBean = parkingBean.getShare();
                     OrderUtil.getInstance().setOrderInfo(mContext, orderId, Constant.ORDER_STATE_RESERVED,
-                            response.body().getData().getEstate().getParking().getShare().getStartTime(),
-                            response.body().getData().getEstate().getParking().getShare().getEndTime(),
-                            response.body().getData().getEstate().getParking().getLockMac(),
-                            response.body().getData().getEstate().getParking().getPassword(),
-                            response.body().getData().getEstate().getParking().getGatewayId(),
-                            response.body().getData().getEstate().getName(),
-                            response.body().getData().getEstate().getX(),
-                            response.body().getData().getEstate().getY());
+                            shareBean.getStartTime(),
+                            shareBean.getEndTime(),
+                            parkingBean.getPassword(),
+                            parkingBean.getLockMac(),
+                            parkingBean.getPassword(),
+                            parkingBean.getGatewayId(),
+                            estateBean.getName(),
+                            estateBean.getX(),
+                            estateBean.getY());
                     Intent intent = new Intent(ParkingListActivity.this, ReserveActivity.class);
                     startActivity(intent);
                     finish();

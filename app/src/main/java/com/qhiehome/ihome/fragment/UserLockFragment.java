@@ -73,8 +73,6 @@ public class UserLockFragment extends Fragment {
 
     QhLockConnectDialog mControlLockDialog;
 
-    private UserLockBeanDao mUserLockBeanDao;
-
     private Query<UserLockBean> mUserLockBeansQuery;
 
     private BluetoothAdapter mBluetoothAdapter;
@@ -140,8 +138,8 @@ public class UserLockFragment extends Fragment {
 
     private void initData() {
         DaoSession daoSession = ((IhomeApplication) getActivity().getApplicationContext()).getDaoSession();
-        mUserLockBeanDao = daoSession.getUserLockBeanDao();
-        mUserLockBeansQuery = mUserLockBeanDao.queryBuilder().orderAsc(UserLockBeanDao.Properties.Id).build();
+        UserLockBeanDao userLockBeanDao = daoSession.getUserLockBeanDao();
+        mUserLockBeansQuery = userLockBeanDao.queryBuilder().orderAsc(UserLockBeanDao.Properties.Id).build();
         mUserLocks = new ArrayList<>();
         inquiryOwnedParkings();
     }

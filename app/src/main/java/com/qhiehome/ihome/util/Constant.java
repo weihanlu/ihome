@@ -57,6 +57,7 @@ public class Constant {
     public static final String PARKING_END_TIME = "endTime";
     //control lock without network
     public static final String RESERVE_LOCK_MAC = "RESERVE_LOCK_MAC";
+    public static final String RESERVE_LOCK_NAME = "RESERVE_LOCK_NAME";
     public static final String RESERVE_LOCK_PWD = "RESERVE_LOCK_PWD";
     public static final String RESERVE_GATEWAY_ID = "RESERVE_GATEWAY_ID";
     //record advanced using right
@@ -88,5 +89,10 @@ public class Constant {
     public static final String MIN_SHARING_PERIOD = "minSharingPeriod";
     public static final String MIN_CHARGING_PERIOD = "minChargingPeriod";
     public static final String FREE_CANCELLATION_TIME = "freeCancellationTime";
+
+    // WeChat pay
+    public static final String APP_ID = "wx42a91e33c4b3a97b";
+    public static final String APP_SIGN = "b84cdbf418f8f46e5661a8a4ae510fed";
+    public static final String APP_PACKAGE = "com.qhiehome.ihome";
 
 }

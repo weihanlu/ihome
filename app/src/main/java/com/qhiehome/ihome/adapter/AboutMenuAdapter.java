@@ -1,6 +1,7 @@
 package com.qhiehome.ihome.adapter;
 
 import android.content.Context;
+import android.os.HandlerThread;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;

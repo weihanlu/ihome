@@ -16,11 +16,12 @@ public class OrderUtil {
         return OrderUtilHolder.INSTANCE;
     }
 
-    public void setOrderInfo(Context context, int orderId, int orderState, long startTime, long endTime, String lockMac, String lockPwd, String gateWayId, String estateName, double estateX, double estateY){
+    public void setOrderInfo(Context context, int orderId, int orderState, long startTime, long endTime, String lockName, String lockMac, String lockPwd, String gateWayId, String estateName, double estateX, double estateY){
         SharedPreferenceUtil.setInt(context, Constant.ORDER_ID, orderId);
         SharedPreferenceUtil.setInt(context, Constant.ORDER_STATE, orderState);
         SharedPreferenceUtil.setLong(context, Constant.PARKING_START_TIME, startTime);
         SharedPreferenceUtil.setLong(context, Constant.PARKING_END_TIME, endTime);
+        SharedPreferenceUtil.setString(context, Constant.RESERVE_LOCK_NAME, lockName);
         SharedPreferenceUtil.setString(context, Constant.RESERVE_LOCK_MAC, lockMac);
         SharedPreferenceUtil.setString(context, Constant.RESERVE_LOCK_PWD, lockPwd);
         SharedPreferenceUtil.setString(context, Constant.RESERVE_GATEWAY_ID, gateWayId);

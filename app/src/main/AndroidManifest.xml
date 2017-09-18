@@ -150,6 +150,13 @@
 
         <activity android:name=".activity.ReserveActivity" />
         <activity android:name=".activity.PayResultActivity" />
+
+        <receiver android:name=".util.AppRegister"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.tencent.mm.plugin.openapi.Intent.ACTION_REFRESH_WXAPP" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

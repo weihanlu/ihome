@@ -136,7 +136,8 @@ public class EstateMapFragment extends Fragment {
                     dialog.setOnSureCallbackListener(new QhDeleteItemDialog.OnSureCallbackListener() {
                         @Override
                         public void onSure(View view) {
-                            mActivity.LockControl(0, false);
+                            mActivity.setDownLock(false);
+                            mActivity.LockControl();
                         }
                     });
                     dialog.show();
@@ -148,7 +149,8 @@ public class EstateMapFragment extends Fragment {
                     dialog.setOnSureCallbackListener(new QhDeleteItemDialog.OnSureCallbackListener() {
                         @Override
                         public void onSure(View view) {
-                            mActivity.LockControl(0, true);
+                            mActivity.setDownLock(true);
+                            mActivity.LockControl();
                             mOrderListBean.setState(Constant.ORDER_STATE_PARKED);
                         }
                     });
@@ -240,7 +242,7 @@ public class EstateMapFragment extends Fragment {
             public void onResponse(Call<CityConfigResponse> call, Response<CityConfigResponse> response) {
                 try {
                     if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
-                        int freeCancellationTime = response.body().getData().getFreeCancellationTime();
+                        long freeCancellationTime = response.body().getData().getFreeCancellationTime();
                         mTvRemind.setText("最晚停车时间："+ END_TIME_FORMAT.format(mOrderListBean.getStartTime() + freeCancellationTime*60*1000));
                     }else {
                         ToastUtil.showToast(mContext, "服务器繁忙，请稍后再试");
