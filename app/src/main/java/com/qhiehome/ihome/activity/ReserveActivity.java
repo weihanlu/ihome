@@ -1,6 +1,5 @@
 package com.qhiehome.ihome.activity;
 
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -18,7 +17,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -30,22 +28,19 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.baidu.mapapi.model.LatLng;
 import com.baidu.navisdk.adapter.BNRoutePlanNode;
 import com.baidu.navisdk.adapter.BaiduNaviManager;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.adapter.ReserveListAdapter;
-import com.qhiehome.ihome.bean.UserLockBean;
+import com.qhiehome.ihome.persistence.UserLockBean;
 import com.qhiehome.ihome.fragment.EstateMapFragment;
 import com.qhiehome.ihome.fragment.EstatePassFragment;
-import com.qhiehome.ihome.fragment.UserLockFragment;
 import com.qhiehome.ihome.lock.ConnectLockService;
 import com.qhiehome.ihome.lock.ble.CommunicationManager;
 import com.qhiehome.ihome.lock.ble.profile.BLECommandIntent;
 import com.qhiehome.ihome.lock.bluetooth.BluetoothClient;
-import com.qhiehome.ihome.manager.ActivityManager;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.inquiry.order.OrderRequest;
 import com.qhiehome.ihome.network.model.inquiry.order.OrderResponse;
@@ -62,7 +57,6 @@ import com.qhiehome.ihome.network.service.inquiry.ParkingUsingService;
 import com.qhiehome.ihome.network.service.park.ChargeService;
 import com.qhiehome.ihome.network.service.park.EnterParkingService;
 import com.qhiehome.ihome.network.service.park.ReserveCancelService;
-import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.LogUtil;
@@ -71,9 +65,7 @@ import com.qhiehome.ihome.util.NetworkUtils;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 import com.qhiehome.ihome.view.QhAvatarSelectDialog;
-import com.qhiehome.ihome.view.QhDeleteItemDialog;
 import com.qhiehome.ihome.view.QhLockConnectDialog;
-import com.qhiehome.ihome.view.RecyclerViewEmptySupport;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -221,7 +213,7 @@ public class ReserveActivity extends BaseActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        disconnectBluetooth();
+        disconnect();
         unregisterReceiver(mReceiver);
 
     }
@@ -569,6 +561,7 @@ public class ReserveActivity extends BaseActivity {
                                     upLock.putExtra(ConnectLockService.ACTION_LOCK_STATE, mLockState);
                                     startService(upLock);
                                 }
+                                disconnect();
                             }
                         }
                     }).build();
@@ -694,6 +687,7 @@ public class ReserveActivity extends BaseActivity {
                     }
                     break;
                 case BLECommandIntent.RX_PASSWORD_RESULT:
+                    LogUtil.d(TAG, "password is " + mLockPwd);
                     int actionId = intent.getIntExtra(BLECommandIntent.EXTRA_PSW_ACTION, -1);
                     int result = intent.getIntExtra(BLECommandIntent.EXTRA_PSW_RESULT, -1);
                     LogUtil.d(TAG, "actionId is " + actionId + ", result is " + result + ", isPassword set " + isPasswordAlreadySet);
@@ -804,14 +798,14 @@ public class ReserveActivity extends BaseActivity {
             mControlLockDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                 @Override
                 public void onDismiss(DialogInterface dialog) {
-                    disconnectBluetooth();
+                    disconnect();
                 }
             });
         }
         mControlLockDialog.show();
     }
 
-    private void disconnectBluetooth() {
+    private void disconnect() {
         Intent disConnectLock = new Intent(this, ConnectLockService.class);
         disConnectLock.setAction(ConnectLockService.ACTION_DISCONNECT);
         startService(disConnectLock);

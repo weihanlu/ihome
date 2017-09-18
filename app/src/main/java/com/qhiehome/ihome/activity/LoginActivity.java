@@ -21,8 +21,8 @@ import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.application.IhomeApplication;
-import com.qhiehome.ihome.bean.UserLockBean;
-import com.qhiehome.ihome.bean.UserLockBeanDao;
+import com.qhiehome.ihome.persistence.UserLockBean;
+import com.qhiehome.ihome.persistence.UserLockBeanDao;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.SMS.SMSResponse;
 import com.qhiehome.ihome.network.model.base.ParkingResponse;
@@ -169,9 +169,11 @@ public class LoginActivity extends BaseActivity {
         switch (view.getId()) {
             case R.id.ll_phone:
                 mEtPhone.requestFocus();
+                CommonUtil.showSoftKeyboard(mEtPhone, mContext);
                 break;
             case R.id.rl_verify_code:
                 mEtVerify.requestFocus();
+                CommonUtil.showSoftKeyboard(mEtVerify, mContext);
                 break;
         }
     }

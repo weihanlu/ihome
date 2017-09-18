@@ -7,7 +7,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 import android.content.Intent;
 
-import com.qhiehome.ihome.bean.UserLockBean;
+import com.qhiehome.ihome.persistence.UserLockBean;
 import com.qhiehome.ihome.lock.ble.profile.BLECommandIntent;
 import com.qhiehome.ihome.util.APPUtils;
 

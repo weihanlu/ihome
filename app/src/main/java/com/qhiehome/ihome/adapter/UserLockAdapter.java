@@ -9,8 +9,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
-import com.qhiehome.ihome.bean.UserLockBean;
-import com.qhiehome.ihome.util.ToastUtil;
+import com.qhiehome.ihome.persistence.UserLockBean;
 
 import java.util.ArrayList;
 
