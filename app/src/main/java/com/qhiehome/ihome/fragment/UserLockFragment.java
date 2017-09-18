@@ -9,8 +9,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -22,24 +20,15 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.adapter.UserLockAdapter;
 import com.qhiehome.ihome.application.IhomeApplication;
-import com.qhiehome.ihome.bean.UserLockBean;
-import com.qhiehome.ihome.bean.UserLockBeanDao;
+import com.qhiehome.ihome.persistence.DaoSession;
+import com.qhiehome.ihome.persistence.UserLockBean;
+import com.qhiehome.ihome.persistence.UserLockBeanDao;
 import com.qhiehome.ihome.lock.ConnectLockService;
 import com.qhiehome.ihome.lock.ble.CommunicationManager;
 import com.qhiehome.ihome.lock.ble.profile.BLECommandIntent;
-import com.qhiehome.ihome.lock.ble.profile.HostAppService;
 import com.qhiehome.ihome.lock.bluetooth.BluetoothClient;
-import com.qhiehome.ihome.network.ServiceGenerator;
-import com.qhiehome.ihome.network.model.base.ParkingResponse;
-import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedRequest;
-import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedResponse;
-import com.qhiehome.ihome.network.service.inquiry.ParkingOwnedService;
-import com.qhiehome.ihome.persistence.DaoSession;
-import com.qhiehome.ihome.util.Constant;
-import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.NetworkUtils;
-import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 import com.qhiehome.ihome.view.QhLockConnectDialog;
 
@@ -51,9 +40,6 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class UserLockFragment extends Fragment {
 

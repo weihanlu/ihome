@@ -2,21 +2,16 @@ package com.qhiehome.ihome.lock.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
-import android.os.HandlerThread;
-import android.util.Log;
 
-import com.qhiehome.ihome.bean.UserLockBean;
 import com.qhiehome.ihome.lock.AppClient;
 import com.qhiehome.ihome.lock.ConnectLockService;
 import com.qhiehome.ihome.lock.ble.CommunicationManager;
 import com.qhiehome.ihome.lock.ble.profile.BLECommandIntent;
 import com.qhiehome.ihome.lock.ble.profile.HostAppService;
 import com.qhiehome.ihome.util.LogUtil;
-import com.qhiehome.ihome.util.ToastUtil;
 
 public class BluetoothClient extends AppClient {
 

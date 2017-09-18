@@ -1,11 +1,10 @@
-package com.qhiehome.ihome.bean;
+package com.qhiehome.ihome.persistence;
 
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.NotNull;
 import org.greenrobot.greendao.annotation.Generated;
 import org.greenrobot.greendao.annotation.Unique;
-
 @Entity
 public class UserLockBean {
 
