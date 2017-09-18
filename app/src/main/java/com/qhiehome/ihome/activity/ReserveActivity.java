@@ -364,63 +364,7 @@ public class ReserveActivity extends BaseActivity {
                 mSrlReserve.setRefreshing(false);
                 mLlReserveEmpty.setVisibility(View.INVISIBLE);
 
-                try {
-                    View viewStubContent = mViewStub.inflate();     //inflate 方法只能被调用一次
-                    mBtnFunction1 = (Button) viewStubContent.findViewById(R.id.btn_nonetwork_function1);
-                    mBtnFunction2 = (Button) viewStubContent.findViewById(R.id.btn_nonetwork_function2);
-                } catch (Exception e) {
-                    mViewStub.setVisibility(View.VISIBLE);
-                }
-                mLlReserveEmpty.setVisibility(View.INVISIBLE);
-                switch (SharedPreferenceUtil.getInt(mContext, Constant.ORDER_STATE, 0)) {
-                    case Constant.ORDER_STATE_RESERVED:
-                        long startTimeMillis = SharedPreferenceUtil.getLong(mContext, Constant.PARKING_START_TIME, 0);
-                        int freeCancellationTime = SharedPreferenceUtil.getInt(mContext, Constant.FREE_CANCELLATION_TIME, 0);
-                        long freeCancellationTimeMillis = freeCancellationTime * 60 * 1000;
-                        if ((startTimeMillis <= System.currentTimeMillis() && startTimeMillis + freeCancellationTimeMillis >= System.currentTimeMillis()) ||
-                                (startTimeMillis + freeCancellationTimeMillis >= System.currentTimeMillis() && SharedPreferenceUtil.getBoolean(mContext, Constant.ADVANCED_USE, false))){
-                            mBtnFunction1.setText("开始停车");
-                            mBtnFunction1.setOnClickListener(new Button.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    mDownLock = true;
-                                    LockControl();
-                                }
-                            });
-                            mBtnFunction1.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_long_button_blue));
-                        }else {
-                            mBtnFunction1.setText(END_TIME_FORMAT.format(startTimeMillis) + "后可停车");
-                            mBtnFunction1.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_long_button_gray));
-                        }
-                        mBtnFunction1.setVisibility(View.VISIBLE);
-                        mBtnFunction2.setVisibility(View.INVISIBLE);
-                        break;
-                    case Constant.ORDER_STATE_PARKED:
-                        mBtnFunction1.setText("结束离开");
-                        mBtnFunction1.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                mDownLock = false;
-                                LockControl();
-                            }
-                        });
-                        mBtnFunction1.setVisibility(View.VISIBLE);
-
-                        mBtnFunction2.setText("暂时离开");
-                        mBtnFunction2.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                LockControlSelf();
-                            }
-                        });
-                        mBtnFunction1.setVisibility(View.VISIBLE);
-                        mBtnFunction2.setVisibility(View.VISIBLE);
-                        break;
-                    default:
-                        mBtnFunction1.setVisibility(View.INVISIBLE);
-                        mBtnFunction2.setVisibility(View.INVISIBLE);
-                        break;
-                }
+                refreshViewStub();
             }
         });
     }
@@ -534,7 +478,6 @@ public class ReserveActivity extends BaseActivity {
 
     /**
      * 开始停车&确认离开
-     *
      * 停车与离开后将订单状态记录在本地
      */
     public void LockControl() {
@@ -543,76 +486,7 @@ public class ReserveActivity extends BaseActivity {
             Log.e("downLock", "升车位锁");
         }
         connectToLock();
-        if (mDownLock) {  //++降车位锁消息发送成功
-            Long currentTime = System.currentTimeMillis();
-            //如果有网络尽快发送停车信息，没有网络则暂存本地，有网络时尽快发送
-            SharedPreferenceUtil.setLong(mContext, Constant.PARKING_ENTER_TIME, currentTime);
-            SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_PARKED);
-            if (NetworkUtils.isConnected(mContext)) {
-                EnterParkingService enterParkingService = ServiceGenerator.createService(EnterParkingService.class);
-                EnterParkingRequest enterParkingRequest = new EnterParkingRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.RSA), currentTime);
-                Call<EnterParkingResponse> call = enterParkingService.enterParking(enterParkingRequest);
-                call.enqueue(new Callback<EnterParkingResponse>() {
-                    @Override
-                    public void onResponse(Call<EnterParkingResponse> call, Response<EnterParkingResponse> response) {
-                        if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                            SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_ENTER_TIME, false);
-                            mEstateMapFragment.refreshFragment();
-                        } else {
-                            ToastUtil.showToast(mContext, "发送请求失败");
-                            SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_ENTER_TIME, true);
-                            SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_PARKED);
-                        }
-                    }
 
-                    @Override
-                    public void onFailure(Call<EnterParkingResponse> call, Throwable t) {
-                        ToastUtil.showToast(mContext, "网络连接异常");
-                        SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_ENTER_TIME, true);
-                        SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_PARKED);
-                    }
-                });
-            } else {
-                SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_ENTER_TIME, true);
-                SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_PARKED);
-            }
-            updateData();
-        }
-        if (!mDownLock) {  //++升车位锁消息发送成功
-            Long currentTime = System.currentTimeMillis();
-            SharedPreferenceUtil.setLong(mContext, Constant.PARKING_LEAVE_TIME, currentTime);
-            SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_NOT_PAID);
-            if (NetworkUtils.isConnected(mContext)) {
-                ChargeService chargeService = ServiceGenerator.createService(ChargeService.class);
-                ChargeRequest chargeRequest = new ChargeRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.RSA), currentTime);
-                Call<ChargeResponse> call = chargeService.charge(chargeRequest);
-                call.enqueue(new Callback<ChargeResponse>() {
-                    @Override
-                    public void onResponse(Call<ChargeResponse> call, Response<ChargeResponse> response) {
-                        if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                            SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_LEAVE_TIME, false);
-                            mJumpToPay = true;
-                            refreshActivity();
-                        } else {
-                            ToastUtil.showToast(mContext, "发送请求失败");
-                            SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_LEAVE_TIME, true);
-                            SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_NOT_PAID);
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<ChargeResponse> call, Throwable t) {
-                        ToastUtil.showToast(mContext, "网络连接异常");
-                        SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_LEAVE_TIME, true);
-                        SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_NOT_PAID);
-                    }
-                });
-            } else {
-                SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_LEAVE_TIME, true);
-                SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_NOT_PAID);
-            }
-            updateData();
-        }
     }
 
     private void connectToLock() {
@@ -803,6 +677,8 @@ public class ReserveActivity extends BaseActivity {
                         if (info != null) {
                             ToastUtil.showToast(mContext, info);
                         } else {
+                            // TODO: 2017/9/18 order
+                            updateOrderState();
                             // judge whether is temp parking
                             if (isTempParking) {
                                 showControlLockDialog();
@@ -878,6 +754,8 @@ public class ReserveActivity extends BaseActivity {
             LogUtil.d(TAG, "password is " + mLockPwd);
             Intent normal = new Intent(ConnectLockService.BROADCAST_CONNECT);
             sendBroadcast(normal);
+            // TODO: 2017/9/18 order
+            updateOrderState();
         } else {
             Intent errPassword = new Intent(ConnectLockService.BROADCAST_CONNECT);
             errPassword.putExtra("info", "密码错误");
@@ -931,6 +809,139 @@ public class ReserveActivity extends BaseActivity {
         Intent disConnectLock = new Intent(this, ConnectLockService.class);
         disConnectLock.setAction(ConnectLockService.ACTION_DISCONNECT);
         startService(disConnectLock);
+    }
+
+    private void updateOrderState(){
+        if (mDownLock) {  //开始停车
+            Long currentTime = System.currentTimeMillis();
+            //如果有网络尽快发送停车信息，没有网络则暂存本地，有网络时尽快发送
+            SharedPreferenceUtil.setLong(mContext, Constant.PARKING_ENTER_TIME, currentTime);
+            SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_PARKED);
+            if (NetworkUtils.isConnected(mContext)) {
+                EnterParkingService enterParkingService = ServiceGenerator.createService(EnterParkingService.class);
+                EnterParkingRequest enterParkingRequest = new EnterParkingRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.RSA), currentTime);
+                Call<EnterParkingResponse> call = enterParkingService.enterParking(enterParkingRequest);
+                call.enqueue(new Callback<EnterParkingResponse>() {
+                    @Override
+                    public void onResponse(Call<EnterParkingResponse> call, Response<EnterParkingResponse> response) {
+                        if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                            SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_ENTER_TIME, false);
+                            mEstateMapFragment.refreshFragment();
+                        } else {
+                            ToastUtil.showToast(mContext, "发送请求失败");
+                            SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_ENTER_TIME, true);
+                            SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_PARKED);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<EnterParkingResponse> call, Throwable t) {
+                        ToastUtil.showToast(mContext, "网络连接异常");
+                        SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_ENTER_TIME, true);
+                        SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_PARKED);
+                    }
+                });
+            } else {
+                SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_ENTER_TIME, true);
+                SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_PARKED);
+                refreshViewStub();
+            }
+        }
+        if (!mDownLock) {  //确认离开
+            Long currentTime = System.currentTimeMillis();
+            SharedPreferenceUtil.setLong(mContext, Constant.PARKING_LEAVE_TIME, currentTime);
+            SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_NOT_PAID);
+            if (NetworkUtils.isConnected(mContext)) {
+                ChargeService chargeService = ServiceGenerator.createService(ChargeService.class);
+                ChargeRequest chargeRequest = new ChargeRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.RSA), currentTime);
+                Call<ChargeResponse> call = chargeService.charge(chargeRequest);
+                call.enqueue(new Callback<ChargeResponse>() {
+                    @Override
+                    public void onResponse(Call<ChargeResponse> call, Response<ChargeResponse> response) {
+                        if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                            SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_LEAVE_TIME, false);
+                            mJumpToPay = true;
+                            refreshActivity();
+                        } else {
+                            ToastUtil.showToast(mContext, "发送请求失败");
+                            SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_LEAVE_TIME, true);
+                            SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_NOT_PAID);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ChargeResponse> call, Throwable t) {
+                        ToastUtil.showToast(mContext, "网络连接异常");
+                        SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_LEAVE_TIME, true);
+                        SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_NOT_PAID);
+                    }
+                });
+            } else {
+                SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_LEAVE_TIME, true);
+                SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_NOT_PAID);
+                refreshViewStub();
+            }
+        }
+    }
+
+    private void refreshViewStub(){
+        try {
+            View viewStubContent = mViewStub.inflate();     //inflate 方法只能被调用一次
+            mBtnFunction1 = (Button) viewStubContent.findViewById(R.id.btn_nonetwork_function1);
+            mBtnFunction2 = (Button) viewStubContent.findViewById(R.id.btn_nonetwork_function2);
+        } catch (Exception e) {
+            mViewStub.setVisibility(View.VISIBLE);
+        }
+        mLlReserveEmpty.setVisibility(View.INVISIBLE);
+        switch (SharedPreferenceUtil.getInt(mContext, Constant.ORDER_STATE, 0)) {
+            case Constant.ORDER_STATE_RESERVED:
+                long startTimeMillis = SharedPreferenceUtil.getLong(mContext, Constant.PARKING_START_TIME, 0);
+                int freeCancellationTime = SharedPreferenceUtil.getInt(mContext, Constant.FREE_CANCELLATION_TIME, 0);
+                long freeCancellationTimeMillis = freeCancellationTime * 60 * 1000;
+                if ((startTimeMillis <= System.currentTimeMillis() && startTimeMillis + freeCancellationTimeMillis >= System.currentTimeMillis()) ||
+                        (startTimeMillis + freeCancellationTimeMillis >= System.currentTimeMillis() && SharedPreferenceUtil.getBoolean(mContext, Constant.ADVANCED_USE, false))){
+                    mBtnFunction1.setText("开始停车");
+                    mBtnFunction1.setOnClickListener(new Button.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            mDownLock = true;
+                            LockControl();
+                        }
+                    });
+                    mBtnFunction1.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_long_button_blue));
+                }else {
+                    mBtnFunction1.setText(END_TIME_FORMAT.format(startTimeMillis) + "后可停车");
+                    mBtnFunction1.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_long_button_gray));
+                }
+                mBtnFunction1.setVisibility(View.VISIBLE);
+                mBtnFunction2.setVisibility(View.INVISIBLE);
+                break;
+            case Constant.ORDER_STATE_PARKED:
+                mBtnFunction1.setText("结束离开");
+                mBtnFunction1.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mDownLock = false;
+                        LockControl();
+                    }
+                });
+                mBtnFunction1.setVisibility(View.VISIBLE);
+
+                mBtnFunction2.setText("暂时离开");
+                mBtnFunction2.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        LockControlSelf();
+                    }
+                });
+                mBtnFunction1.setVisibility(View.VISIBLE);
+                mBtnFunction2.setVisibility(View.VISIBLE);
+                break;
+            default:
+                mBtnFunction1.setVisibility(View.INVISIBLE);
+                mBtnFunction2.setVisibility(View.INVISIBLE);
+                break;
+        }
     }
 
 }
