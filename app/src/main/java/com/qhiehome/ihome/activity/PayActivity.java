@@ -54,6 +54,9 @@ import com.qhiehome.ihome.util.ToastUtil;
 import com.tencent.mm.opensdk.constants.ConstantsAPI;
 import com.tencent.mm.opensdk.modelbase.BaseReq;
 import com.tencent.mm.opensdk.modelbase.BaseResp;
+import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
+import com.tencent.mm.opensdk.modelmsg.WXMediaMessage;
+import com.tencent.mm.opensdk.modelmsg.WXTextObject;
 import com.tencent.mm.opensdk.modelpay.PayReq;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler;
@@ -296,6 +299,7 @@ public class PayActivity extends BaseActivity {
                     });
                 } else {
                     // TODO: 2017/9/17 微信支付
+                    WXShare();
                 }
                 break;
             case Constant.PAY_STATE_GUARANTEE:
@@ -682,6 +686,25 @@ public class PayActivity extends BaseActivity {
 
     }
 
+    private void WXShare(){
+        WXTextObject textObject = new WXTextObject();
+        textObject.text = "啦啦啦";
+        WXMediaMessage mediaMessage = new WXMediaMessage();
+        mediaMessage.mediaObject = textObject;
+        mediaMessage.description = "啦啦啦";
+        SendMessageToWX.Req req = new SendMessageToWX.Req();
+        req.transaction = buildTransaction("text");
+        req.message = mediaMessage;
+        req.scene = SendMessageToWX.Req.WXSceneTimeline;
+        final IWXAPI api;
+        api = WXAPIFactory.createWXAPI(this, Constant.APP_ID);
+        api.sendReq(req);
+
+    }
+
+    private String buildTransaction(final String type) {
+        return (type == null) ? String.valueOf(System.currentTimeMillis()) : type + System.currentTimeMillis();
+    }
 
 
 }

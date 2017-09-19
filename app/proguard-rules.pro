@@ -68,3 +68,14 @@
 -keep class com.alipay.tscenter.** { *; }
 -keep class com.ta.utdid2.** { *;}
 -keep class com.ut.device.** { *;}
+
+# wechat
+-keep class com.tencent.mm.opensdk.** {
+   *;
+}
+-keep class com.tencent.wxop.** {
+   *;
+}
+-keep class com.tencent.mm.sdk.** {
+   *;
+}
