@@ -45,11 +45,11 @@ public class WXPayEntryActivity extends BaseActivity implements IWXAPIEventHandl
             case 0:
                 ToastUtil.showToast(mContext, "errorCode 0");
                 break;
-            case 1:
-                ToastUtil.showToast(mContext, "errorCode 1");
+            case -1:
+                ToastUtil.showToast(mContext, "errorCode -1");
                 break;
-            case 2:
-                ToastUtil.showToast(mContext, "errorCode 2");
+            case -2:
+                ToastUtil.showToast(mContext, "errorCode -2");
                 break;
             default:
                 break;
