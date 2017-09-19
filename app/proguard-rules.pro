@@ -33,20 +33,20 @@
 -dontwarn com.baidu.**
 
 # ---------------------------------------------------------   retrofit start
-# Platform calls Class.forName on types which do not exist on Android to determine platform.
+# Retrofit
 -dontnote retrofit2.Platform
-# Platform used when running on Java 8 VMs. Will not be used at runtime.
+-dontnote retrofit2.Platform$IOS$MainThreadExecutor
 -dontwarn retrofit2.Platform$Java8
-# Retain generic type information for use by reflection by converters and adapters.
 -keepattributes Signature
-# Retain declared checked exceptions for use by a Proxy instance.
 -keepattributes Exceptions
+# okhttp
+-dontwarn okio.**
 # ---------------------------------------------------------   retrofit end
-
 -dontwarn okhttp3.**
 
-# okio
--dontwarn okio.**
+-dontwarn javax.annotation.**
+# Gson
+-keep class com.qhiehome.ihome.network.model.**{*;}
 
 # alipay
 -keep class com.alipay.android.app.IAlixPay{*;}
@@ -69,13 +69,23 @@
 -keep class com.ta.utdid2.** { *;}
 -keep class com.ut.device.** { *;}
 
+-dontwarn android.net.**
+-keep class android.net.SSLCertificateSocketFactory{*;}
+
 # wechat
--keep class com.tencent.mm.opensdk.** {
-   *;
+-keep class com.tencent.mm.opensdk.** {*;}
+-keep class com.tencent.wxop.** {*;}
+-keep class com.tencent.mm.sdk.** { *; }
+
+### greenDAO 3
+-keepclassmembers class * extends org.greenrobot.greendao.AbstractDao {
+public static java.lang.String TABLENAME;
 }
--keep class com.tencent.wxop.** {
-   *;
-}
--keep class com.tencent.mm.sdk.** {
-   *;
-}
+-keep class **$Properties
+
+# If you do not use SQLCipher:
+-dontwarn org.greenrobot.greendao.database.**
+# If you do not use RxJava:
+-dontwarn rx.**
+# keep bean
+-keep class com.qhiehome.ihome.persistence.*{ *; }

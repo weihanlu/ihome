@@ -142,9 +142,13 @@
         <!-- The following are services: -->
         <service android:name=".lock.ble.profile.BLECommandService" />
         <service android:name=".lock.ble.profile.HostAppService" />
-        <service
-            android:name=".lock.ConnectLockService"
-            android:exported="false" />
+
+        <service android:name=".lock.bluetooth.BluetoothManagerService"
+                 android:exported="false"/>
+
+        <service android:name=".lock.gateway.MqttManagerService"
+            android:exported="false"/>
+
         <service
             android:name="org.eclipse.paho.android.service.MqttService"
             android:exported="false" />

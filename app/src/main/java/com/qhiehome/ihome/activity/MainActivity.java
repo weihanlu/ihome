@@ -35,6 +35,7 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.baidu.mapapi.SDKInitializer;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.fragment.ParkFragment;
+import com.qhiehome.ihome.lock.gateway.MqttManagerService;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.avatar.UploadAvatarResponse;
 import com.qhiehome.ihome.network.model.pay.accountbalance.AccountBalanceRequest;
@@ -140,6 +141,7 @@ public class MainActivity extends BaseActivity {
         mContext = this;
         initFragments(savedInstanceState);
         checkUpdate();
+        subcribeToKlm();
         isFirst = true;
     }
 
@@ -148,6 +150,12 @@ public class MainActivity extends BaseActivity {
         super.onResume();
         checkUserType();
         checkLogin();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unSubscribeToKlm();
     }
 
     private void checkLogin() {
@@ -384,11 +392,6 @@ public class MainActivity extends BaseActivity {
     public static void start(Context context) {
         Intent intent = new Intent(context, MainActivity.class);
         context.startActivity(intent);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
     }
 
     @Override
@@ -738,6 +741,15 @@ public class MainActivity extends BaseActivity {
         mLlMyPublish.setVisibility(userType == Constant.USER_TYPE_TEMP? View.GONE: View.VISIBLE);
     }
 
+    private void subcribeToKlm() {
+        Intent subscribeToKlm = new Intent(this, MqttManagerService.class);
+        startService(subscribeToKlm);
+    }
 
+    private void unSubscribeToKlm() {
+        Intent subscribeToKlm = new Intent(this, MqttManagerService.class);
+        subscribeToKlm.setAction(MqttManagerService.ACTION_GATEWAY_DISCONNECT);
+        startService(subscribeToKlm);
+    }
 
 }

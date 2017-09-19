@@ -20,10 +20,12 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.adapter.UserLockAdapter;
 import com.qhiehome.ihome.application.IhomeApplication;
+import com.qhiehome.ihome.lock.LockController;
+import com.qhiehome.ihome.lock.gateway.MqttManagerService;
 import com.qhiehome.ihome.persistence.DaoSession;
 import com.qhiehome.ihome.persistence.UserLockBean;
 import com.qhiehome.ihome.persistence.UserLockBeanDao;
-import com.qhiehome.ihome.lock.ConnectLockService;
+import com.qhiehome.ihome.lock.bluetooth.BluetoothManagerService;
 import com.qhiehome.ihome.lock.ble.CommunicationManager;
 import com.qhiehome.ihome.lock.ble.profile.BLECommandIntent;
 import com.qhiehome.ihome.lock.bluetooth.BluetoothClient;
@@ -100,7 +102,7 @@ public class UserLockFragment extends Fragment {
         super.onStart();
         mReceiver = new ConnectLockReceiver();
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(ConnectLockService.BROADCAST_CONNECT);
+        intentFilter.addAction(LockController.BROADCAST_CONNECT);
         intentFilter.addAction(BLECommandIntent.RX_CURRENT_STATUS);
         intentFilter.addAction(BLECommandIntent.RX_PASSWORD_RESULT);
         intentFilter.addAction(CommunicationManager.ACTION_CONNECTION_STATE_CHANGE);
@@ -173,7 +175,7 @@ public class UserLockFragment extends Fragment {
                 mLockMac = userLockBean.getLockMac();
                 mLockName = userLockBean.getParkingName();
                 mLockPassword = userLockBean.getPassword();
-                if (!NetworkUtils.isConnected(mActivity)) {
+                if (!hasNetwork()) {
                     mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
                     if (mBluetoothAdapter == null) {
                         ToastUtil.showToast(mActivity, "初始化蓝牙失败");
@@ -233,7 +235,7 @@ public class UserLockFragment extends Fragment {
                     }
 
                     break;
-                case ConnectLockService.BROADCAST_CONNECT:
+                case LockController.BROADCAST_CONNECT:
                     String info = intent.getStringExtra("info");
                     if (mProgressDialog != null && mProgressDialog.isShowing()) {
                         mProgressDialog.dismiss();
@@ -309,10 +311,10 @@ public class UserLockFragment extends Fragment {
         if (result == 0x10) {
             // MM 代表密码
             LogUtil.d(TAG, "password is " + mLockPassword);
-            Intent normal = new Intent(ConnectLockService.BROADCAST_CONNECT);
+            Intent normal = new Intent(LockController.BROADCAST_CONNECT);
             mActivity.sendBroadcast(normal);
         } else {
-            Intent errPassword = new Intent(ConnectLockService.BROADCAST_CONNECT);
+            Intent errPassword = new Intent(LockController.BROADCAST_CONNECT);
             errPassword.putExtra("info", "密码错误");
             mActivity.sendBroadcast(errPassword);
         }
@@ -327,21 +329,23 @@ public class UserLockFragment extends Fragment {
                     .showListener(new DialogInterface.OnShowListener() {
                         @Override
                         public void onShow(DialogInterface dialog) {
-                            Intent connectLock = new Intent(mActivity, ConnectLockService.class);
-                            if (NetworkUtils.isConnected(mActivity)) {
-                                connectLock.setAction(ConnectLockService.ACTION_GATEWAY_CONNECT);
-                                connectLock.putExtra(ConnectLockService.EXTRA_GATEWAY_ID, mGateWayId);
-                                connectLock.putExtra(ConnectLockService.EXTRA_LOCK_MAC, mLockMac);
+                            if (hasNetwork()) {
+                                Intent gateWayConnect = new Intent(mActivity, MqttManagerService.class);
+                                gateWayConnect.setAction(MqttManagerService.ACTION_GATEWAY_CONNECT);
+                                gateWayConnect.putExtra(MqttManagerService.GATEWAY_ID, mGateWayId);
+                                gateWayConnect.putExtra(MqttManagerService.LOCK_MAC, mLockMac);
+                                mActivity.startService(gateWayConnect);
                             } else {
                                 if (!getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
                                     ToastUtil.showToast(mActivity, "不支持蓝牙低能耗特性");
                                     dialog.dismiss();
                                 } else {
-                                    connectLock.setAction(ConnectLockService.ACTION_BLUETOOTH_CONNECT);
-                                    connectLock.putExtra(ConnectLockService.EXTRA_LOCK_NAME, mLockName);
+                                    Intent bluetoothConnect = new Intent(mActivity, BluetoothManagerService.class);
+                                    bluetoothConnect.setAction(BluetoothManagerService.ACTION_BLUETOOTH_CONNECT);
+                                    bluetoothConnect.putExtra(BluetoothManagerService.EXTRA_LOCK_NAME, mLockName);
+                                    mActivity.startService(bluetoothConnect);
                                 }
                             }
-                            mActivity.startService(connectLock);
                         }
                     }).build();
         }
@@ -354,19 +358,29 @@ public class UserLockFragment extends Fragment {
             mControlLockDialog.setOnItemClickListener(new QhLockConnectDialog.OnItemClickListener() {
                 @Override
                 public void onLockUp(View view) {
-                    Intent upLock = new Intent(mActivity, ConnectLockService.class);
-                    upLock.setAction(ConnectLockService.ACTION_UP_LOCK);
-                    LogUtil.d(TAG,"lockState is " + mLockState);
-                    upLock.putExtra(ConnectLockService.ACTION_LOCK_STATE, mLockState);
+                    Intent upLock;
+                    if (hasNetwork()) {
+                        upLock = new Intent(mActivity, MqttManagerService.class);
+                        upLock.setAction(MqttManagerService.ACTION_UP_LOCK);
+                    } else {
+                        upLock = new Intent(mActivity, BluetoothManagerService.class);
+                        upLock.setAction(BluetoothManagerService.ACTION_UP_LOCK);
+                        upLock.putExtra(BluetoothManagerService.ACTION_LOCK_STATE, mLockState);
+                    }
                     mActivity.startService(upLock);
                 }
 
                 @Override
                 public void onLockDown(View view) {
-                    Intent downLock = new Intent(mActivity, ConnectLockService.class);
-                    downLock.setAction(ConnectLockService.ACTION_DOWN_LOCK);
-                    LogUtil.d(TAG,"lockState is " + mLockState);
-                    downLock.putExtra(ConnectLockService.ACTION_LOCK_STATE, mLockState);
+                    Intent downLock;
+                    if (hasNetwork()) {
+                        downLock = new Intent(mActivity, MqttManagerService.class);
+                        downLock.setAction(MqttManagerService.ACTION_DOWN_LOCK);
+                    } else {
+                        downLock = new Intent(mActivity, BluetoothManagerService.class);
+                        downLock.setAction(BluetoothManagerService.ACTION_DOWN_LOCK);
+                        downLock.putExtra(BluetoothManagerService.ACTION_LOCK_STATE, mLockState);
+                    }
                     mActivity.startService(downLock);
                 }
             });
@@ -381,9 +395,13 @@ public class UserLockFragment extends Fragment {
     }
 
     private void disconnect() {
-        LogUtil.d(TAG, "disconnect to bluetooth or gateway");
-        Intent disConnectLock = new Intent(mActivity, ConnectLockService.class);
-        disConnectLock.setAction(ConnectLockService.ACTION_DISCONNECT);
+        LogUtil.d(TAG, "disconnect to bluetooth");
+        Intent disConnectLock = new Intent(mActivity, BluetoothManagerService.class);
+        disConnectLock.setAction(BluetoothManagerService.ACTION_DISCONNECT);
         mActivity.startService(disConnectLock);
+    }
+
+    private boolean hasNetwork() {
+        return NetworkUtils.isConnected(mActivity);
     }
 }
