@@ -1,23 +1,28 @@
 package com.qhiehome.ihome.network.model.pay;
 
+import com.qhiehome.ihome.activity.PayActivity;
+
 /**
- * Created by YueMa on 2017/7/20.
+ * Created by YueMa on 2017/9/18.
  */
 
 public class PayRequest {
 
-
     /**
      * orderId : 123456789
-     * enterTime : 1499826000000
-     * leaveTime : 1499826000000
-     * paymentTime : 1499826000000
+     * channel : 1
+     * fee : 5.0
      */
 
     private int orderId;
-    private long enterTime;
-    private long leaveTime;
-    private long paymentTime;
+    private int channel;
+    private double fee;
+
+    public PayRequest(int orderId, int channel, double fee) {
+        this.orderId = orderId;
+        this.channel = channel;
+        this.fee = fee;
+    }
 
     public int getOrderId() {
         return orderId;
@@ -27,27 +32,19 @@ public class PayRequest {
         this.orderId = orderId;
     }
 
-    public long getEnterTime() {
-        return enterTime;
+    public int getChannel() {
+        return channel;
     }
 
-    public void setEnterTime(long enterTime) {
-        this.enterTime = enterTime;
+    public void setChannel(int channel) {
+        this.channel = channel;
     }
 
-    public long getLeaveTime() {
-        return leaveTime;
+    public double getFee() {
+        return fee;
     }
 
-    public void setLeaveTime(long leaveTime) {
-        this.leaveTime = leaveTime;
-    }
-
-    public long getPaymentTime() {
-        return paymentTime;
-    }
-
-    public void setPaymentTime(long paymentTime) {
-        this.paymentTime = paymentTime;
+    public void setFee(double fee) {
+        this.fee = fee;
     }
 }
