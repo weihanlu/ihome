@@ -23,6 +23,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -31,6 +32,9 @@ import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.alipay.AliPayRequest;
 import com.qhiehome.ihome.network.model.alipay.AliPayResponse;
+import com.qhiehome.ihome.network.model.pay.PayChannel;
+import com.qhiehome.ihome.network.model.pay.PayRequest;
+import com.qhiehome.ihome.network.model.pay.PayResponse;
 import com.qhiehome.ihome.network.model.pay.accountbalance.AccountBalanceRequest;
 import com.qhiehome.ihome.network.model.pay.accountbalance.AccountBalanceResponse;
 import com.qhiehome.ihome.network.model.pay.guarantee.PayGuaranteeRequest;
@@ -38,15 +42,24 @@ import com.qhiehome.ihome.network.model.pay.guarantee.PayGuaranteeResponse;
 import com.qhiehome.ihome.network.service.alipay.AliPayService;
 import com.qhiehome.ihome.network.service.pay.AccountBalanceService;
 import com.qhiehome.ihome.network.service.pay.PayGuaranteeService;
+import com.qhiehome.ihome.network.service.pay.PayService;
 import com.qhiehome.ihome.pay.AliPay.PayResult;
 import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
+import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.OrderUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
+import com.tencent.mm.opensdk.constants.ConstantsAPI;
+import com.tencent.mm.opensdk.modelbase.BaseReq;
+import com.tencent.mm.opensdk.modelbase.BaseResp;
+import com.tencent.mm.opensdk.modelpay.PayReq;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
+import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
+
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -283,7 +296,6 @@ public class PayActivity extends BaseActivity {
                     });
                 } else {
                     // TODO: 2017/9/17 微信支付
-
                 }
                 break;
             case Constant.PAY_STATE_GUARANTEE:
@@ -325,7 +337,7 @@ public class PayActivity extends BaseActivity {
                         }
                     });
                 } else if (mSelectedNum[1]){
-
+                    WXPay();
                 } else {
                     payWithAccount();
                 }
@@ -504,22 +516,40 @@ public class PayActivity extends BaseActivity {
     }
 
     private void payWithAccount(){
-        AccountBalanceService accountBalanceService = ServiceGenerator.createService(AccountBalanceService.class);
-        AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.RSA), -mFee, mOrderId);
-        Call<AccountBalanceResponse> call = accountBalanceService.account(accountBalanceRequest);
-        call.enqueue(new Callback<AccountBalanceResponse>() {
+//        AccountBalanceService accountBalanceService = ServiceGenerator.createService(AccountBalanceService.class);
+//        AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.RSA), -mFee, mOrderId);
+//        Call<AccountBalanceResponse> call = accountBalanceService.account(accountBalanceRequest);
+//        call.enqueue(new Callback<AccountBalanceResponse>() {
+//            @Override
+//            public void onResponse(Call<AccountBalanceResponse> call, Response<AccountBalanceResponse> response) {
+//                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+//                    if (mPayState == Constant.PAY_STATE_GUARANTEE){
+//                        PayGuaranteeFee();
+//                    }else {
+//                        PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod());
+//                    }
+//                }
+//            }
+//            @Override
+//            public void onFailure(Call<AccountBalanceResponse> call, Throwable t) {
+//
+//            }
+//        });
+        PayService payService = ServiceGenerator.createService(PayService.class);
+        PayRequest payRequest = new PayRequest(mOrderId, PayChannel.WALLET.ordinal(), mFee);
+        Call<PayResponse> call = payService.pay(payRequest);
+        call.enqueue(new Callback<PayResponse>() {
             @Override
-            public void onResponse(Call<AccountBalanceResponse> call, Response<AccountBalanceResponse> response) {
-                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                    if (mPayState == Constant.PAY_STATE_GUARANTEE){
-                        PayGuaranteeFee();
-                    }else {
-                        PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod());
-                    }
+            public void onResponse(Call<PayResponse> call, Response<PayResponse> response) {
+                if (mPayState == Constant.PAY_STATE_GUARANTEE){
+                    PayGuaranteeFee();
+                }else {
+                    PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod());
                 }
             }
+
             @Override
-            public void onFailure(Call<AccountBalanceResponse> call, Throwable t) {
+            public void onFailure(Call<PayResponse> call, Throwable t) {
 
             }
         });
@@ -613,5 +643,45 @@ public class PayActivity extends BaseActivity {
         }
         return -1;
     }
+
+    private void WXPay(){
+        final IWXAPI api;
+        api = WXAPIFactory.createWXAPI(this, Constant.APP_ID);
+        PayService payService = ServiceGenerator.createService(PayService.class);
+        PayRequest payRequest = new PayRequest(mOrderId, PayChannel.WXPAY.ordinal(), (double) mFee);
+        Call<PayResponse> call = payService.pay(payRequest);
+        call.enqueue(new Callback<PayResponse>() {
+            @Override
+            public void onResponse(Call<PayResponse> call, Response<PayResponse> response) {
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
+                    try {
+                        PayReq req = new PayReq();
+                        req.appId = response.body().getData().getAppId();
+                        req.partnerId = response.body().getData().getPartnerId();
+                        req.prepayId = response.body().getData().getPrepayId();
+                        req.nonceStr = response.body().getData().getNonceStr();
+                        req.timeStamp = response.body().getData().getTimeStamp();
+                        req.packageValue = response.body().getData().getPackageValue();
+                        req.sign = response.body().getData().getSign();
+                        ToastUtil.showToast(mContext, "成功调起支付");
+                        api.sendReq(req);
+                    }catch (Exception e){
+                        ToastUtil.showToast(mContext, "微信支付异常");
+                    }
+
+                }else {
+                    ToastUtil.showToast(mContext, "服务器返回错误");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PayResponse> call, Throwable t) {
+                ToastUtil.showToast(mContext, "网络连接异常");
+            }
+        });
+
+    }
+
+
 
 }

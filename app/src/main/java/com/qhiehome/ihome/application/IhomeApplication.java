@@ -4,7 +4,10 @@ import android.app.Application;
 
 import com.qhiehome.ihome.persistence.DaoMaster;
 import com.qhiehome.ihome.persistence.DaoSession;
+import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.CrashHandler;
+import com.tencent.mm.opensdk.openapi.IWXAPI;
+import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 
 import org.greenrobot.greendao.database.Database;
 
@@ -42,6 +45,10 @@ public class IhomeApplication extends Application {
         // init CrashHandler
         CrashHandler crashHandler = CrashHandler.getInstance();
         crashHandler.init(getApplicationContext());
+
+        final IWXAPI msgApi = WXAPIFactory.createWXAPI(this, Constant.APP_ID, true);
+        // 将该app注册到微信
+        msgApi.registerApp(Constant.APP_ID);
     }
 
     public DaoSession getDaoSession() {

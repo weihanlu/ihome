@@ -57,6 +57,7 @@
             android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -151,12 +152,17 @@
         <activity android:name=".activity.ReserveActivity" />
         <activity android:name=".activity.PayResultActivity" />
 
-        <receiver android:name=".util.AppRegister"
+        <receiver
+            android:name=".util.AppRegister"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.tencent.mm.plugin.openapi.Intent.ACTION_REFRESH_WXAPP" />
             </intent-filter>
         </receiver>
+
+        <activity android:name=".wxapi.WXPayEntryActivity"
+            android:exported="true">
+        </activity>
     </application>
 
 </manifest>
