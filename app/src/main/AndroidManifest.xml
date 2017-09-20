@@ -165,6 +165,7 @@
         </receiver>
 
         <activity android:name=".wxapi.WXPayEntryActivity"
+            android:theme="@style/TranslucentTheme"
             android:exported="true">
         </activity>
     </application>

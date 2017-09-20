@@ -1,15 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_height="match_parent"
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:gravity="center"
-        android:textColor="#ff000000"
-        android:textSize="20dp"
-        android:text="啦啦啦"/>
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/toolbar_theme">
 
-</LinearLayout>
+        <include layout="@layout/layout_toolbar_centertitle"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize">
+        </include>
+
+    </android.support.design.widget.AppBarLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:background="@color/bg_activity"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:background="@color/white"
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+            <ImageView
+                android:id="@+id/iv_wxpay_result"
+                android:src="@drawable/ic_pay_wechat"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"/>
+
+            <TextView
+                android:id="@+id/tv_wxpay_result"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="支付成功"
+                android:textSize="16sp"
+                android:textColor="@color/theme_start_color"
+                android:layout_marginTop="10dp"
+                />
+
+            <TextView
+                android:id="@+id/tv_wxpay_account"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="24sp"
+                android:textColor="@color/major_text"
+                android:layout_marginTop="20dp"/>
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_wxpay_accomplish"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:text="完成"
+            android:textSize="16sp"
+            android:textColor="@color/submit_feedback"
+            android:background="@drawable/round_long_button_blue"
+            android:layout_marginTop="30dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            />
+
+    </LinearLayout>
+
+</android.support.design.widget.CoordinatorLayout>

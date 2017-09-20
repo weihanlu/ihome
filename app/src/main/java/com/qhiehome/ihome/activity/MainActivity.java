@@ -38,12 +38,15 @@ import com.qhiehome.ihome.fragment.ParkFragment;
 import com.qhiehome.ihome.lock.gateway.MqttManagerService;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.avatar.UploadAvatarResponse;
+import com.qhiehome.ihome.network.model.pay.account.AccountRequest;
+import com.qhiehome.ihome.network.model.pay.account.AccountResponse;
 import com.qhiehome.ihome.network.model.pay.accountbalance.AccountBalanceRequest;
 import com.qhiehome.ihome.network.model.pay.accountbalance.AccountBalanceResponse;
 import com.qhiehome.ihome.network.model.update.CheckUpdateResponse;
 import com.qhiehome.ihome.network.service.avatar.DownloadAvatarService;
 import com.qhiehome.ihome.network.service.avatar.UploadAvatarService;
 import com.qhiehome.ihome.network.service.pay.AccountBalanceService;
+import com.qhiehome.ihome.network.service.pay.AccountService;
 import com.qhiehome.ihome.network.service.update.PgyService;
 import com.qhiehome.ihome.network.service.update.PgyServiceGenerator;
 import com.qhiehome.ihome.util.CommonUtil;
@@ -180,19 +183,19 @@ public class MainActivity extends BaseActivity {
     }
 
     private void initBalance() {
-        AccountBalanceService accountBalanceService = ServiceGenerator.createService(AccountBalanceService.class);
-        AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.RSA), 0.0);
-        Call<AccountBalanceResponse> call = accountBalanceService.account(accountBalanceRequest);
-        call.enqueue(new Callback<AccountBalanceResponse>() {
+        AccountService accountService = ServiceGenerator.createService(AccountService.class);
+        AccountRequest accountRequest = new AccountRequest(EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.RSA), 0.0);
+        Call<AccountResponse> call = accountService.account(accountRequest);
+        call.enqueue(new Callback<AccountResponse>() {
             @Override
-            public void onResponse(Call<AccountBalanceResponse> call, Response<AccountBalanceResponse> response) {
+            public void onResponse(Call<AccountResponse> call, Response<AccountResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     mTvUserBalance.setText(String.format(getString(R.string.format_user_balance), response.body().getData().getAccount()));
                 }
             }
 
             @Override
-            public void onFailure(Call<AccountBalanceResponse> call, Throwable t) {
+            public void onFailure(Call<AccountResponse> call, Throwable t) {
                 ToastUtil.showToast(mContext, "网络连接异常");
             }
         });
