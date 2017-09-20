@@ -40,6 +40,7 @@
                 android:layout_marginTop="30dp"/>
 
             <TextView
+                android:id="@+id/tv_pay_result"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="支付成功"

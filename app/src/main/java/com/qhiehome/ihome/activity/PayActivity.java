@@ -1,15 +1,16 @@
 package com.qhiehome.ihome.activity;
 
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -23,10 +24,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.alipay.sdk.app.PayTask;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.network.ServiceGenerator;
@@ -35,34 +33,30 @@ import com.qhiehome.ihome.network.model.alipay.AliPayResponse;
 import com.qhiehome.ihome.network.model.pay.PayChannel;
 import com.qhiehome.ihome.network.model.pay.PayRequest;
 import com.qhiehome.ihome.network.model.pay.PayResponse;
-import com.qhiehome.ihome.network.model.pay.accountbalance.AccountBalanceRequest;
-import com.qhiehome.ihome.network.model.pay.accountbalance.AccountBalanceResponse;
+import com.qhiehome.ihome.network.model.pay.account.AccountRequest;
+import com.qhiehome.ihome.network.model.pay.account.AccountResponse;
 import com.qhiehome.ihome.network.model.pay.guarantee.PayGuaranteeRequest;
 import com.qhiehome.ihome.network.model.pay.guarantee.PayGuaranteeResponse;
+import com.qhiehome.ihome.network.model.pay.notify.PayNotifyRequest;
+import com.qhiehome.ihome.network.model.pay.notify.PayNotifyResponse;
 import com.qhiehome.ihome.network.service.alipay.AliPayService;
-import com.qhiehome.ihome.network.service.pay.AccountBalanceService;
+import com.qhiehome.ihome.network.service.pay.AccountService;
 import com.qhiehome.ihome.network.service.pay.PayGuaranteeService;
+import com.qhiehome.ihome.network.service.pay.PayNotifyService;
 import com.qhiehome.ihome.network.service.pay.PayService;
 import com.qhiehome.ihome.pay.AliPay.PayResult;
-import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
-import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.OrderUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
-import com.tencent.mm.opensdk.constants.ConstantsAPI;
-import com.tencent.mm.opensdk.modelbase.BaseReq;
-import com.tencent.mm.opensdk.modelbase.BaseResp;
+import com.qhiehome.ihome.wxapi.WXPayEntryActivity;
 import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
 import com.tencent.mm.opensdk.modelmsg.WXMediaMessage;
 import com.tencent.mm.opensdk.modelmsg.WXTextObject;
 import com.tencent.mm.opensdk.modelpay.PayReq;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
-import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
-
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -112,6 +106,8 @@ public class PayActivity extends BaseActivity {
 
     private float mCurrentAccount;
 
+    private WXResultReceiver mReceiver;
+
     private Context mContext;
     private PayListAdapter mAdapter;
     private boolean[] mSelectedNum = {false, false, false}; //支付宝、微信、余额
@@ -131,6 +127,7 @@ public class PayActivity extends BaseActivity {
     private static final int MSG_ALIPAY = 0;
 
     private IWXAPI mIwxApi;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -160,12 +157,6 @@ public class PayActivity extends BaseActivity {
                 mBtnPay.setText("确认支付：" + mPriceList[mButtonClicked - 1] + "元");
                 break;
             case Constant.PAY_STATE_GUARANTEE:      //支付担保费
-                mLayoutTitleAdd.setVisibility(View.GONE);
-                mLayoutDetailAdd.setVisibility(View.GONE);
-                mFee = intent.getFloatExtra("fee", 0);
-                mTvPay.setText(String.format(Locale.CHINA, DECIMAL_2, mFee));
-                mBtnPay.setText("确认支付：" + String.format(Locale.CHINA, DECIMAL_2, mFee) + "元");
-                break;
             case Constant.PAY_STATE_TOTAL:          //支付停车费
                 mLayoutTitleAdd.setVisibility(View.GONE);
                 mLayoutDetailAdd.setVisibility(View.GONE);
@@ -203,42 +194,42 @@ public class PayActivity extends BaseActivity {
         mAdapter.setOnItemClickListener(new OnClickListener() {
             @Override
             public void onClick(View view, int i) {
-                /*  账户余额可以混合支付
-                if (mPayState == Constant.PAY_STATE_ADD_ACCOUNT) {//充值
-                    if (i == 1) {
-                        mSelectedNum[1] = true;
-                        mSelectedNum[0] = false;
-                    }
-                    if (i == 0) {
-                        mSelectedNum[0] = true;
-                        mSelectedNum[1] = false;
-                    }
-                } else {//支付
-                    if (i == 2 && mAccountBalance >= mFee) {//账户余额足够支付，完全用余额支付
-                        mSelectedNum[0] = false;
-                        mSelectedNum[1] = false;
-                        mSelectedNum[2] = true;
-                    }
-                    if (i == 2 && mAccountBalance < mFee && mAccountBalance != 0) {//账户余额不为0且不够支付，选择是否要使用余额
-                        mSelectedNum[2] = !mSelectedNum[2];
-                    }
-                    if (i != 2 && mAccountBalance >= mFee) {//账户余额足够支付，选择支付宝或微信支付
-                        mSelectedNum[2] = false;
-                        mSelectedNum[1] = false;
-                        mSelectedNum[0] = false;
-                        mSelectedNum[i] = true;
-                    }
-                    if (i != 2 && mAccountBalance < mFee) {//账户余额不够支付，选择支付方式
-                        mSelectedNum[1] = false;
-                        mSelectedNum[0] = false;
-                        mSelectedNum[i] = true;
-                    }
-                    if (mSelectedNum[2]) {
-                        mBtnPay.setText("确认支付：" + String.format(Locale.CHINA, DECIMAL_2, mFee >= mAccountBalance ? (mFee - mAccountBalance) : 0.0) + "元");
-                    } else {
-                        mBtnPay.setText("确认支付：" + String.format(Locale.CHINA, DECIMAL_2, mFee) + "元");
-                    }
-                }*/
+                  //账户余额可以混合支付
+//                if (mPayState == Constant.PAY_STATE_ADD_ACCOUNT) {//充值
+//                    if (i == 1) {
+//                        mSelectedNum[1] = true;
+//                        mSelectedNum[0] = false;
+//                    }
+//                    if (i == 0) {
+//                        mSelectedNum[0] = true;
+//                        mSelectedNum[1] = false;
+//                    }
+//                } else {//支付
+//                    if (i == 2 && mAccountBalance >= mFee) {//账户余额足够支付，完全用余额支付
+//                        mSelectedNum[0] = false;
+//                        mSelectedNum[1] = false;
+//                        mSelectedNum[2] = true;
+//                    }
+//                    if (i == 2 && mAccountBalance < mFee && mAccountBalance != 0) {//账户余额不为0且不够支付，选择是否要使用余额
+//                        mSelectedNum[2] = !mSelectedNum[2];
+//                    }
+//                    if (i != 2 && mAccountBalance >= mFee) {//账户余额足够支付，选择支付宝或微信支付
+//                        mSelectedNum[2] = false;
+//                        mSelectedNum[1] = false;
+//                        mSelectedNum[0] = false;
+//                        mSelectedNum[i] = true;
+//                    }
+//                    if (i != 2 && mAccountBalance < mFee) {//账户余额不够支付，选择支付方式
+//                        mSelectedNum[1] = false;
+//                        mSelectedNum[0] = false;
+//                        mSelectedNum[i] = true;
+//                    }
+//                    if (mSelectedNum[2]) {
+//                        mBtnPay.setText("确认支付：" + String.format(Locale.CHINA, DECIMAL_2, mFee >= mAccountBalance ? (mFee - mAccountBalance) : 0.0) + "元");
+//                    } else {
+//                        mBtnPay.setText("确认支付：" + String.format(Locale.CHINA, DECIMAL_2, mFee) + "元");
+//                    }
+//                }
                 if (!(i == 2 && mAccountBalance < mFee)){
                     mSelectedNum[0] = false;
                     mSelectedNum[1] = false;
@@ -258,19 +249,23 @@ public class PayActivity extends BaseActivity {
     @OnClick(R.id.btn_pay)
     public void onViewClicked() {
         switch (mPayState) {
+            //1、充值
             case Constant.PAY_STATE_ADD_ACCOUNT:
                 mCurrentAccount = Float.valueOf(mPriceList[mButtonClicked - 1]);
-                if (mSelectedNum[0]) {
-                    AccountBalanceService accountBalanceService = ServiceGenerator.createService(AccountBalanceService.class);
-                    AccountBalanceRequest accountBalanceRequest =
-                            new AccountBalanceRequest(EncryptUtil.
-                                    encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""),
-                                            EncryptUtil.ALGO.RSA), Double.valueOf(mPriceList[mButtonClicked - 1]));
-                    Call<AccountBalanceResponse> call = accountBalanceService.account(accountBalanceRequest);
-                    call.enqueue(new Callback<AccountBalanceResponse>() {
-                        @Override
-                        public void onResponse(@NonNull Call<AccountBalanceResponse> call, @NonNull Response<AccountBalanceResponse> response) {
-                            if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                AccountService accountService = ServiceGenerator.createService(AccountService.class);
+                AccountRequest accountRequest =
+                        new AccountRequest(EncryptUtil.
+                                encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""),
+                                        EncryptUtil.ALGO.RSA), Double.valueOf(mPriceList[mButtonClicked - 1]),
+                                mSelectedNum[0]?PayChannel.ALIPAY.ordinal():PayChannel.WXPAY.ordinal());
+                Call<AccountResponse> call = accountService.account(accountRequest);
+                call.enqueue(new Callback<AccountResponse>() {
+                    @Override
+                    public void onResponse(@NonNull Call<AccountResponse> call, @NonNull Response<AccountResponse> response) {
+                        if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                            //支付宝充值
+                            mOrderId = response.body().getData().getChargeOrderId();
+                            if (mSelectedNum[0]){
                                 final String orderInfo = response.body().getData().getOrderInfo();
                                 Runnable payRunnable = new Runnable() {
                                     @Override
@@ -287,62 +282,95 @@ public class PayActivity extends BaseActivity {
                                 };
                                 Thread payThread = new Thread(payRunnable);
                                 payThread.start();
-                            } else {
-                                ToastUtil.showToast(mContext, "充值失败");
+                            //微信支付充值
+                            }else if (mSelectedNum[1]){
+                                try {
+                                    final IWXAPI api;
+                                    api = WXAPIFactory.createWXAPI(mContext, Constant.APP_ID);
+                                    PayReq req = new PayReq();
+                                    req.appId = response.body().getData().getAppId();
+                                    req.partnerId = response.body().getData().getPartnerId();
+                                    req.prepayId = response.body().getData().getPrepayId();
+                                    req.nonceStr = response.body().getData().getNonceStr();
+                                    req.timeStamp = response.body().getData().getTimeStamp();
+                                    req.packageValue = response.body().getData().getPackageValue();
+                                    req.sign = response.body().getData().getSign();
+                                    ToastUtil.showToast(mContext, "成功调起支付");
+                                    api.sendReq(req);
+                                }catch (Exception e){
+                                    ToastUtil.showToast(mContext, "服务器异常");
+                                }
                             }
+                        } else {
+                            ToastUtil.showToast(mContext, "充值失败");
                         }
+                    }
 
-                        @Override
-                        public void onFailure(@NonNull Call<AccountBalanceResponse> call, @NonNull Throwable t) {
+                    @Override
+                    public void onFailure(@NonNull Call<AccountResponse> call, @NonNull Throwable t) {
 
-                        }
-                    });
-                } else {
-                    // TODO: 2017/9/17 微信支付
-                    WXShare();
-                }
+                    }
+                });
                 break;
+            //2、支付担保费
             case Constant.PAY_STATE_GUARANTEE:
+            //3、支付停车费
             case Constant.PAY_STATE_TOTAL:
                 mCurrentAccount = mFee;
-                if (mSelectedNum[0]) {
-                    AliPayService aliPayService = ServiceGenerator.createService(AliPayService.class);
-                    AliPayRequest aliPayRequest = new AliPayRequest(mOrderId);
-                    Call<AliPayResponse> call = aliPayService.aliPay(aliPayRequest);
-                    call.enqueue(new Callback<AliPayResponse>() {
+                if (mSelectedNum[0] || mSelectedNum[1]) {
+                    PayService payService = ServiceGenerator.createService(PayService.class);
+                    PayRequest payRequest = new PayRequest(mOrderId, PayChannel.ALIPAY.ordinal(), mFee);
+                    Call<PayResponse> payCall = payService.pay(payRequest);
+                    payCall.enqueue(new Callback<PayResponse>() {
                         @Override
-                        public void onResponse(@NonNull Call<AliPayResponse> call, @NonNull Response<AliPayResponse> response) {
-                            if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                                final String orderInfo = response.body().getData().getOrderInfo();
-                                Runnable payRunnable = new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        PayTask alipay = new PayTask(PayActivity.this);
-                                        Map<String, String> result = alipay.payV2(orderInfo, true);
-                                        Log.i("msp", result.toString());
+                        public void onResponse(Call<PayResponse> call, Response<PayResponse> response) {
+                            if (response.code() == Constant.RESPONSE_SUCCESS_CODE &&
+                                    response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                                if (mSelectedNum[0]) {
+                                    final String orderInfo = response.body().getData().getOrderInfo();
+                                    Runnable payRunnable = new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            PayTask alipay = new PayTask(PayActivity.this);
+                                            Map<String, String> result = alipay.payV2(orderInfo, true);
+                                            Log.i("msp", result.toString());
 
-                                        Message msg = new Message();
-                                        msg.what = MSG_ALIPAY;
-                                        msg.obj = result;
-                                        mHandler.sendMessage(msg);
+                                            Message msg = new Message();
+                                            msg.what = MSG_ALIPAY;
+                                            msg.obj = result;
+                                            mHandler.sendMessage(msg);
+                                        }
+                                    };
+
+                                    Thread payThread = new Thread(payRunnable);
+                                    payThread.start();
+                                } else if (mSelectedNum[1]) {
+                                    try {
+                                        final IWXAPI api;
+                                        api = WXAPIFactory.createWXAPI(mContext, Constant.APP_ID);
+                                        PayReq req = new PayReq();
+                                        req.appId = response.body().getData().getAppId();
+                                        req.partnerId = response.body().getData().getPartnerId();
+                                        req.prepayId = response.body().getData().getPrepayId();
+                                        req.nonceStr = response.body().getData().getNonceStr();
+                                        req.timeStamp = response.body().getData().getTimeStamp();
+                                        req.packageValue = response.body().getData().getPackageValue();
+                                        req.sign = response.body().getData().getSign();
+                                        ToastUtil.showToast(mContext, "成功调起支付");
+                                        api.sendReq(req);
+                                    } catch (Exception e) {
+                                        ToastUtil.showToast(mContext, "服务器异常");
                                     }
-                                };
-
-                                Thread payThread = new Thread(payRunnable);
-                                payThread.start();
-                            } else {
-                                ToastUtil.showToast(mContext, "支付失败");
+                                }
                             }
                         }
 
                         @Override
-                        public void onFailure(@NonNull Call<AliPayResponse> call,@NonNull Throwable t) {
-                            ToastUtil.showToast(mContext, "支付失败（服务器繁忙）");
+                        public void onFailure(Call<PayResponse> call, Throwable t) {
+
                         }
                     });
-                } else if (mSelectedNum[1]){
-                    WXPay();
-                } else {
+                }else {
                     payWithAccount();
                 }
             default:
@@ -350,6 +378,7 @@ public class PayActivity extends BaseActivity {
         }
 
     }
+
 
     @OnClick({R.id.btn_add_balance_1, R.id.btn_add_balance_2, R.id.btn_add_balance_3, R.id.btn_add_balance_4})
     public void onViewClicked(View view) {
@@ -439,7 +468,7 @@ public class PayActivity extends BaseActivity {
                     if (mIsFirstLoad) {
                         holder.tv_pay.setText("账户余额");
                         holder.tv_pay_info.setText("正在获取账户余额");
-                        changeAccountBalance(holder, 0.0);
+                        changeAccountBalance(holder, 0.0, 0);
                         mIsFirstLoad = false;
                     }
 
@@ -494,13 +523,20 @@ public class PayActivity extends BaseActivity {
      * @param holder    to show balance
      * @param change    0 or positive num
      */
-    private void changeAccountBalance(final PayListAdapter.PayListHolder holder, final double change) {
-        AccountBalanceService accountBalanceService = ServiceGenerator.createService(AccountBalanceService.class);
-        AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.RSA), change);
-        Call<AccountBalanceResponse> call = accountBalanceService.account(accountBalanceRequest);
-        call.enqueue(new Callback<AccountBalanceResponse>() {
+    private void changeAccountBalance(final PayListAdapter.PayListHolder holder, final double change, int channel) {
+        AccountService accountService = ServiceGenerator.createService(AccountService.class);
+        AccountRequest accountRequest;
+        if (channel > 0){
+            accountRequest = new AccountRequest(
+                    EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.RSA),
+                    change, channel);
+        }else {
+            accountRequest = new AccountRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.RSA), change);
+        }
+        Call<AccountResponse> call = accountService.account(accountRequest);
+        call.enqueue(new Callback<AccountResponse>() {
             @Override
-            public void onResponse(Call<AccountBalanceResponse> call, Response<AccountBalanceResponse> response) {
+            public void onResponse(Call<AccountResponse> call, Response<AccountResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     String pay_info = "账户余额：";
                     mAccountBalance = response.body().getData().getAccount();
@@ -513,7 +549,7 @@ public class PayActivity extends BaseActivity {
             }
 
             @Override
-            public void onFailure(Call<AccountBalanceResponse> call, Throwable t) {
+            public void onFailure(Call<AccountResponse> call, Throwable t) {
                 ToastUtil.showToast(mContext, "网络连接异常");
             }
         });
@@ -548,7 +584,7 @@ public class PayActivity extends BaseActivity {
                 if (mPayState == Constant.PAY_STATE_GUARANTEE){
                     PayGuaranteeFee();
                 }else {
-                    PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod());
+                    PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod(), true);
                 }
             }
 
@@ -577,13 +613,14 @@ public class PayActivity extends BaseActivity {
                     if (TextUtils.equals(resultStatus, "9000")) {
                         // 该笔订单是否真实支付成功，需要依赖服务端的异步通知。
 //                        ToastUtil.showToast(mContext, "支付成功");
+                        payNotify(PayChannel.ALIPAY.ordinal());
                         if (mPayState == Constant.PAY_STATE_GUARANTEE) {
                             PayGuaranteeFee();
                         } else if (mPayState == Constant.PAY_STATE_ADD_ACCOUNT) {
-                            PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod());
+                            PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod(), true);
                         } else if (mPayState == Constant.PAY_STATE_TOTAL) {
                             // TODO: 2017/9/12 有无发送什么命令
-                            PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod());
+                            PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod(), true);
                         }
                     } else {
                         // 该笔订单真实的支付结果，需要依赖服务端的异步通知。
@@ -628,7 +665,7 @@ public class PayActivity extends BaseActivity {
                             estate.getName(),
                             estate.getX(),
                             estate.getY());
-                    PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod());
+                    PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod(), true);
                 }
             }
 
@@ -686,6 +723,7 @@ public class PayActivity extends BaseActivity {
 
     }
 
+
     private void WXShare(){
         WXTextObject textObject = new WXTextObject();
         textObject.text = "啦啦啦";
@@ -707,4 +745,44 @@ public class PayActivity extends BaseActivity {
     }
 
 
+    private void payNotify(int channel){
+        PayNotifyService payNotifyService = ServiceGenerator.createService(PayNotifyService.class);
+        PayNotifyRequest payNotifyRequest = new PayNotifyRequest(mOrderId, channel, mFee);
+        Call<PayNotifyResponse> call = payNotifyService.notify(payNotifyRequest);
+        call.enqueue(new Callback<PayNotifyResponse>() {
+            @Override
+            public void onResponse(Call<PayNotifyResponse> call, Response<PayNotifyResponse> response) {
+
+            }
+
+            @Override
+            public void onFailure(Call<PayNotifyResponse> call, Throwable t) {
+
+            }
+        });
+    }
+
+    private class WXResultReceiver extends BroadcastReceiver{
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int WXResult = intent.getIntExtra(WXPayEntryActivity.RESP_ERRCODE, -1);
+            PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod(), WXResult==0);
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mReceiver = new WXResultReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(WXPayEntryActivity.ACTION);
+        registerReceiver(mReceiver, filter);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unregisterReceiver(mReceiver);
+    }
 }
