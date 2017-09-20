@@ -64,8 +64,4 @@ public class WXPayEntryActivity extends BaseActivity implements IWXAPIEventHandl
         finish();
     }
 
-    @OnClick(R.id.btn_wxpay_accomplish)
-    public void onViewClicked() {
-        finish();
-    }
 }

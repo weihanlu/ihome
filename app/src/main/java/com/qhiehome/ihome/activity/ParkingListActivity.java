@@ -34,13 +34,20 @@ import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyResponse;
 import com.qhiehome.ihome.network.model.park.reserve.ReserveRequest;
 import com.qhiehome.ihome.network.model.park.reserve.ReserveResponse;
+import com.qhiehome.ihome.network.model.pay.PayChannel;
+import com.qhiehome.ihome.network.model.pay.PayRequest;
+import com.qhiehome.ihome.network.model.pay.PayResponse;
+import com.qhiehome.ihome.network.model.pay.account.AccountRequest;
+import com.qhiehome.ihome.network.model.pay.account.AccountResponse;
 import com.qhiehome.ihome.network.model.pay.accountbalance.AccountBalanceRequest;
 import com.qhiehome.ihome.network.model.pay.accountbalance.AccountBalanceResponse;
 import com.qhiehome.ihome.network.model.pay.guarantee.PayGuaranteeRequest;
 import com.qhiehome.ihome.network.model.pay.guarantee.PayGuaranteeResponse;
 import com.qhiehome.ihome.network.service.park.ReserveService;
 import com.qhiehome.ihome.network.service.pay.AccountBalanceService;
+import com.qhiehome.ihome.network.service.pay.AccountService;
 import com.qhiehome.ihome.network.service.pay.PayGuaranteeService;
+import com.qhiehome.ihome.network.service.pay.PayService;
 import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
@@ -435,12 +442,13 @@ public class ParkingListActivity extends BaseActivity {
     }
 
     private void payGuarFeeWithWallet(final int orderId){
-        AccountBalanceService accountBalanceService = ServiceGenerator.createService(AccountBalanceService.class);
-        AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.RSA), -mGuaranteeFee, orderId);
-        Call<AccountBalanceResponse> call = accountBalanceService.account(accountBalanceRequest);
-        call.enqueue(new Callback<AccountBalanceResponse>() {
+
+        PayService payService = ServiceGenerator.createService(PayService.class);
+        PayRequest payRequest = new PayRequest(orderId, PayChannel.WALLET.ordinal(), mGuaranteeFee);
+        Call<PayResponse> call = payService.pay(payRequest);
+        call.enqueue(new Callback<PayResponse>() {
             @Override
-            public void onResponse(Call<AccountBalanceResponse> call, Response<AccountBalanceResponse> response) {
+            public void onResponse(Call<PayResponse> call, Response<PayResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     PayGuaranteeFee(orderId);
                 }else if (response.body().getErrcode() == ERROR_CODE_INSUFFICIENT){
@@ -455,7 +463,7 @@ public class ParkingListActivity extends BaseActivity {
                 }
             }
             @Override
-            public void onFailure(Call<AccountBalanceResponse> call, Throwable t) {
+            public void onFailure(Call<PayResponse> call, Throwable t) {
 
             }
         });

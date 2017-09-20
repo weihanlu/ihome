@@ -429,6 +429,9 @@ public class ParkFragment extends Fragment {
         mOnMarkerClickListener = new BaiduMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker1) {
+                if (isFastClick(2000)){
+                    return false;
+                }
                 mClickedMarker = marker1;
                 getCityConfig(marker1);
                 return false;
@@ -745,6 +748,15 @@ public class ParkFragment extends Fragment {
     }
 
 
+    private static long lastClickTime;
+    public static boolean isFastClick(long ClickIntervalTime) {
+        long ClickingTime = System.currentTimeMillis();
+        if ( ClickingTime - lastClickTime < ClickIntervalTime) {
+            return true;
+        }
+        lastClickTime = ClickingTime;
+        return false;
+    }
 
 
 }

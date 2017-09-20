@@ -320,7 +320,7 @@ public class PayActivity extends BaseActivity {
                 mCurrentAccount = mFee;
                 if (mSelectedNum[0] || mSelectedNum[1]) {
                     PayService payService = ServiceGenerator.createService(PayService.class);
-                    PayRequest payRequest = new PayRequest(mOrderId, PayChannel.ALIPAY.ordinal(), mFee);
+                    PayRequest payRequest = new PayRequest(mOrderId, mSelectedNum[0]?PayChannel.ALIPAY.ordinal():PayChannel.WXPAY.ordinal(), mFee);
                     Call<PayResponse> payCall = payService.pay(payRequest);
                     payCall.enqueue(new Callback<PayResponse>() {
                         @Override
