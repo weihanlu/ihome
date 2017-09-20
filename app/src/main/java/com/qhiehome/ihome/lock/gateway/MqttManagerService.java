@@ -75,27 +75,29 @@ public class MqttManagerService extends Service implements LockController{
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        String action = intent.getAction();
-        if (action != null) {
-            switch (action) {
-                case ACTION_GATEWAY_CONNECT:
-                    mGateWayId = intent.getStringExtra(GATEWAY_ID);
-                    mLockMac = intent.getStringExtra(LOCK_MAC);
-                    mPublishTopic = PUBLISH_PREFIX + mGateWayId;
-                    mSubscribeTopic = SUBSCRIBE_PREFIX + mGateWayId;
-                    connect();
-                    break;
-                case ACTION_GATEWAY_DISCONNECT:
-                    disconnect();
-                    break;
-                case ACTION_DOWN_LOCK:
-                    downLock();
-                    break;
-                case ACTION_UP_LOCK:
-                    raiseLock();
-                    break;
-                default:
-                    break;
+        if (intent != null) {
+            String action = intent.getAction();
+            if (action != null) {
+                switch (action) {
+                    case ACTION_GATEWAY_CONNECT:
+                        mGateWayId = intent.getStringExtra(GATEWAY_ID);
+                        mLockMac = intent.getStringExtra(LOCK_MAC);
+                        mPublishTopic = PUBLISH_PREFIX + mGateWayId;
+                        mSubscribeTopic = SUBSCRIBE_PREFIX + mGateWayId;
+                        connect();
+                        break;
+                    case ACTION_GATEWAY_DISCONNECT:
+                        disconnect();
+                        break;
+                    case ACTION_DOWN_LOCK:
+                        downLock();
+                        break;
+                    case ACTION_UP_LOCK:
+                        raiseLock();
+                        break;
+                    default:
+                        break;
+                }
             }
         }
         return START_STICKY;

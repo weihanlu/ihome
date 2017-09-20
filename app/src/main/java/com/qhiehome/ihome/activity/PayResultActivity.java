@@ -50,7 +50,7 @@ public class PayResultActivity extends BaseActivity {
     @BindView(R.id.iv_pay_result)
     ImageView mIvResult;
 
-    @BindView(R.id.iv_pay_result)
+    @BindView(R.id.tv_pay_result)
     TextView mTvResult;
 
     @Override
