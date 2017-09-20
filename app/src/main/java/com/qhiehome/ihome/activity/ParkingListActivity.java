@@ -247,16 +247,16 @@ public class ParkingListActivity extends BaseActivity {
                     mAdapter.notifyDataSetChanged();
                 }
             })
+                    .setBgColor(Color.WHITE)
+                    .setTitleBgColor(Color.WHITE)
                     .setTitleText("选择时间")
+                    .setTitleColor(ContextCompat.getColor(mContext, R.color.major_text))
+                    .setTextColorCenter(ContextCompat.getColor(mContext, R.color.major_text))
+                    .setSubmitColor(ContextCompat.getColor(mContext, R.color.theme_start_color))
+                    .setDividerColor(ContextCompat.getColor(mContext, R.color.theme_start_color))//设置分割线的颜色
+                    .setCancelColor(R.color.button_bord)
                     .setContentTextSize(20)//设置滚轮文字大小
-                    .setDividerColor(Color.GREEN)//设置分割线的颜色
                     .setSelectOptions(mStartSelectIndex)//默认选中项
-                    .setBgColor(Color.BLACK)
-                    .setTitleBgColor(Color.DKGRAY)
-                    .setTitleColor(Color.LTGRAY)
-                    .setCancelColor(Color.YELLOW)
-                    .setSubmitColor(Color.YELLOW)
-                    .setTextColorCenter(Color.LTGRAY)
                     .isCenterLabel(false) //是否只显示中间选中项的label文字，false则每项item全部都带有label。
 //                    .setLabels("省", "市", "区")
                     .setBackgroundId(0x66000000) //设置外部遮罩颜色
@@ -277,18 +277,18 @@ public class ParkingListActivity extends BaseActivity {
                     mAdapter.notifyDataSetChanged();
                 }
             })
+                    .setBgColor(Color.WHITE)
+                    .setTitleBgColor(Color.WHITE)
                     .setTitleText("选择时间")
+                    .setTitleColor(ContextCompat.getColor(mContext, R.color.major_text))
+                    .setTextColorCenter(ContextCompat.getColor(mContext, R.color.major_text))
+                    .setSubmitColor(ContextCompat.getColor(mContext, R.color.theme_start_color))
+                    .setDividerColor(ContextCompat.getColor(mContext, R.color.theme_start_color))//设置分割线的颜色
+                    .setCancelColor(R.color.button_bord)
                     .setContentTextSize(20)//设置滚轮文字大小
-                    .setDividerColor(Color.GREEN)//设置分割线的颜色
                     .setSelectOptions(mEndSelectIndex)//默认选中项
-                    .setBgColor(Color.BLACK)
-                    .setTitleBgColor(Color.DKGRAY)
-                    .setTitleColor(Color.LTGRAY)
-                    .setCancelColor(Color.YELLOW)
-                    .setSubmitColor(Color.YELLOW)
-                    .setTextColorCenter(Color.LTGRAY)
                     .isCenterLabel(false) //是否只显示中间选中项的label文字，false则每项item全部都带有label。
-                    //.setLabels("省", "市", "区")
+//                    .setLabels("省", "市", "区")
                     .setBackgroundId(0x66000000) //设置外部遮罩颜色
                     .build();
             //pvOptions.setSelectOptions(1,1);

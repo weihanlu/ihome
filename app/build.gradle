@@ -34,6 +34,7 @@ android {
             signingConfig signingConfigs.release
         }
         debug {
+            minifyEnabled false
             signingConfig signingConfigs.debug
         }
     }
@@ -45,7 +46,7 @@ android {
 
 repositories {
     maven {
-        url "https://repo.eclipse.org/content/repositories/paho-snapshots/"
+        url "https://repo.eclipse.org/content/repositories/paho-releases/"
     }
 }
 
@@ -58,7 +59,7 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile('org.eclipse.paho:org.eclipse.paho.android.service:1.0.2') {
+    compile('org.eclipse.paho:org.eclipse.paho.android.service:1.1.0') {
         exclude module: 'support-v4'
     }
     compile 'com.android.support:support-v4:25.3.1'
@@ -73,7 +74,7 @@ dependencies {
     compile 'com.squareup.okhttp3:logging-interceptor:3.4.1'
     compile 'com.afollestad.material-dialogs:core:0.9.4.5'
     compile 'com.contrarywind:Android-PickerView:3.2.6'
-    compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2'
+    compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.0'
     compile 'com.github.arimorty:floatingsearchview:2.1.1'
     compile 'de.hdodenhof:circleimageview:2.1.0'
     compile 'com.vivian.widgets:TimeLineItemDecoration:1.2'

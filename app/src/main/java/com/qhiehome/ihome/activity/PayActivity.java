@@ -770,7 +770,7 @@ public class PayActivity extends BaseActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             int WXResult = intent.getIntExtra(WXPayEntryActivity.RESP_ERRCODE, -1);
-            PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod(), WXResult==0);
+            PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod(), WXResult == 0);
         }
     }
 
