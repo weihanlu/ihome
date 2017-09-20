@@ -1,74 +1,22 @@
 package com.qhiehome.ihome.activity;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.PorterDuff;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.CountDownTimer;
-import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.ActionBar;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewStub;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.baidu.mapapi.model.LatLng;
 import com.baidu.navisdk.adapter.BNRoutePlanNode;
-import com.baidu.navisdk.adapter.BaiduNaviManager;
 import com.ericliu.asyncexpandablelist.CollectionView;
 import com.ericliu.asyncexpandablelist.async.AsyncExpandableListView;
-import com.ericliu.asyncexpandablelist.async.AsyncExpandableListViewCallbacks;
-import com.ericliu.asyncexpandablelist.async.AsyncHeaderViewHolder;
 import com.qhiehome.ihome.R;
-import com.qhiehome.ihome.adapter.ReserveViewPagerAdapter;
-import com.qhiehome.ihome.lock.ConnectLockService;
-import com.qhiehome.ihome.network.ServiceGenerator;
-import com.qhiehome.ihome.network.model.configuration.city.CityConfigRequest;
-import com.qhiehome.ihome.network.model.configuration.city.CityConfigResponse;
-import com.qhiehome.ihome.network.model.inquiry.order.OrderRequest;
 import com.qhiehome.ihome.network.model.inquiry.order.OrderResponse;
-import com.qhiehome.ihome.network.model.inquiry.parkingusing.ParkingUsingRequest;
-import com.qhiehome.ihome.network.model.inquiry.parkingusing.ParkingUsingResponse;
-import com.qhiehome.ihome.network.model.park.charge.ChargeRequest;
-import com.qhiehome.ihome.network.model.park.charge.ChargeResponse;
-import com.qhiehome.ihome.network.model.park.enter.EnterParkingRequest;
-import com.qhiehome.ihome.network.model.park.enter.EnterParkingResponse;
-import com.qhiehome.ihome.network.model.park.reservecancel.ReserveCancelRequest;
-import com.qhiehome.ihome.network.model.park.reservecancel.ReserveCancelResponse;
-import com.qhiehome.ihome.network.service.configuration.CityConfigService;
-import com.qhiehome.ihome.network.service.inquiry.OrderService;
-import com.qhiehome.ihome.network.service.inquiry.ParkingUsingService;
-import com.qhiehome.ihome.network.service.park.ChargeService;
-import com.qhiehome.ihome.network.service.park.EnterParkingService;
-import com.qhiehome.ihome.network.service.park.ReserveCancelService;
 import com.qhiehome.ihome.util.CommonUtil;
-import com.qhiehome.ihome.util.Constant;
-import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.NaviUtil;
-import com.qhiehome.ihome.util.NetworkUtils;
-import com.qhiehome.ihome.util.SharedPreferenceUtil;
-import com.qhiehome.ihome.util.ToastUtil;
 
-import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,9 +24,6 @@ import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class ReserveActivity_old extends BaseActivity{
 

@@ -6,14 +6,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 
-import com.qhiehome.ihome.lock.AppClient;
-import com.qhiehome.ihome.lock.ConnectLockService;
+import com.qhiehome.ihome.lock.LockController;
 import com.qhiehome.ihome.lock.ble.CommunicationManager;
 import com.qhiehome.ihome.lock.ble.profile.BLECommandIntent;
 import com.qhiehome.ihome.lock.ble.profile.HostAppService;
 import com.qhiehome.ihome.util.LogUtil;
 
-public class BluetoothClient extends AppClient {
+public class BluetoothClient implements LockController {
 
     private static final String TAG = BluetoothClient.class.getSimpleName();
 
@@ -82,7 +81,7 @@ public class BluetoothClient extends AppClient {
             public void run() {
                 if (!isFindLock) {
                     scanLeDevice(false);
-                    Intent intent = new Intent(ConnectLockService.BROADCAST_CONNECT);
+                    Intent intent = new Intent(LockController.BROADCAST_CONNECT);
                     intent.putExtra("info", "没有找到车锁，请重新连接");
                     mContext.sendBroadcast(intent);
                 }

@@ -1,7 +1,10 @@
 package com.qhiehome.ihome.application;
 
 import android.app.Application;
+import android.app.IntentService;
+import android.content.Intent;
 
+import com.qhiehome.ihome.lock.gateway.MqttManagerService;
 import com.qhiehome.ihome.persistence.DaoMaster;
 import com.qhiehome.ihome.persistence.DaoSession;
 import com.qhiehome.ihome.util.Constant;

@@ -340,7 +340,7 @@ public class LoginActivity extends BaseActivity {
             } else {                 //网络请求失败或者网络不通则重置按钮
                 mBtVerify.setClickable(true);
                 mBtVerify.setText(login_getVerification);
-                mBtVerify.setTextColor(getResources().getColor(R.color.black));
+                mBtVerify.setTextColor(ContextCompat.getColor(LoginActivity.this, R.color.theme_start_color));
             }
         }
     }

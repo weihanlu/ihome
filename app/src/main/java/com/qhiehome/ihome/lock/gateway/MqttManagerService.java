@@ -1,11 +1,13 @@
 package com.qhiehome.ihome.lock.gateway;
 
-import android.content.Context;
+import android.app.Service;
 import android.content.Intent;
+import android.os.IBinder;
+import android.support.annotation.Nullable;
 
 import com.qhiehome.ihome.application.IhomeApplication;
-import com.qhiehome.ihome.lock.AppClient;
-import com.qhiehome.ihome.lock.ConnectLockService;
+import com.qhiehome.ihome.lock.LockController;
+import com.qhiehome.ihome.lock.bluetooth.BluetoothManagerService;
 import com.qhiehome.ihome.util.LogUtil;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
@@ -18,33 +20,17 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
-public class GateWayClient extends AppClient{
+public class MqttManagerService extends Service implements LockController{
 
-    private static final String TAG = GateWayClient.class.getSimpleName();
+    public static final String ACTION_GATEWAY_CONNECT = "com.qhiehome.ihome.lock.action.GATEWAY_CONNECT";
+    public static final String ACTION_GATEWAY_DISCONNECT = "com.qhiehome.ihome.lock.action.GATEWAY_DISCONNECT";
+    public static final String ACTION_UP_LOCK = "com.qhiehome.ihome.lock.action.UP_LOCK";
+    public static final String ACTION_DOWN_LOCK = "com.qhiehome.ihome.lock.action.DOWN_LOCK";
 
-    private static volatile GateWayClient gateWayClient;
+    public static final String LOCK_MAC = "lock_mac";
+    public static final String GATEWAY_ID = "gateway_id";
 
-    private static final String HOST = "tcp://www.klmiot.tk:1883";
-
-    private String gateWayId;
-
-    private String lockMac;
-
-    private MqttAndroidClient mqttAndroidClient;
-
-    private static final String SUBSCRIBE_PREFIX = "/status/lock/ap/v2/";
-
-    private static final String PUBLISH_PREFIX = "/set/lock/ap/v2/";
-
-    private String publishTopic;
-
-    private String subscribeTopic;
-
-    private MqttConnectOptions mqttConnectOptions;
-
-    private Context mContext;
-
-    private int failTimes;
+    private static final String TAG = "MqttManagerService";
 
     private static final String COMMAND_UP = "[01:01]";
 
@@ -52,36 +38,81 @@ public class GateWayClient extends AppClient{
 
     private static final String COMMAND_BEE = "[0A:05]";
 
-    private GateWayClient(Context context) {
-        this.mContext = context;
-        failTimes = 3;
+    private static final String HOST = "tcp://www.klmiot.tk:1883";
+
+    private MqttAndroidClient mqttAndroidClient;
+
+    private static final String SUBSCRIBE_PREFIX = "/status/lock/ap/v2/";
+
+    private static final String PUBLISH_PREFIX = "/set/lock/ap/v2/";
+
+    private String mPublishTopic;
+
+    private String mSubscribeTopic;
+
+    private String mGateWayId;
+
+    private String mLockMac;
+
+    private MqttConnectOptions mqttConnectOptions;
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
         GateWayCallback gateWayCallback = new GateWayCallback();
-        mqttAndroidClient = new MqttAndroidClient(IhomeApplication.getInstance(), HOST, MqttClient.generateClientId());
+        mqttAndroidClient = new MqttAndroidClient(IhomeApplication.getInstance(),
+                HOST, MqttClient.generateClientId());
         mqttAndroidClient.setCallback(gateWayCallback);
         mqttConnectOptions = new MqttConnectOptions();
         mqttConnectOptions.setCleanSession(false);
     }
 
-    public static GateWayClient getInstance(Context context) {
-        if (gateWayClient == null) {
-            synchronized (GateWayClient.class) {
-                if (gateWayClient == null) {
-                    gateWayClient = new GateWayClient(context);
-                }
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        String action = intent.getAction();
+        if (action != null) {
+            switch (action) {
+                case ACTION_GATEWAY_CONNECT:
+                    mGateWayId = intent.getStringExtra(GATEWAY_ID);
+                    mLockMac = intent.getStringExtra(LOCK_MAC);
+                    mPublishTopic = PUBLISH_PREFIX + mGateWayId;
+                    mSubscribeTopic = SUBSCRIBE_PREFIX + mGateWayId;
+                    connect();
+                    break;
+                case ACTION_GATEWAY_DISCONNECT:
+                    disconnect();
+                    break;
+                case ACTION_DOWN_LOCK:
+                    downLock();
+                    break;
+                case ACTION_UP_LOCK:
+                    raiseLock();
+                    break;
+                default:
+                    break;
             }
         }
-        return gateWayClient;
+        return START_STICKY;
     }
 
-    public void setGateWayId(String gateWayId) {
-        this.gateWayId = gateWayId;
-        publishTopic = PUBLISH_PREFIX + gateWayId;
-        subscribeTopic = SUBSCRIBE_PREFIX + gateWayId;
+    private void beeLock() {
+        publishMessage(COMMAND_BEE);
     }
 
+    @Override
+    public void raiseLock() {
+        publishMessage(COMMAND_UP);
+    }
 
-    public void setLockMac(String lockMac) {
-        this.lockMac = lockMac;
+    @Override
+    public void downLock() {
+        publishMessage(COMMAND_DOWN);
     }
 
     @Override
@@ -95,12 +126,6 @@ public class GateWayClient extends AppClient{
 
                 @Override
                 public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                    if (failTimes < 0) {
-                        Intent intent = new Intent(mContext, ConnectLockService.class);
-                        intent.setAction(ConnectLockService.ACTION_BLUETOOTH_CONNECT);
-                        mContext.startService(intent);
-                    }
-                    failTimes--;
                 }
             });
         } catch (MqttException e) {
@@ -120,14 +145,13 @@ public class GateWayClient extends AppClient{
     }
 
     private void subscribeToTopic() {
-        LogUtil.d(TAG, "subscribeTopic is " + subscribeTopic);
+        LogUtil.d(TAG, "subscribeTopic is " + mSubscribeTopic);
         try {
-            mqttAndroidClient.subscribe(subscribeTopic, 0, null, new IMqttActionListener() {
+            mqttAndroidClient.subscribe(mSubscribeTopic, 0, null, new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
                     LogUtil.d(TAG, "subscribe successfully");
-                    Intent intent = new Intent(ConnectLockService.BROADCAST_CONNECT);
-                    mContext.sendBroadcast(intent);
+                    dismissProgressDialog();
                 }
 
                 @Override
@@ -141,38 +165,23 @@ public class GateWayClient extends AppClient{
 
     private void publishMessage(String command) {
         try {
-            String sendMsg = "{\"version\": \"v1\", \"gateway_id\": \"" + gateWayId
+            String sendMsg = "{\"version\": \"v1\", \"gateway_id\": \"" + mGateWayId
                     + "\",\"type\": \"DEVICE_CMD\", \"device\": {\"payload\": \""
-                    + command + "\", \"mac\": \"" + lockMac + "\", \"type\": \"CON\"}}";
+                    + command + "\", \"mac\": \"" + mLockMac + "\", \"type\": \"CON\"}}";
             LogUtil.d(TAG, "send Message is " + sendMsg);
             MqttMessage message = new MqttMessage();
             message.setQos(0);
             message.setPayload(sendMsg.getBytes());
-            LogUtil.d(TAG, "publishTopic is " + publishTopic + ", message is " + message);
-            mqttAndroidClient.publish(publishTopic, message);
+            LogUtil.d(TAG, "publishTopic is " + mPublishTopic + ", message is " + message);
+            mqttAndroidClient.publish(mPublishTopic, message);
         } catch (MqttException e) {
             e.printStackTrace();
         }
     }
 
-    private void beeLock() {
-        if (gateWayClient != null) {
-            gateWayClient.publishMessage(COMMAND_BEE);
-        }
-    }
-
-    @Override
-    public void raiseLock() {
-        if (gateWayClient != null) {
-            gateWayClient.publishMessage(COMMAND_UP);
-        }
-    }
-
-    @Override
-    public void downLock() {
-        if (gateWayClient != null) {
-            gateWayClient.publishMessage(COMMAND_DOWN);
-        }
+    private void dismissProgressDialog() {
+        Intent intent = new Intent(LockController.BROADCAST_CONNECT);
+        sendBroadcast(intent);
     }
 
     private class GateWayCallback implements MqttCallback {
@@ -192,5 +201,4 @@ public class GateWayClient extends AppClient{
             LogUtil.d(TAG, "deliveryComplete..." + token.isComplete());
         }
     }
-
 }

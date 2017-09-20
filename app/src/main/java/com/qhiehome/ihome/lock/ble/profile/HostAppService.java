@@ -23,7 +23,8 @@ import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
 
-import com.qhiehome.ihome.lock.ConnectLockService;
+import com.qhiehome.ihome.lock.LockController;
+import com.qhiehome.ihome.lock.bluetooth.BluetoothManagerService;
 import com.qhiehome.ihome.lock.ble.CommunicationManager;
 import com.qhiehome.ihome.lock.ble.request.NotificationRunnable;
 import com.qhiehome.ihome.lock.ble.request.Request;
@@ -902,7 +903,7 @@ public class HostAppService extends Service implements Observer {
 	}
 
 	private void sendTimeOutBroadcast() {
-		Intent intent = new Intent(ConnectLockService.BROADCAST_CONNECT);
+		Intent intent = new Intent(LockController.BROADCAST_CONNECT);
 		intent.putExtra("info", "连接超时");
 		sendBroadcast(intent);
 	}

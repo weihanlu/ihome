@@ -34,10 +34,12 @@ import com.baidu.navisdk.adapter.BNRoutePlanNode;
 import com.baidu.navisdk.adapter.BaiduNaviManager;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.adapter.ReserveListAdapter;
+import com.qhiehome.ihome.lock.LockController;
+import com.qhiehome.ihome.lock.gateway.MqttManagerService;
 import com.qhiehome.ihome.persistence.UserLockBean;
 import com.qhiehome.ihome.fragment.EstateMapFragment;
 import com.qhiehome.ihome.fragment.EstatePassFragment;
-import com.qhiehome.ihome.lock.ConnectLockService;
+import com.qhiehome.ihome.lock.bluetooth.BluetoothManagerService;
 import com.qhiehome.ihome.lock.ble.CommunicationManager;
 import com.qhiehome.ihome.lock.ble.profile.BLECommandIntent;
 import com.qhiehome.ihome.lock.bluetooth.BluetoothClient;
@@ -186,7 +188,7 @@ public class ReserveActivity extends BaseActivity {
         super.onStart();
         mReceiver = new ConnectLockReceiver();
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(ConnectLockService.BROADCAST_CONNECT);
+        intentFilter.addAction(LockController.BROADCAST_CONNECT);
         intentFilter.addAction(BLECommandIntent.RX_CURRENT_STATUS);
         intentFilter.addAction(BLECommandIntent.RX_PASSWORD_RESULT);
         intentFilter.addAction(CommunicationManager.ACTION_CONNECTION_STATE_CHANGE);
@@ -486,7 +488,6 @@ public class ReserveActivity extends BaseActivity {
             Log.e("downLock", "升车位锁");
         }
         connectToLock();
-
     }
 
     private void connectToLock() {
@@ -494,7 +495,7 @@ public class ReserveActivity extends BaseActivity {
         mLockMac = SharedPreferenceUtil.getString(this, Constant.RESERVE_LOCK_MAC, "");
         mLockPwd = SharedPreferenceUtil.getString(this, Constant.RESERVE_LOCK_PWD, "");
         mLockName = SharedPreferenceUtil.getString(this, Constant.RESERVE_LOCK_NAME, "");
-        if (!NetworkUtils.isConnected(mContext)) {
+        if (!hasNetwork()) {
             BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
             if (bluetoothAdapter == null) {
                 ToastUtil.showToast(mContext, "初始化蓝牙失败");
@@ -528,37 +529,51 @@ public class ReserveActivity extends BaseActivity {
                     .showListener(new DialogInterface.OnShowListener() {
                         @Override
                         public void onShow(DialogInterface dialog) {
-                            Intent connectLock = new Intent(mContext, ConnectLockService.class);
-                            if (NetworkUtils.isConnected(mContext)) {
-                                connectLock.setAction(ConnectLockService.ACTION_GATEWAY_CONNECT);
-                                connectLock.putExtra(ConnectLockService.EXTRA_GATEWAY_ID, mGatewayId);
-                                connectLock.putExtra(ConnectLockService.EXTRA_LOCK_MAC, mLockMac);
+                            if (hasNetwork()) {
+                                Intent gateWayConnect = new Intent(mContext, MqttManagerService.class);
+                                gateWayConnect.setAction(MqttManagerService.ACTION_GATEWAY_CONNECT);
+                                gateWayConnect.putExtra(MqttManagerService.GATEWAY_ID, mGatewayId);
+                                gateWayConnect.putExtra(MqttManagerService.LOCK_MAC, mLockMac);
+                                startService(gateWayConnect);
                             } else {
                                 if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
                                     ToastUtil.showToast(mContext, "不支持蓝牙低能耗特性");
                                     dialog.dismiss();
                                 } else {
-                                    connectLock.setAction(ConnectLockService.ACTION_BLUETOOTH_CONNECT);
-                                    connectLock.putExtra(ConnectLockService.EXTRA_LOCK_NAME, mLockName);
+                                    Intent bluetoothConnect = new Intent(mContext, BluetoothManagerService.class);
+                                    bluetoothConnect.setAction(BluetoothManagerService.ACTION_BLUETOOTH_CONNECT);
+                                    bluetoothConnect.putExtra(BluetoothManagerService.EXTRA_LOCK_NAME, mLockName);
+                                    startService(bluetoothConnect);
                                 }
                             }
-                            startService(connectLock);
                         }
                     }).dismissListener(new DialogInterface.OnDismissListener() {
                         @Override
                         public void onDismiss(DialogInterface dialog) {
                             if (!isTempParking) {
                                 if (mDownLock) {
-                                    Intent downLock = new Intent(mContext, ConnectLockService.class);
-                                    downLock.setAction(ConnectLockService.ACTION_DOWN_LOCK);
-                                    LogUtil.d(TAG,"lockState is " + mLockState);
-                                    downLock.putExtra(ConnectLockService.ACTION_LOCK_STATE, mLockState);
+                                    LogUtil.d(TAG, "down lock");
+                                    Intent downLock;
+                                    if (hasNetwork()) {
+                                        downLock = new Intent(mContext, MqttManagerService.class);
+                                        downLock.setAction(MqttManagerService.ACTION_DOWN_LOCK);
+                                    } else {
+                                        downLock = new Intent(mContext, BluetoothManagerService.class);
+                                        downLock.setAction(BluetoothManagerService.ACTION_DOWN_LOCK);
+                                        downLock.putExtra(BluetoothManagerService.ACTION_LOCK_STATE, mLockState);
+                                    }
                                     startService(downLock);
                                 } else {
-                                    Intent upLock = new Intent(mContext, ConnectLockService.class);
-                                    upLock.setAction(ConnectLockService.ACTION_UP_LOCK);
-                                    LogUtil.d(TAG,"lockState is " + mLockState);
-                                    upLock.putExtra(ConnectLockService.ACTION_LOCK_STATE, mLockState);
+                                    LogUtil.d(TAG, "up lock");
+                                    Intent upLock;
+                                    if (hasNetwork()) {
+                                        upLock = new Intent(mContext, MqttManagerService.class);
+                                        upLock.setAction(MqttManagerService.ACTION_UP_LOCK);
+                                    } else {
+                                        upLock = new Intent(mContext, BluetoothManagerService.class);
+                                        upLock.setAction(BluetoothManagerService.ACTION_UP_LOCK);
+                                        upLock.putExtra(BluetoothManagerService.ACTION_LOCK_STATE, mLockState);
+                                    }
                                     startService(upLock);
                                 }
                                 disconnect();
@@ -670,7 +685,7 @@ public class ReserveActivity extends BaseActivity {
                     }
 
                     break;
-                case ConnectLockService.BROADCAST_CONNECT:
+                case LockController.BROADCAST_CONNECT:
                     String info = intent.getStringExtra("info");
                     if (mProgressDialog != null && mProgressDialog.isShowing()) {
                         mProgressDialog.dismiss();
@@ -752,12 +767,12 @@ public class ReserveActivity extends BaseActivity {
         if (result == 0x10) {
             // MM 代表密码
             LogUtil.d(TAG, "password is " + mLockPwd);
-            Intent normal = new Intent(ConnectLockService.BROADCAST_CONNECT);
+            Intent normal = new Intent(LockController.BROADCAST_CONNECT);
             sendBroadcast(normal);
             // TODO: 2017/9/18 order
             updateOrderState();
         } else {
-            Intent errPassword = new Intent(ConnectLockService.BROADCAST_CONNECT);
+            Intent errPassword = new Intent(LockController.BROADCAST_CONNECT);
             errPassword.putExtra("info", "密码错误");
             sendBroadcast(errPassword);
         }
@@ -779,19 +794,29 @@ public class ReserveActivity extends BaseActivity {
             mControlLockDialog.setOnItemClickListener(new QhLockConnectDialog.OnItemClickListener() {
                 @Override
                 public void onLockUp(View view) {
-                    Intent upLock = new Intent(mContext, ConnectLockService.class);
-                    upLock.setAction(ConnectLockService.ACTION_UP_LOCK);
-                    LogUtil.d(TAG,"lockState is " + mLockState);
-                    upLock.putExtra(ConnectLockService.ACTION_LOCK_STATE, mLockState);
+                    Intent upLock;
+                    if (hasNetwork()) {
+                        upLock = new Intent(mContext, MqttManagerService.class);
+                        upLock.setAction(MqttManagerService.ACTION_UP_LOCK);
+                    } else {
+                        upLock = new Intent(mContext, BluetoothManagerService.class);
+                        upLock.setAction(BluetoothManagerService.ACTION_UP_LOCK);
+                        upLock.putExtra(BluetoothManagerService.ACTION_LOCK_STATE, mLockState);
+                    }
                     startService(upLock);
                 }
 
                 @Override
                 public void onLockDown(View view) {
-                    Intent downLock = new Intent(mContext, ConnectLockService.class);
-                    downLock.setAction(ConnectLockService.ACTION_DOWN_LOCK);
-                    LogUtil.d(TAG,"lockState is " + mLockState);
-                    downLock.putExtra(ConnectLockService.ACTION_LOCK_STATE, mLockState);
+                    Intent downLock;
+                    if (hasNetwork()) {
+                        downLock = new Intent(mContext, MqttManagerService.class);
+                        downLock.setAction(MqttManagerService.ACTION_DOWN_LOCK);
+                    } else {
+                        downLock = new Intent(mContext, BluetoothManagerService.class);
+                        downLock.setAction(BluetoothManagerService.ACTION_DOWN_LOCK);
+                        downLock.putExtra(BluetoothManagerService.ACTION_LOCK_STATE, mLockState);
+                    }
                     startService(downLock);
                 }
             });
@@ -803,12 +828,6 @@ public class ReserveActivity extends BaseActivity {
             });
         }
         mControlLockDialog.show();
-    }
-
-    private void disconnect() {
-        Intent disConnectLock = new Intent(this, ConnectLockService.class);
-        disConnectLock.setAction(ConnectLockService.ACTION_DISCONNECT);
-        startService(disConnectLock);
     }
 
     private void updateOrderState(){
@@ -942,6 +961,16 @@ public class ReserveActivity extends BaseActivity {
                 mBtnFunction2.setVisibility(View.INVISIBLE);
                 break;
         }
+    }
+
+    private void disconnect() {
+        Intent disConnectLock = new Intent(this, BluetoothManagerService.class);
+        disConnectLock.setAction(BluetoothManagerService.ACTION_DISCONNECT);
+        startService(disConnectLock);
+    }
+
+    private boolean hasNetwork() {
+        return NetworkUtils.isConnected(mContext);
     }
 
 }
