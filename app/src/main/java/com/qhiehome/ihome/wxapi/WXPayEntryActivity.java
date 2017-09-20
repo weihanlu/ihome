@@ -28,19 +28,6 @@ import butterknife.OnClick;
 
 public class WXPayEntryActivity extends BaseActivity implements IWXAPIEventHandler {
 
-    @BindView(R.id.toolbar_center)
-    Toolbar mToolbar;
-    @BindView(R.id.tv_title_toolbar)
-    TextView mToolbarTitle;
-    @BindView(R.id.iv_wxpay_result)
-    ImageView mIvWxpayResult;
-    @BindView(R.id.tv_wxpay_result)
-    TextView mTvWxpayResult;
-    @BindView(R.id.tv_wxpay_account)
-    TextView mTvWxpayAccount;
-    @BindView(R.id.btn_wxpay_accomplish)
-    Button mBtnWxpayAccomplish;
-
     private IWXAPI api;
 
     public static final String ACTION = "pay_result";
@@ -59,25 +46,8 @@ public class WXPayEntryActivity extends BaseActivity implements IWXAPIEventHandl
         super.onNewIntent(intent);
         setIntent(intent);
         api.handleIntent(intent, this);
-        initToolbar();
     }
 
-    private void initToolbar(){
-        setSupportActionBar(mToolbar);
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setDisplayShowTitleEnabled(false);
-        }
-        mToolbar.setTitle("");
-        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
-        mToolbarTitle.setText("支付结果");
-    }
 
     @Override
     public void onReq(BaseReq req) {
@@ -91,6 +61,7 @@ public class WXPayEntryActivity extends BaseActivity implements IWXAPIEventHandl
         intent.setAction(ACTION);
         intent.putExtra(RESP_ERRCODE, resp.errCode);
         WXPayEntryActivity.this.sendBroadcast(intent);
+        finish();
     }
 
     @OnClick(R.id.btn_wxpay_accomplish)

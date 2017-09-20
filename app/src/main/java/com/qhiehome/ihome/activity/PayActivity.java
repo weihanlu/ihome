@@ -47,6 +47,7 @@ import com.qhiehome.ihome.network.service.pay.PayService;
 import com.qhiehome.ihome.pay.AliPay.PayResult;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
+import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.OrderUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
@@ -770,6 +771,7 @@ public class PayActivity extends BaseActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             int WXResult = intent.getIntExtra(WXPayEntryActivity.RESP_ERRCODE, -1);
+            ToastUtil.showToast(mContext, WXResult + "");
             PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod(), WXResult == 0);
         }
     }
