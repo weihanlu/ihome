@@ -581,10 +581,13 @@ public class PayActivity extends BaseActivity {
         call.enqueue(new Callback<PayResponse>() {
             @Override
             public void onResponse(Call<PayResponse> call, Response<PayResponse> response) {
-                if (mPayState == Constant.PAY_STATE_GUARANTEE){
-                    PayGuaranteeFee();
-                }else {
-                    PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod(), true);
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE &&
+                        response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
+                    if (mPayState == Constant.PAY_STATE_GUARANTEE){
+                        PayGuaranteeFee();
+                    }else {
+                        PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod(), true);
+                    }
                 }
             }
 

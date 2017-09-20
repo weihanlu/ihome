@@ -9,7 +9,7 @@ android {
         applicationId "com.qhiehome.ihome"
         minSdkVersion 19
         targetSdkVersion 22
-        versionCode 31
+        versionCode 32
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -17,19 +17,19 @@ android {
         release {
             keyAlias 'key_release'
             keyPassword '123456'
-            storeFile file('/Users/xiang/AndroidStudioProjects/Ihome/keystorerelease.jks')
+            storeFile file('/Users/YueMa/AndroidStudioProjects/Ihome/keystorerelease.jks')
             storePassword '123456'
         }
         debug {
             keyAlias 'key_debug'
             keyPassword '123456'
-            storeFile file('/Users/xiang/AndroidStudioProjects/Ihome/keystoredebug.jks')
+            storeFile file('/Users/YueMa/AndroidStudioProjects/Ihome/keystoredebug.jks')
             storePassword '123456'
         }
     }
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
         }

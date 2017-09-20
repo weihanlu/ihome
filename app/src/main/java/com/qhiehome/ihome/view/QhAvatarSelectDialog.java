@@ -18,7 +18,7 @@ public class QhAvatarSelectDialog extends Dialog{
 
     private String mSelect1;
     private String mSelect2;
-    private int mType = 0;  //0:选择投降; 1:选择支付担保费or取消预约
+    private int mType = 0;  //0:选择头像; 1:选择支付担保费or取消预约
 
     public QhAvatarSelectDialog(@NonNull Context context) {
         super(context, R.style.qh_dialog_Theme);
