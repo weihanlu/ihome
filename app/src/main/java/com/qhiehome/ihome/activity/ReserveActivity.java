@@ -693,10 +693,11 @@ public class ReserveActivity extends BaseActivity {
                             ToastUtil.showToast(mContext, info);
                         } else {
                             // TODO: 2017/9/18 order
-                            updateOrderState();
                             // judge whether is temp parking
                             if (isTempParking) {
                                 showControlLockDialog();
+                            }else {
+                                updateOrderState();
                             }
                         }
                     }
@@ -863,6 +864,7 @@ public class ReserveActivity extends BaseActivity {
             } else {
                 SharedPreferenceUtil.setBoolean(mContext, Constant.NEED_POST_ENTER_TIME, true);
                 SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_PARKED);
+                refreshActivity();
                 refreshViewStub();
             }
         }

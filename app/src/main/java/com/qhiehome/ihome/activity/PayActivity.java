@@ -47,6 +47,7 @@ import com.qhiehome.ihome.network.service.pay.PayService;
 import com.qhiehome.ihome.pay.AliPay.PayResult;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
+import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.OrderUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
@@ -319,7 +320,7 @@ public class PayActivity extends BaseActivity {
                 mCurrentAccount = mFee;
                 if (mSelectedNum[0] || mSelectedNum[1]) {
                     PayService payService = ServiceGenerator.createService(PayService.class);
-                    PayRequest payRequest = new PayRequest(mOrderId, PayChannel.ALIPAY.ordinal(), mFee);
+                    PayRequest payRequest = new PayRequest(mOrderId, mSelectedNum[0]?PayChannel.ALIPAY.ordinal():PayChannel.WXPAY.ordinal(), mFee);
                     Call<PayResponse> payCall = payService.pay(payRequest);
                     payCall.enqueue(new Callback<PayResponse>() {
                         @Override
@@ -581,10 +582,13 @@ public class PayActivity extends BaseActivity {
         call.enqueue(new Callback<PayResponse>() {
             @Override
             public void onResponse(Call<PayResponse> call, Response<PayResponse> response) {
-                if (mPayState == Constant.PAY_STATE_GUARANTEE){
-                    PayGuaranteeFee();
-                }else {
-                    PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod(), true);
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE &&
+                        response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
+                    if (mPayState == Constant.PAY_STATE_GUARANTEE){
+                        PayGuaranteeFee();
+                    }else {
+                        PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod(), true);
+                    }
                 }
             }
 
@@ -767,6 +771,7 @@ public class PayActivity extends BaseActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             int WXResult = intent.getIntExtra(WXPayEntryActivity.RESP_ERRCODE, -1);
+            ToastUtil.showToast(mContext, WXResult + "");
             PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod(), WXResult == 0);
         }
     }
