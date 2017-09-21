@@ -47,6 +47,7 @@ public class ParkingEmptyResponse extends Response {
              * unitPrice : 10
              * guaranteeFee : 10
              * parkingList : [{"id":123456789,"startTime":1499826000000,"endTime":1499828000000}]
+             * shareCount : 1
              */
 
             private int id;
@@ -56,6 +57,7 @@ public class ParkingEmptyResponse extends Response {
             private int unitPrice;
             private int guaranteeFee;
             private List<ParkingListBean> parkingList;
+            private int shareCount;
 
             public int getId() {
                 return id;
@@ -111,6 +113,14 @@ public class ParkingEmptyResponse extends Response {
 
             public void setParkingList(List<ParkingListBean> parkingList) {
                 this.parkingList = parkingList;
+            }
+
+            public int getShareCount() {
+                return shareCount;
+            }
+
+            public void setShareCount(int shareCount) {
+                this.shareCount = shareCount;
             }
 
             public static class ParkingListBean implements Serializable, Comparable<ParkingListBean> {

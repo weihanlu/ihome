@@ -455,14 +455,8 @@ public class ParkFragment extends Fragment {
             mMarker = (Marker) mBaiduMap.addOverlay(searchOptions);
         }
         for (int i = 0; i < mEstateBeanList.size(); i++) {
-            boolean hasShare = false;
-            for (int j = 0; j < mEstateBeanList.get(i).getParkingList().size(); j++) {
-                if (mEstateBeanList.get(i).getParkingList().size() != 0) {
-                    hasShare = true;
-                    break;
-                }
-            }
-            if (hasShare) {
+
+            if (mEstateBeanList.get(i).getShareCount() > 0) {
                 LatLng newPT = new LatLng(mEstateBeanList.get(i).getY(), mEstateBeanList.get(i).getX());
                 OverlayOptions options;
 
@@ -471,7 +465,7 @@ public class ParkFragment extends Fragment {
                 ImageView iv_marker = (ImageView) customMarker.findViewById(R.id.iv_marker);
                 if (mMapStateParkingNum) {
                     iv_marker.setImageResource(R.drawable.img_bluemark);
-                    int shareNum = mEstateBeanList.get(i).getParkingList().size();
+                    int shareNum = mEstateBeanList.get(i).getShareCount();
                     tv_marker.setText(String.valueOf(shareNum));
                 } else {
                     iv_marker.setImageResource(R.drawable.img_redmark);
