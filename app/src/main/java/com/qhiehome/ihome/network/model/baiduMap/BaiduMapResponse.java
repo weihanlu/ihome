@@ -7,18 +7,18 @@ package com.qhiehome.ihome.network.model.baiduMap;
 public class BaiduMapResponse {
 
     /**
-     * status : OK
-     * result : {"location":{"lng":116.308151,"lat":40.05689},"precise":1,"confidence":80,"level":"道路"}
+     * status : 0
+     * result : {"location":{"lng":113.30764967515182,"lat":23.12004910207623},"precise":0,"confidence":12,"level":"城市"}
      */
 
-    private String status;
+    private int status;
     private ResultBean result;
 
-    public String getStatus() {
+    public int getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(int status) {
         this.status = status;
     }
 
@@ -32,10 +32,10 @@ public class BaiduMapResponse {
 
     public static class ResultBean {
         /**
-         * location : {"lng":116.308151,"lat":40.05689}
-         * precise : 1
-         * confidence : 80
-         * level : 道路
+         * location : {"lng":113.30764967515182,"lat":23.12004910207623}
+         * precise : 0
+         * confidence : 12
+         * level : 城市
          */
 
         private LocationBean location;
@@ -77,8 +77,8 @@ public class BaiduMapResponse {
 
         public static class LocationBean {
             /**
-             * lng : 116.308151
-             * lat : 40.05689
+             * lng : 113.30764967515182
+             * lat : 23.12004910207623
              */
 
             private double lng;

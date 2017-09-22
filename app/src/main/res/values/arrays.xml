@@ -14,12 +14,12 @@
     </string-array>
 
     <string-array name="cities">
-        <item>Beijing</item>
-        <item>Guangzhou</item>
-        <item>Shenzhen</item>
-        <item>Shanghai</item>
-        <item>Hangzhou</item>
-        <item>Chengdu</item>
+        <item>北京市</item>
+        <item>广州市</item>
+        <item>深圳市</item>
+        <item>上海市</item>
+        <item>杭州市</item>
+        <item>成都市</item>
     </string-array>
 
     <string-array name="titles">
