@@ -21,7 +21,7 @@ public interface BaiduMapService {
             "Accept: application/json"
     })
 
-    @GET("geocoder")
+    @GET("geocoder/v2/")
     Call<BaiduMapResponse> queryLatLnt(@QueryMap Map<String, String> option);
 
 }

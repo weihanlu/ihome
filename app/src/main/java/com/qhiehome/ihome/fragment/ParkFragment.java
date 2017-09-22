@@ -593,7 +593,7 @@ public class ParkFragment extends Fragment {
                 mTvCurrentCity.setText(mCity);
                 String URLString;
                 String output = "json";
-                String key = "R6nE16pZMKymjr58SMBAPsU3wC8BD9RY";
+                String key = "iLf6t6ZTMfSxZ2T9WFbAalUOfi01GPA8";
 //                try {
 //                    cityName = URLEncoder.encode(data.getExtras().getString("city"), "UTF-8");
 //                }catch (Exception e){
@@ -604,12 +604,12 @@ public class ParkFragment extends Fragment {
                     Map<String, String> option = new HashMap<String, String>();
                     option.put("address", mCity);
                     option.put("output", output);
-                    option.put("key", key);
+                    option.put("ak", key);
                     Call<BaiduMapResponse> call = baiduMapService.queryLatLnt(option);
                     call.enqueue(new Callback<BaiduMapResponse>() {
                         @Override
                         public void onResponse(Call<BaiduMapResponse> call, Response<BaiduMapResponse> response) {
-                            if (response.body().getStatus().equals("OK")) {
+                            if (response.body().getStatus() == 0) {
                                 mMyPt = new LatLng(response.body().getResult().getLocation().getLat(), response.body().getResult().getLocation().getLng());
                                 MapStatus mMapStatus = new MapStatus.Builder()
                                         .target(mMyPt)
