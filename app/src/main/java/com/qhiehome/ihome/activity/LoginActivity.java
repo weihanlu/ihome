@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.application.IhomeApplication;
+import com.qhiehome.ihome.bean.UserBean;
 import com.qhiehome.ihome.persistence.UserLockBean;
 import com.qhiehome.ihome.persistence.UserLockBeanDao;
 import com.qhiehome.ihome.network.ServiceGenerator;
@@ -44,6 +45,7 @@ import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.OrderUtil;
+import com.qhiehome.ihome.util.PersistenceUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
@@ -67,6 +69,7 @@ import retrofit2.Response;
 public class LoginActivity extends BaseActivity {
 
     private static final String TAG = LoginActivity.class.getSimpleName();
+
     @BindView(R.id.tv_title_toolbar)
     TextView mTvTitle;
     @BindView(R.id.et_phone)
@@ -89,6 +92,8 @@ public class LoginActivity extends BaseActivity {
     String login_successGetVerification;
     @BindView(R.id.toolbar_center)
     Toolbar mToolbar;
+    @BindView(R.id.bt_login)
+    Button mBtLogin;
 
     private UserLockBeanDao mUserLockBeanDao;
 
@@ -100,11 +105,7 @@ public class LoginActivity extends BaseActivity {
 
     public static final int GET_VERIFICATION = 3;
 
-    private static final String SMS_KEY = "c718da9eb368b06d145a81f5661e093d";
-
     private static final int SUCCESS_ERROR_CODE = 0;
-    @BindView(R.id.bt_login)
-    Button mBtLogin;
 
     private Handler mHandler;
 
@@ -113,7 +114,6 @@ public class LoginActivity extends BaseActivity {
     private String mVerification;
 
     private boolean mHasSentSMS;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,7 +135,7 @@ public class LoginActivity extends BaseActivity {
 
     private void initView() {
         mTvTitle.setText(R.string.login);
-        SpannableString sp = new SpannableString("点击登录，表示默认同意《服务条款》");
+        SpannableString sp = new SpannableString("点击登录，表示默认同意《服务协议》");
         sp.setSpan(new ForegroundColorSpan(
                         ContextCompat.getColor(this, R.color.theme_start_color)),
                 11, 17, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -195,6 +195,8 @@ public class LoginActivity extends BaseActivity {
             final LoginActivity loginActivity = mActivity.get();
             if (msg.what == GET_VERIFICATION) {
                 loginActivity.mEtVerify.setText(msg.obj.toString());
+                loginActivity.mEtVerify.requestFocus();
+                loginActivity.mEtVerify.setSelection(msg.obj.toString().length());
             }
             if (msg.what == COUNT_DOWN_START) {
                 loginActivity.runOnUiThread(new Runnable() {
@@ -218,8 +220,8 @@ public class LoginActivity extends BaseActivity {
             @Override
             public void onResponse(@NonNull Call<SigninResponse> call, @NonNull Response<SigninResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-//                    MainActivity.start(LoginActivity.this);
-                    SharedPreferenceUtil.setString(LoginActivity.this, Constant.PHONE_KEY, mPhoneNum);
+                    UserBean userBean = new UserBean(mPhoneNum);
+                    PersistenceUtil.userInfo(LoginActivity.this, userBean);
                     getOwnerParking();
                 }
             }
@@ -268,25 +270,25 @@ public class LoginActivity extends BaseActivity {
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
-            options.put("key", SMS_KEY);
+            options.put("key", Constant.SMS_KEY);
             //网络请求
             SMSService smsService = SMSServiceGenerator.createService(SMSService.class);
             Call<SMSResponse> call = smsService.sendSMS(options);
             call.enqueue(new Callback<SMSResponse>() {
                 @Override
-                public void onResponse(Call<SMSResponse> call, Response<SMSResponse> response) {
+                public void onResponse(@NonNull Call<SMSResponse> call, @NonNull Response<SMSResponse> response) {
                     SMSResponse smsResponse = response.body();
-                    int error_code = smsResponse.getError_code();
-                    if (error_code == SUCCESS_ERROR_CODE) {
-//                        ToastUtil.showToast(LoginActivity.this,"短信发送成功");
-                    } else {
-                        ToastUtil.showToast(LoginActivity.this, smsResponse.getReason());
-                        mHasSentSMS = false;
+                    if (smsResponse != null) {
+                        int error_code = smsResponse.getError_code();
+                        if (error_code != SUCCESS_ERROR_CODE) {
+                            ToastUtil.showToast(LoginActivity.this, smsResponse.getReason());
+                            mHasSentSMS = false;
+                        }
                     }
                 }
 
                 @Override
-                public void onFailure(Call<SMSResponse> call, Throwable t) {
+                public void onFailure(@NonNull Call<SMSResponse> call, @NonNull Throwable t) {
                     ToastUtil.showToast(LoginActivity.this, "网络异常");
                     mHasSentSMS = false;
                 }
@@ -299,14 +301,14 @@ public class LoginActivity extends BaseActivity {
     @OnClick(R.id.bt_login)
     public void login() {
         LogUtil.d(TAG, "login() executed");
-        mPhoneNum = mEtPhone.getText().toString();
+        String phoneNum = mEtPhone.getText().toString();
         String verifyCode = mEtVerify.getText().toString();
         if (TextUtils.isEmpty(verifyCode)) {
             ToastUtil.showToast(this, login_emptyVerification);
         } else {
             //验证验证码
             //SMSSDK.submitVerificationCode(DEFAULT_COUNTRY_CODE, mPhoneNum, verifyCode);
-            if (verifyCode.equals(mVerification)) {
+            if (verifyCode.equals(mVerification) && phoneNum.equals(mPhoneNum)) {
                 webLogin();
             } else {
                 ToastUtil.showToast(this, login_wrongVerification);
@@ -335,12 +337,10 @@ public class LoginActivity extends BaseActivity {
                     mVerification = String.valueOf(new Random().nextFloat());//1分钟后验证码失效
                     mBtVerify.setClickable(true);
                     mBtVerify.setText(login_getVerification);
-                    mBtVerify.setTextColor(ContextCompat.getColor(LoginActivity.this, R.color.theme_start_color));
                 }
             } else {                 //网络请求失败或者网络不通则重置按钮
                 mBtVerify.setClickable(true);
                 mBtVerify.setText(login_getVerification);
-                mBtVerify.setTextColor(ContextCompat.getColor(LoginActivity.this, R.color.theme_start_color));
             }
         }
     }

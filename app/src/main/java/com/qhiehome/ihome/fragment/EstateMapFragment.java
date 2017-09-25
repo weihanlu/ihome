@@ -65,7 +65,6 @@ public class EstateMapFragment extends Fragment {
     private boolean mCanUse;
     private boolean mAdvancedUse;
 
-
     public EstateMapFragment() {
         // Required empty public constructor
     }

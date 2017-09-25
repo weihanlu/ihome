@@ -14,6 +14,8 @@ public class Constant {
 
     public static final String TEST_PHONE_NUM = "f8cfd23a25811570298c8773bdca4d4d538d0d7fe52f6e5b3aefd08b907c8df2";
 
+    public static final String SMS_KEY = "c718da9eb368b06d145a81f5661e093d";
+
     public static final String PHONE_KEY = "phoneNum";
 
     public static final int TIME_PERIOD_LIMIT = 3;

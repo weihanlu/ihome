@@ -48,7 +48,7 @@
             android:layout_below="@id/tv_label_tip"
             android:layout_alignStart="@id/tv_label_tip"
             android:layout_marginTop="2dp"
-            android:text="1.请按时到预约车位停车"
+            android:text="1、请按时到预约车位停车"
             android:textSize="12sp"
             android:textColor="@color/hint_text"/>
 
@@ -59,7 +59,6 @@
             android:layout_below="@id/tv_tip_one"
             android:layout_alignStart="@id/tv_tip_one"
             android:layout_marginTop="2dp"
-            android:text="2.15分钟未入场，订单自动取消"
             android:textSize="12sp"
             android:textColor="@color/hint_text"/>
 

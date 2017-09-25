@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -18,10 +19,16 @@ import android.view.ViewGroup;
 import android.view.ViewStub;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.activity.LoginActivity;
 import com.qhiehome.ihome.adapter.UserLockAdapter;
 import com.qhiehome.ihome.application.IhomeApplication;
 import com.qhiehome.ihome.lock.LockController;
 import com.qhiehome.ihome.lock.gateway.MqttManagerService;
+import com.qhiehome.ihome.network.ServiceGenerator;
+import com.qhiehome.ihome.network.model.base.ParkingResponse;
+import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedRequest;
+import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedResponse;
+import com.qhiehome.ihome.network.service.inquiry.ParkingOwnedService;
 import com.qhiehome.ihome.persistence.DaoSession;
 import com.qhiehome.ihome.persistence.UserLockBean;
 import com.qhiehome.ihome.persistence.UserLockBeanDao;
@@ -29,8 +36,11 @@ import com.qhiehome.ihome.lock.bluetooth.BluetoothManagerService;
 import com.qhiehome.ihome.lock.ble.CommunicationManager;
 import com.qhiehome.ihome.lock.ble.profile.BLECommandIntent;
 import com.qhiehome.ihome.lock.bluetooth.BluetoothClient;
+import com.qhiehome.ihome.util.Constant;
+import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.NetworkUtils;
+import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 import com.qhiehome.ihome.view.QhLockConnectDialog;
 
@@ -42,6 +52,9 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class UserLockFragment extends Fragment {
 
@@ -53,15 +66,11 @@ public class UserLockFragment extends Fragment {
 
     private ArrayList<UserLockBean> mUserLocks;
 
-    private long mCurrentTime;
-
     private ConnectLockReceiver mReceiver;
 
     MaterialDialog mProgressDialog;
 
     QhLockConnectDialog mControlLockDialog;
-
-    private Query<UserLockBean> mUserLockBeansQuery;
 
     private BluetoothAdapter mBluetoothAdapter;
 
@@ -80,6 +89,8 @@ public class UserLockFragment extends Fragment {
     View mView;
 
     private int mLockState;
+
+    private UserLockBeanDao mUserLockBeanDao;
 
     @Override
     public void onAttach(Context context) {
@@ -133,27 +144,88 @@ public class UserLockFragment extends Fragment {
 
     private void initData() {
         DaoSession daoSession = ((IhomeApplication) getActivity().getApplicationContext()).getDaoSession();
-        UserLockBeanDao userLockBeanDao = daoSession.getUserLockBeanDao();
-        mUserLockBeansQuery = userLockBeanDao.queryBuilder().orderAsc(UserLockBeanDao.Properties.Id).build();
+        mUserLockBeanDao = daoSession.getUserLockBeanDao();
         mUserLocks = new ArrayList<>();
         inquiryOwnedParkings();
     }
 
     private void inquiryOwnedParkings() {
-        mCurrentTime = System.currentTimeMillis();
-        List<UserLockBean> lockList = mUserLockBeansQuery.list();
-        if (lockList != null && lockList.size() > 0) {
+        if (hasNetwork()) {
+            getNewestLocks();
+        } else {
+            getPersistenceLocks();
+            showLocks();
+        }
+    }
+
+    private void showLocks() {
+        if (mUserLocks != null && mUserLocks.size() > 0) {
             mViewStub.inflate();
             RecyclerView rvUserLocks = (RecyclerView) mView.findViewById(R.id.rv_user_locks);
             rvUserLocks.setHasFixedSize(true);
             LinearLayoutManager llm = new LinearLayoutManager(mActivity);
             rvUserLocks.setLayoutManager(llm);
-            for (UserLockBean userLockBean : lockList) {
-                mUserLocks.add(userLockBean);
-            }
             UserLockAdapter userLockAdapter = new UserLockAdapter(mActivity, mUserLocks);
             rvUserLocks.setAdapter(userLockAdapter);
             initListener(userLockAdapter);
+        }
+    }
+
+    private void getNewestLocks() {
+        String phoneNum = SharedPreferenceUtil.getString(mActivity, Constant.PHONE_KEY, "");
+        ParkingOwnedService parkingOwnedService = ServiceGenerator.createService(ParkingOwnedService.class);
+        ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(EncryptUtil.encrypt(phoneNum, EncryptUtil.ALGO.RSA));
+        Call<ParkingOwnedResponse> call = parkingOwnedService.parkingOwned(parkingOwnedRequest);
+        call.enqueue(new Callback<ParkingOwnedResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<ParkingOwnedResponse> call, @NonNull Response<ParkingOwnedResponse> response) {
+                try {
+                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                        List<ParkingResponse.DataBean.EstateBean> estateList = response.body().getData().getEstate();
+                        if (estateList != null && estateList.size() > 0) {
+                            mUserLockBeanDao.deleteAll();
+                            UserLockBean userLockBean;
+                            boolean isRented;
+                            long currentTime = System.currentTimeMillis();
+                            for (ParkingResponse.DataBean.EstateBean estate : estateList) {
+                                for (ParkingResponse.DataBean.EstateBean.ParkingListBean parkingBean : estate.getParkingList()) {
+                                    isRented = false;
+                                    for (ParkingResponse.DataBean.EstateBean.ParkingListBean.ShareListBean shareListBean: parkingBean.getShareList()) {
+                                        long startTime = shareListBean.getStartTime();
+                                        long endTime = shareListBean.getEndTime();
+                                        if (startTime <= currentTime && currentTime <= endTime) {
+                                            isRented = true;
+                                            break;
+                                        }
+                                    }
+                                    userLockBean = new UserLockBean(null, estate.getName(), parkingBean.getName(), parkingBean.getId(), parkingBean.getGatewayId(),
+                                            parkingBean.getLockMac(), parkingBean.getPassword(), isRented);
+                                    mUserLocks.add(userLockBean);
+                                    mUserLockBeanDao.insertOrReplace(userLockBean);
+                                }
+                            }
+                            showLocks();
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    ToastUtil.showToast(mActivity, "服务器错误，请稍后再试");
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ParkingOwnedResponse> call, @NonNull Throwable t) {
+            }
+        });
+    }
+
+    private void getPersistenceLocks() {
+        Query<UserLockBean> userLockBeansQuery = mUserLockBeanDao.queryBuilder().orderAsc(UserLockBeanDao.Properties.Id).build();
+        List<UserLockBean> lockList = userLockBeansQuery.list();
+        if (lockList != null) {
+            for (UserLockBean userLockBean : lockList) {
+                mUserLocks.add(userLockBean);
+            }
         }
     }
 
@@ -210,6 +282,7 @@ public class UserLockFragment extends Fragment {
 
                     isPasswordAlreadySet = intent.getIntExtra(BLECommandIntent.EXTRA_MM_SET_ALREADY, -1) == 1;
                     // send password
+                    LogUtil.d(TAG, "receive lock password " + mLockPassword);
                     Bundle data = new Bundle();
                     int[] password = new int[6];
                     for (int i = 0; i < 6; i++) {

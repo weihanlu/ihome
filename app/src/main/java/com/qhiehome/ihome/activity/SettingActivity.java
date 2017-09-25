@@ -72,15 +72,14 @@ public class SettingActivity extends BaseActivity {
 
     private boolean cancelUpdate;
 
-    MaterialDialog mUpdateInfoDialog;
-
-    MaterialDialog mUpdateProcessDialog;
-
     private String mSavedPath;
 
     private TextView mTvTitleToolbar;
     private Toolbar mToolbar;
 
+    private MaterialDialog mQuitDialog;
+    private MaterialDialog mUpdateInfoDialog;
+    private MaterialDialog mUpdateProcessDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -281,19 +280,22 @@ public class SettingActivity extends BaseActivity {
     }
 
     private void switchAccount() {
-        new MaterialDialog.Builder(mContext)
-                .content("确定退出当前账号吗？")
-                .positiveText("退出")
-                .negativeText("取消")
-                .onPositive(new MaterialDialog.SingleButtonCallback() {
-                    @Override
-                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                        ActivityManager.finishAll();
-                        SharedPreferenceUtil.setString(mContext, Constant.PHONE_KEY, "");
-                        SharedPreferenceUtil.setInt(mContext, Constant.USER_TYPE, Constant.USER_TYPE_TEMP);
-                        LoginActivity.start(mContext);
-                    }
-                }).show();
+        if (mQuitDialog == null) {
+            mQuitDialog = new MaterialDialog.Builder(mContext)
+                    .content("确定退出当前账号吗？")
+                    .positiveText("退出")
+                    .negativeText("取消")
+                    .onPositive(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            ActivityManager.finishAll();
+                            SharedPreferenceUtil.setString(mContext, Constant.PHONE_KEY, "");
+                            SharedPreferenceUtil.setInt(mContext, Constant.USER_TYPE, Constant.USER_TYPE_TEMP);
+                            LoginActivity.start(mContext);
+                        }
+                    }).build();
+        }
+        mQuitDialog.show();
     }
 
     @OnClick(R.id.btn_switch_account)

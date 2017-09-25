@@ -8,6 +8,8 @@ import android.content.Context;
 
 public class OrderUtil {
 
+    private OrderUtil(){}
+
     private static class OrderUtilHolder {
         private static final OrderUtil INSTANCE = new OrderUtil();
     }

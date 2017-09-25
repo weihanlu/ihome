@@ -51,4 +51,12 @@
         <item>100.00</item>
     </string-array>
 
+    <!--<string-array name="fee_intro">-->
+        <!--<item>You can cancel the order free of charge within %d minutes after the booking start time. The guarantee fee is refunded to the account balance;</item>-->
+        <!--<item>The vehicle will start charging, the guarantee fee can be deducted parking fees;</item>-->
+        <!--<item>If not on time parking spaces up to keep %d minutes, more than %d minutes, orders automatically cancel, guarantee fee is not refundable;</item>-->
+        <!--<item>Minutes the minutes of %d minutes by %d minutes;</item>-->
+        <!--<item>More than the appointment time does not leave, the excess will charge double parking fee;</item>-->
+    <!--</string-array>-->
+
 </resources>

@@ -119,6 +119,8 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
 
     private SparseBooleanArray mCheckedArray;
 
+    QhPublishParkingDialog mQhPublishParkingDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -336,8 +338,8 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                 mSelected.set(i, false);
             }
             mPeriodTimes = 0;
-            QhPublishParkingDialog dialog = new QhPublishParkingDialog(mContext);
-            View customView = dialog.getCustomView();
+            mQhPublishParkingDialog = new QhPublishParkingDialog(mContext);
+            View customView = mQhPublishParkingDialog.getCustomView();
             if (customView != null) {
                 mRvPark = (RecyclerView) customView.findViewById(R.id.rv_dialog);
                 mRvPark.setHasFixedSize(true);
@@ -384,14 +386,14 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                 addBtn.callOnClick();
                 updateTimeInterval(0);
             }
-            dialog.setOnSurePublishListener(new QhPublishParkingDialog.OnSurePublishListener() {
+            mQhPublishParkingDialog.setOnSurePublishListener(new QhPublishParkingDialog.OnSurePublishListener() {
                 @Override
                 public void onSure(View view) {
                     getSelectedPeriod();
                     publishParking();
                 }
             });
-            dialog.show();
+            mQhPublishParkingDialog.show();
         } catch (Exception e) {
             e.printStackTrace();
             ToastUtil.showToast(mContext, "获取车位锁发生错误");

@@ -111,7 +111,9 @@ public class OrderOwnerFragment extends Fragment implements SwipeRefreshLayout.O
             {
                 case REFRESH_COMPLETE:
                     orderOwnerFragment.mAdapter.notifyDataSetChanged();
-                    orderOwnerFragment.mSrlOrderOwner.setRefreshing(false);
+                    if (orderOwnerFragment.mSrlOrderOwner != null) {
+                        orderOwnerFragment.mSrlOrderOwner.setRefreshing(false);
+                    }
                     break;
                 case EXTRA_INFO:
                     orderOwnerFragment.initData();

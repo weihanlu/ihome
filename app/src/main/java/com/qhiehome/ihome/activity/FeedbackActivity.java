@@ -41,15 +41,12 @@ public class FeedbackActivity extends BaseActivity {
     @BindView(R.id.tv_title_toolbar)
     TextView mTvTitleToolbar;
 
-    private Context mContext;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_feedback);
         ButterKnife.bind(this);
         initToolbar();
-        mContext = this;
     }
 
     @OnClick(R.id.btn_feedback)

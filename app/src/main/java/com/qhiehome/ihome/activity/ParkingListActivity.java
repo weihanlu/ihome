@@ -16,8 +16,6 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -62,6 +60,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -85,6 +84,8 @@ public class ParkingListActivity extends BaseActivity {
     TextView mTvParkingFee;
     @BindView(R.id.rl_parking_list)
     RelativeLayout mRlParkingList;
+    @BindView(R.id.tv_tip_two)
+    TextView mTvTipTwo;
     @BindView(R.id.tv_tip_three)
     TextView mTvTipThree;
 
@@ -92,6 +93,7 @@ public class ParkingListActivity extends BaseActivity {
     Toolbar mTbParking;
     @BindView(R.id.rv_parking)
     RecyclerView mRvParking;
+
     private ParkingListAdapter mAdapter;
     private List<Map<String, String>> parking_data = new ArrayList<>();
     private ParkingEmptyResponse.DataBean.EstateBean mEstateBean;
@@ -126,10 +128,13 @@ public class ParkingListActivity extends BaseActivity {
 
 
     //configuration parameter
-    private int MIN_SHARING_PERIOD;
-    private int MIN_CHARGING_PERIOD;
+    private int mMinSharingTime;
+    private int mMinChargeTime;
     private int mFreeCancellationTime;
 
+    private MaterialDialog mShowFeeIntroDialog;
+
+    private String mFeeIntro;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -140,16 +145,45 @@ public class ParkingListActivity extends BaseActivity {
         Intent intent = this.getIntent();
         Bundle bundle = intent.getExtras();
         mEstateBean = (ParkingEmptyResponse.DataBean.EstateBean) bundle.getSerializable("estate");
-        MIN_SHARING_PERIOD = bundle.getInt(Constant.MIN_SHARING_PERIOD);
-        MIN_CHARGING_PERIOD = bundle.getInt(Constant.MIN_CHARGING_PERIOD);
+        mMinSharingTime = bundle.getInt(Constant.MIN_SHARING_PERIOD);
+        mMinChargeTime = bundle.getInt(Constant.MIN_CHARGING_PERIOD);
         mFreeCancellationTime = bundle.getInt(Constant.FREE_CANCELLATION_TIME);
         initView();
         mUnitPrice = (float) mEstateBean.getUnitPrice();
         mGuaranteeFee = (float) mEstateBean.getGuaranteeFee();
-        mPrice = mUnitPrice / 60 * MIN_SHARING_PERIOD;
+        mPrice = mUnitPrice / 60 * mMinSharingTime;
 
         mTvParkingGuarfee.setText(String.format(Locale.CHINA, DECIMAL_2, mGuaranteeFee));
         updateParkingFee();
+
+        initIntroString();
+    }
+
+    private void initIntroString() {
+        String tipTwo = "2、%d分钟未入场，订单自动取消";
+        mTvTipTwo.setText(String.format(Locale.CHINA, tipTwo, mFreeCancellationTime));
+
+        SpannableString sp = new SpannableString("3、了解更多计费信息请阅读《担保费与计费说明》");
+        sp.setSpan(new ForegroundColorSpan(
+                        ContextCompat.getColor(this, R.color.theme_start_color)),
+                13, 23, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        mTvTipThree.setText(sp);
+
+        StringBuilder stringBuilder = new StringBuilder();
+        String[] mFeeIntroArray = {
+                "预约开始时间后%d分钟内可以免费取消订单，担保费退还至账户余额；",
+                "车辆进场开始计费，担保费可抵扣停车费；",
+                "如未按时进场车位最多保留%d分钟，超过%d分钟，订单自动取消，担保费不退还；",
+                "停车时间不足%d分钟按%d分钟计费；",
+                "超过预约时间未离开，超出部分将收取双倍停车费。"
+        };
+        mFeeIntroArray[0] = String.format(Locale.CHINA, mFeeIntroArray[0], mFreeCancellationTime);
+        mFeeIntroArray[2] = String.format(Locale.CHINA, mFeeIntroArray[2], mFreeCancellationTime, mFreeCancellationTime);
+        mFeeIntroArray[3] = String.format(Locale.CHINA, mFeeIntroArray[3], mMinChargeTime, mMinChargeTime);
+        for (int i = 0; i < mFeeIntroArray.length; i++) {
+            stringBuilder.append(i + 1).append("、").append(mFeeIntroArray[i]).append("\n");
+        }
+        mFeeIntro = stringBuilder.toString();
     }
 
     private void updateParkingFee() {
@@ -162,12 +196,6 @@ public class ParkingListActivity extends BaseActivity {
         initToolbar();
         initTimePickerData();
         initRecyclerView();
-
-        SpannableString sp = new SpannableString("3.了解更多计费信息请阅读《担保费与计费说明》");
-        sp.setSpan(new ForegroundColorSpan(
-                        ContextCompat.getColor(this, R.color.theme_start_color)),
-                13, 23, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        mTvTipThree.setText(sp);
     }
 
     @OnClick(R.id.iv_time_axis)
@@ -205,9 +233,9 @@ public class ParkingListActivity extends BaseActivity {
         int m = calendar.get(Calendar.MINUTE);
         int h = calendar.get(Calendar.HOUR_OF_DAY);
         int m_total = m + h * 60;
-        int m_start = m_total - (m_total % MIN_CHARGING_PERIOD) + MIN_CHARGING_PERIOD;
-        int m_end = m_start + MIN_SHARING_PERIOD;
-        while (m_start <= 24 * 60 - MIN_SHARING_PERIOD) {
+        int m_start = m_total - (m_total % mMinChargeTime) + mMinChargeTime;
+        int m_end = m_start + mMinSharingTime;
+        while (m_start <= 24 * 60 - mMinSharingTime) {
 
             m = m_start % 60;
             h = m_start / 60;
@@ -216,7 +244,7 @@ public class ParkingListActivity extends BaseActivity {
             mStartSelectionMillis.add(calendar.getTimeInMillis());
             mStartSelectionStr.add(TIME_FORMAT.format(calendar.getTimeInMillis()));
 
-            m_start += MIN_CHARGING_PERIOD;
+            m_start += mMinChargeTime;
         }
 
         while (m_end <= 24 * 60) {
@@ -228,7 +256,7 @@ public class ParkingListActivity extends BaseActivity {
             mEndSelectionMillis.add(calendar.getTimeInMillis());
             mEndSelectionStr.add(TIME_FORMAT.format(calendar.getTimeInMillis()));
 
-            m_end += MIN_CHARGING_PERIOD;
+            m_end += mMinChargeTime;
         }
 
         for (int i = 0; i < mStartSelectIndex; i++) {
@@ -350,9 +378,33 @@ public class ParkingListActivity extends BaseActivity {
         }
     }
 
+    @OnClick(R.id.tv_tip_three)
+    public void onShowFeeIntro() {
+        showFeeIntroDialog();
+    }
+
+    private void showFeeIntroDialog() {
+        if (mShowFeeIntroDialog == null) {
+            mShowFeeIntroDialog = new MaterialDialog.Builder(this)
+                            .title("担保费与计费说明")
+                            .titleColor(ContextCompat.getColor(mContext, R.color.theme_start_color))
+                            .content(mFeeIntro)
+                            .contentColor(ContextCompat.getColor(mContext, R.color.major_text))
+                            .positiveText("确定")
+                            .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                @Override
+                                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                    dialog.dismiss();
+                                }
+                            })
+                            .canceledOnTouchOutside(true).build();
+        }
+        mShowFeeIntroDialog.show();
+    }
+
     /*********预约按钮*********/
     @OnClick(R.id.tv_parking_reserve)
-    public void onViewClicked() {
+    public void onParkingReserve() {
         String phoneNum = SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, "");
         if (TextUtils.isEmpty(phoneNum)) {
             new MaterialDialog.Builder(mContext)
@@ -376,7 +428,6 @@ public class ParkingListActivity extends BaseActivity {
                 public void onResponse(Call<ReserveResponse> call, Response<ReserveResponse> response) {
                     if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                         payGuarFeeWithWallet(response.body().getData().getOrder().getId());
-
                     } else if (response.body().getErrcode() == UNPAY_ORDER) {
                         new MaterialDialog.Builder(mContext)
                                 .title("预约失败")
@@ -440,8 +491,7 @@ public class ParkingListActivity extends BaseActivity {
         intent.putExtras(bundle);
         startActivity(intent);
     }
-
-    private void payGuarFeeWithWallet(final int orderId){
+    private void payGuarFeeWithWallet(final int orderId) {
 
         PayService payService = ServiceGenerator.createService(PayService.class);
         PayRequest payRequest = new PayRequest(orderId, PayChannel.WALLET.ordinal(), mGuaranteeFee);
@@ -469,7 +519,7 @@ public class ParkingListActivity extends BaseActivity {
         });
     }
 
-    private void PayGuaranteeFee(final int orderId){
+    private void PayGuaranteeFee(final int orderId) {
         PayGuaranteeService payGuaranteeService = ServiceGenerator.createService(PayGuaranteeService.class);
         PayGuaranteeRequest payGuaranteeRequest = new PayGuaranteeRequest(orderId);
         Call<PayGuaranteeResponse> call = payGuaranteeService.payGuarantee(payGuaranteeRequest);

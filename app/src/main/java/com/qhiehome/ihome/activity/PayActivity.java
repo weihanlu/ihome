@@ -741,7 +741,6 @@ public class PayActivity extends BaseActivity {
         final IWXAPI api;
         api = WXAPIFactory.createWXAPI(this, Constant.APP_ID);
         api.sendReq(req);
-
     }
 
     private String buildTransaction(final String type) {
@@ -771,7 +770,7 @@ public class PayActivity extends BaseActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             int WXResult = intent.getIntExtra(WXPayEntryActivity.RESP_ERRCODE, -1);
-            ToastUtil.showToast(mContext, WXResult + "");
+//            ToastUtil.showToast(mContext, WXResult + "");
             PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod(), WXResult == 0);
         }
     }

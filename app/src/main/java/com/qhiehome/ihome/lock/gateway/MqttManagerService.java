@@ -7,7 +7,6 @@ import android.support.annotation.Nullable;
 
 import com.qhiehome.ihome.application.IhomeApplication;
 import com.qhiehome.ihome.lock.LockController;
-import com.qhiehome.ihome.lock.bluetooth.BluetoothManagerService;
 import com.qhiehome.ihome.util.LogUtil;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
@@ -38,13 +37,15 @@ public class MqttManagerService extends Service implements LockController{
 
     private static final String COMMAND_BEE = "[0A:05]";
 
-    private static final String HOST = "tcp://www.klmiot.tk:1883";
+    private static final String HOST = "tcp://www.klmiot.cn:1883";
+
+    private static final String UID = "c55e365d3f164df1";
 
     private MqttAndroidClient mqttAndroidClient;
 
-    private static final String SUBSCRIBE_PREFIX = "/status/lock/ap/v2/";
+    private static final String SUBSCRIBE_PREFIX = "/status/lock/" + UID + "/#";
 
-    private static final String PUBLISH_PREFIX = "/set/lock/ap/v2/";
+    private static final String PUBLISH_PREFIX = "/set/lock/" + UID + "/";
 
     private String mPublishTopic;
 
@@ -83,7 +84,7 @@ public class MqttManagerService extends Service implements LockController{
                         mGateWayId = intent.getStringExtra(GATEWAY_ID);
                         mLockMac = intent.getStringExtra(LOCK_MAC);
                         mPublishTopic = PUBLISH_PREFIX + mGateWayId;
-                        mSubscribeTopic = SUBSCRIBE_PREFIX + mGateWayId;
+                        mSubscribeTopic = SUBSCRIBE_PREFIX;
                         connect();
                         break;
                     case ACTION_GATEWAY_DISCONNECT:
