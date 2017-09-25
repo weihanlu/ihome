@@ -111,7 +111,7 @@ public class MeFragment extends Fragment {
                         break;
                     case 3:
 //                        OrderListActivity.start(mContext);
-                        SettingActivity.start(mContext);
+//                        SettingActivity.start(mContext);
                         break;
                     case 4:
                         break;

@@ -17,13 +17,13 @@ android {
         release {
             keyAlias 'key_release'
             keyPassword '123456'
-            storeFile file('/Users/xiang/AndroidStudioProjects/Ihome/keystorerelease.jks')
+            storeFile file('D:/IHome/ihome/keystorerelease.jks')
             storePassword '123456'
         }
         debug {
             keyAlias 'key_debug'
             keyPassword '123456'
-            storeFile file('/Users/xiang/AndroidStudioProjects/Ihome/keystoredebug.jks')
+            storeFile file('D:/IHome/ihome/keystoredebug.jks')
             storePassword '123456'
         }
     }
