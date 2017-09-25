@@ -59,4 +59,16 @@
         <!--<item>More than the appointment time does not leave, the excess will charge double parking fee;</item>-->
     <!--</string-array>-->
 
+    <string-array name="join_title">
+        <item>name</item>
+        <item>mobile phone</item>
+        <item>estate name</item>
+    </string-array>
+
+    <string-array name="join_hint">
+        <item>your name</item>
+        <item>your mobile phone number</item>
+        <item>your estate name</item>
+    </string-array>
+
 </resources>

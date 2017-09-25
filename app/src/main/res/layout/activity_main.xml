@@ -191,6 +191,32 @@
 
         <LinearLayout
             android:layout_below="@id/ll_my_publish"
+            android:id="@+id/ll_join_owner"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:background="@drawable/selector_item">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="20dp"
+                android:src="@drawable/ic_setting"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="申请车位"
+                android:textColor="@color/major_text"
+                android:textSize="16sp"
+                android:layout_marginStart="20dp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_below="@id/ll_join_owner"
             android:id="@+id/ll_setting"
             android:layout_width="match_parent"
             android:layout_height="60dp"

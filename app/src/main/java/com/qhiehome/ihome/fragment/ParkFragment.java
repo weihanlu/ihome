@@ -10,13 +10,17 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.NotificationCompat;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.ZoomControls;
 
@@ -37,6 +41,16 @@ import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.UiSettings;
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.search.route.BikingRouteResult;
+import com.baidu.mapapi.search.route.DrivingRoutePlanOption;
+import com.baidu.mapapi.search.route.DrivingRouteResult;
+import com.baidu.mapapi.search.route.IndoorRouteResult;
+import com.baidu.mapapi.search.route.MassTransitRouteResult;
+import com.baidu.mapapi.search.route.OnGetRoutePlanResultListener;
+import com.baidu.mapapi.search.route.PlanNode;
+import com.baidu.mapapi.search.route.RoutePlanSearch;
+import com.baidu.mapapi.search.route.TransitRouteResult;
+import com.baidu.mapapi.search.route.WalkingRouteResult;
 import com.baidu.mapapi.utils.DistanceUtil;
 import com.baidu.navisdk.adapter.BNRoutePlanNode.CoordinateType;
 import com.baidu.navisdk.adapter.BaiduNaviManager;
@@ -46,6 +60,8 @@ import com.qhiehome.ihome.activity.MainActivity;
 import com.qhiehome.ihome.activity.MapSearchActivity;
 import com.qhiehome.ihome.activity.ParkingListActivity;
 import com.qhiehome.ihome.activity.ReserveActivity_old;
+import com.qhiehome.ihome.adapter.EstateInfoAdapter;
+import com.qhiehome.ihome.map.DrivingRouteOverlay;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.baiduMap.BaiduMapResponse;
 import com.qhiehome.ihome.network.model.configuration.city.CityConfigRequest;
@@ -61,6 +77,7 @@ import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.NaviUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
+import com.qhiehome.ihome.view.BasePopupWindow;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -432,8 +449,18 @@ public class ParkFragment extends Fragment {
                 if (isFastClick(2000)){
                     return false;
                 }
+                // TODO: 2017/9/25 更换为显示小区详细信息
                 mClickedMarker = marker1;
                 getCityConfig(marker1);
+//                BasePopupWindow popupWindow;
+//                View view = LayoutInflater.from(mContext).inflate(R.layout.layout_estate_info,null);//PopupWindow对象
+//                popupWindow= new BasePopupWindow(mContext, getActivity(), 1000);//初始化PopupWindow对象
+//                popupWindow.setContentView(view);//设置PopupWindow布局文件
+//                View rootView =LayoutInflater.from(mContext).inflate(R.layout.fragment_park, null);//父布局
+//                popupWindow.showAtLocation(rootView, Gravity.BOTTOM,0,0);
+//
+//                initPopupWindow(view);
+
                 return false;
             }
         };
@@ -751,6 +778,62 @@ public class ParkFragment extends Fragment {
         lastClickTime = ClickingTime;
         return false;
     }
+
+    private void initPopupWindow(View contentView){
+        TextView tvLocation = (TextView) contentView.findViewById(R.id.tv_estate_location);
+        RecyclerView rvEstateDetail = (RecyclerView) contentView.findViewById(R.id.rv_estate_detail);
+        Button btnReserve = (Button) contentView.findViewById(R.id.btn_to_reserve);
+
+        EstateInfoAdapter adapter = new EstateInfoAdapter();
+        rvEstateDetail.setLayoutManager(new GridLayoutManager(mContext, 3));
+        rvEstateDetail.setAdapter(adapter);
+        tvLocation.setText("北京邮电大学新科研楼");
+    }
+
+    private void routeSearch(LatLng targetPt){
+        RoutePlanSearch routePlanSearch = RoutePlanSearch.newInstance();
+        PlanNode stNode = PlanNode.withLocation(mCurrentPt);
+        PlanNode enNode = PlanNode.withLocation(targetPt);
+        routePlanSearch.drivingSearch((new DrivingRoutePlanOption())
+                .from(stNode)//起点
+                .to(enNode));//终点
+        routePlanSearch.setOnGetRoutePlanResultListener(new OnGetRoutePlanResultListener() {
+            @Override
+            public void onGetWalkingRouteResult(WalkingRouteResult walkingRouteResult) {
+
+            }
+
+            @Override
+            public void onGetTransitRouteResult(TransitRouteResult transitRouteResult) {
+
+            }
+
+            @Override
+            public void onGetMassTransitRouteResult(MassTransitRouteResult massTransitRouteResult) {
+
+            }
+
+            @Override
+            public void onGetDrivingRouteResult(DrivingRouteResult drivingRouteResult) {
+                DrivingRouteOverlay overlay = new DrivingRouteOverlay(mBaiduMap);
+                overlay.setData(drivingRouteResult.getRouteLines().get(0));
+                overlay.addToMap();
+                overlay.zoomToSpan();
+            }
+
+            @Override
+            public void onGetIndoorRouteResult(IndoorRouteResult indoorRouteResult) {
+
+            }
+
+            @Override
+            public void onGetBikingRouteResult(BikingRouteResult bikingRouteResult) {
+
+            }
+        });
+
+    }
+
 
 
 }
