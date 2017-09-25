@@ -445,11 +445,7 @@ public class MainActivity extends BaseActivity {
                 }
                 break;
             case R.id.ll_setting:
-                if (isLogin) {
-                    SettingActivity.start(mContext);
-                } else {
-                    LoginActivity.start(mContext);
-                }
+                    SettingActivity.start(mContext, isLogin);
                 break;
             case R.id.iv_avatar:
                 QhAvatarSelectDialog dialog = new QhAvatarSelectDialog(mContext);

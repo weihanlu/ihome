@@ -22,6 +22,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
@@ -69,6 +70,9 @@ public class SettingActivity extends BaseActivity {
     @BindView(R.id.rv_setting)
     RecyclerView mRvSetting;
 
+    @BindView(R.id.btn_switch_account)
+    Button mBtnSwitchAccount;
+
 
     private boolean cancelUpdate;
 
@@ -90,6 +94,10 @@ public class SettingActivity extends BaseActivity {
         mTvTitleToolbar = (TextView) findViewById(R.id.tv_title_toolbar);
         initView();
         mContext = this;
+        boolean isLogin = getIntent().getBooleanExtra("isLogin",false);
+        if(!isLogin){
+            mBtnSwitchAccount.setVisibility(View.INVISIBLE);
+        }
     }
 
     private void initView() {
@@ -255,8 +263,9 @@ public class SettingActivity extends BaseActivity {
         mTvTitleToolbar.setText("系统设置");
     }
 
-    public static void start(Context context) {
+    public static void start(Context context, boolean isLogin) {
         Intent intent = new Intent(context, SettingActivity.class);
+        intent.putExtra("isLogin", isLogin);
         context.startActivity(intent);
     }
 
