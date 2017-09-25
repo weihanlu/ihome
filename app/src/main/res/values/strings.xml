@@ -42,5 +42,6 @@
     <string name="confirm_password">Please Confirm</string>
 
     <string name="order_owner_orderId">OrderId: %d</string>
+    <string name="title_activity_join_owner">JoinOwnerActivity</string>
 
 </resources>
