@@ -60,7 +60,7 @@ public class EstatePassFragment extends Fragment {
 
     private void DownloadPass(){
         DownloadEstatePassService downloadEstatePassService = ServiceGenerator.createService(DownloadEstatePassService.class);
-        String encryptedAvatarName = EncryptUtil.encrypt("pass", EncryptUtil.ALGO.MD5);
+        String encryptedAvatarName = EncryptUtil.md5Encrypt("pass");
         Call<ResponseBody> call = downloadEstatePassService.downloadPass(encryptedAvatarName + ".jpg");
         call.enqueue(new Callback<ResponseBody>() {
             @Override

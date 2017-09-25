@@ -35,8 +35,16 @@ public class EncryptUtil {
             "K5nnNoZnr/OWahw/UeH5IB20zSTobOmgFKUV+4q2wvI32MVCphV3tM/EW59HZCGOuQSIWzvkk1B3\n" +
             "kahA1WPYIbyR6417Rxukwktf72WiQKGOp2WIbXch6fhdp3HRmiqQqAYHCQIDAQAB";
 
-    public enum ALGO {
+    private enum ALGO {
         SHA_256, SHA_512, MD5, RSA
+    }
+
+    public static String rsaEncrypt(String text) {
+        return encrypt(text, ALGO.RSA);
+    }
+
+    public static String md5Encrypt(String text) {
+        return encrypt(text, ALGO.MD5);
     }
 
     /**
@@ -45,7 +53,7 @@ public class EncryptUtil {
      * @param algo 加密算法类型
      * @return 加密后的密文
      */
-    public static String encrypt(String text, ALGO algo) {
+    private static String encrypt(String text, ALGO algo) {
         String encrypted = null;
         if (TextUtils.isEmpty(text)) {
             return "";

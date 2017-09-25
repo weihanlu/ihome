@@ -174,7 +174,7 @@ public class UserLockFragment extends Fragment {
     private void getNewestLocks() {
         String phoneNum = SharedPreferenceUtil.getString(mActivity, Constant.PHONE_KEY, "");
         ParkingOwnedService parkingOwnedService = ServiceGenerator.createService(ParkingOwnedService.class);
-        ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(EncryptUtil.encrypt(phoneNum, EncryptUtil.ALGO.RSA));
+        ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(EncryptUtil.rsaEncrypt(phoneNum));
         Call<ParkingOwnedResponse> call = parkingOwnedService.parkingOwned(parkingOwnedRequest);
         call.enqueue(new Callback<ParkingOwnedResponse>() {
             @Override

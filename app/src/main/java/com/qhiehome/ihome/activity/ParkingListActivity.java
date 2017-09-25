@@ -28,6 +28,7 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.bigkoo.pickerview.OptionsPickerView;
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.bean.persistence.OrderInfoBean;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyResponse;
 import com.qhiehome.ihome.network.model.park.reserve.ReserveRequest;
@@ -49,7 +50,7 @@ import com.qhiehome.ihome.network.service.pay.PayService;
 import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
-import com.qhiehome.ihome.util.OrderUtil;
+import com.qhiehome.ihome.util.PersistenceUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
@@ -421,7 +422,7 @@ public class ParkingListActivity extends BaseActivity {
                     .show();
         } else {
             ReserveService reserveService = ServiceGenerator.createService(ReserveService.class);
-            final ReserveRequest reserveRequest = new ReserveRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, Constant.TEST_PHONE_NUM), EncryptUtil.ALGO.RSA), mEstateBean.getId(), mStartSelectionMillis.get(mStartSelectIndex), mEndSelectionMillis.get(mEndSelectIndex));
+            final ReserveRequest reserveRequest = new ReserveRequest(EncryptUtil.rsaEncrypt(PersistenceUtil.getUserInfo(this).getPhoneNum()), mEstateBean.getId(), mStartSelectionMillis.get(mStartSelectIndex), mEndSelectionMillis.get(mEndSelectIndex));
             Call<ReserveResponse> call = reserveService.reserve(reserveRequest);
             call.enqueue(new Callback<ReserveResponse>() {
                 @Override
@@ -527,28 +528,16 @@ public class ParkingListActivity extends BaseActivity {
             @Override
             public void onResponse(Call<PayGuaranteeResponse> call, Response<PayGuaranteeResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-//                    SharedPreferenceUtil.setLong(mContext, Constant.PARKING_START_TIME, response.body().getData().getEstate().getParking().getShare().getStartTime());
-//                    SharedPreferenceUtil.setLong(mContext, Constant.PARKING_END_TIME, response.body().getData().getEstate().getParking().getShare().getEndTime());
-//                    SharedPreferenceUtil.setString(mContext, Constant.RESERVE_LOCK_MAC, response.body().getData().getEstate().getParking().getLockMac());
-//                    SharedPreferenceUtil.setString(mContext, Constant.RESERVE_LOCK_PWD, response.body().getData().getEstate().getParking().getPassword());
-//                    SharedPreferenceUtil.setString(mContext, Constant.RESERVE_GATEWAY_ID, response.body().getData().getEstate().getParking().getGatewayId());
-//                    SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_RESERVED);
-//                    SharedPreferenceUtil.setString(mContext, Constant.ESTATE_NAME, response.body().getData().getEstate().getName());
-//                    SharedPreferenceUtil.setFloat(mContext, Constant.ESTATE_LONGITUDE, (float) response.body().getData().getEstate().getX());
-//                    SharedPreferenceUtil.setFloat(mContext, Constant.ESTATE_LATITUDE, (float) response.body().getData().getEstate().getY());
                     PayGuaranteeResponse.DataBean.EstateBean estateBean = response.body().getData().getEstate();
                     PayGuaranteeResponse.DataBean.EstateBean.ParkingBean parkingBean = estateBean.getParking();
                     PayGuaranteeResponse.DataBean.EstateBean.ParkingBean.ShareBean shareBean = parkingBean.getShare();
-                    OrderUtil.getInstance().setOrderInfo(mContext, orderId, Constant.ORDER_STATE_RESERVED,
-                            shareBean.getStartTime(),
-                            shareBean.getEndTime(),
-                            parkingBean.getName(),
-                            parkingBean.getLockMac(),
-                            parkingBean.getPassword(),
-                            parkingBean.getGatewayId(),
-                            estateBean.getName(),
-                            estateBean.getX(),
-                            estateBean.getY());
+
+                    OrderInfoBean orderInfoBean = new OrderInfoBean(orderId, Constant.ORDER_STATE_RESERVED, shareBean.getStartTime(),
+                                                    shareBean.getEndTime(), parkingBean.getName(), parkingBean.getLockMac(),
+                                                    parkingBean.getPassword(), parkingBean.getGatewayId(), estateBean.getName(),
+                                                    (float) estateBean.getX(), (float)estateBean.getY());
+
+                    PersistenceUtil.setOrderInfo(mContext, orderInfoBean);
                     Intent intent = new Intent(ParkingListActivity.this, ReserveActivity.class);
                     startActivity(intent);
                     finish();

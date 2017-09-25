@@ -54,11 +54,19 @@ public class TimeUtil {
      * @return oneDayTime 得到一天的时间
      */
     public List<String> getStartTime() {
-        return new ArrayList<>(timeMap.keySet()).subList(0, timeMap.size() - 1);
+        if (timeMap.size() > 0) {
+            return new ArrayList<>(timeMap.keySet()).subList(0, timeMap.size() - 1);
+        } else {
+            return new ArrayList<>(timeMap.keySet());
+        }
     }
 
     public List<String> getEndTime() {
-        return new ArrayList<>(timeMap.keySet()).subList(1, timeMap.size());
+        if (timeMap.size() > 1) {
+            return new ArrayList<>(timeMap.keySet()).subList(1, timeMap.size());
+        } else {
+            return new ArrayList<>(timeMap.keySet());
+        }
     }
 
     public long getTimeStamp(String str) {

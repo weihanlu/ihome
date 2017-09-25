@@ -186,7 +186,7 @@ public class MainActivity extends BaseActivity {
 
     private void initBalance() {
         AccountService accountService = ServiceGenerator.createService(AccountService.class);
-        AccountRequest accountRequest = new AccountRequest(EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.RSA), 0.0);
+        AccountRequest accountRequest = new AccountRequest(EncryptUtil.rsaEncrypt(mPhoneNum), 0.0);
         Call<AccountResponse> call = accountService.account(accountRequest);
         call.enqueue(new Callback<AccountResponse>() {
             @Override
@@ -215,7 +215,7 @@ public class MainActivity extends BaseActivity {
         } else {
             LogUtil.d(TAG, "download avatar");
             DownloadAvatarService downloadAvatarService = ServiceGenerator.createService(DownloadAvatarService.class);
-            String encryptedAvatarName = EncryptUtil.encrypt(mAvatarName, EncryptUtil.ALGO.MD5);
+            String encryptedAvatarName = EncryptUtil.md5Encrypt(mAvatarName);
             Call<ResponseBody> call = downloadAvatarService.downloadAvatar(encryptedAvatarName + ".jpg");
             call.enqueue(new Callback<ResponseBody>() {
                 @Override
@@ -445,7 +445,7 @@ public class MainActivity extends BaseActivity {
                 }
                 break;
             case R.id.ll_setting:
-                    SettingActivity.start(mContext, isLogin);
+                SettingActivity.start(mContext, isLogin);
                 break;
             case R.id.iv_avatar:
                 QhAvatarSelectDialog dialog = new QhAvatarSelectDialog(mContext);
@@ -574,10 +574,10 @@ public class MainActivity extends BaseActivity {
         File avatarDir = mAvatarFile.getParentFile();
         if (avatarDir.isDirectory() && avatarDir.listFiles().length != 0) {
             UploadAvatarService uploadAvatarService = ServiceGenerator.createService(UploadAvatarService.class);
-            RequestBody requestPhone = RequestBody.create(MediaType.parse("multipart/form-data"), EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.RSA));
+            RequestBody requestPhone = RequestBody.create(MediaType.parse("multipart/form-data"), EncryptUtil.rsaEncrypt(mPhoneNum));
             final RequestBody requestAvatar = RequestBody.create(MediaType.parse("multipart/form-data"), mAvatarFile);
             LogUtil.d(TAG, "file length is " + mAvatarFile.length());
-            String encryptedAvatarName = EncryptUtil.encrypt(mAvatarName, EncryptUtil.ALGO.MD5);
+            String encryptedAvatarName = EncryptUtil.md5Encrypt(mAvatarName);
             MultipartBody.Part avatarPart = MultipartBody.Part.createFormData("file", encryptedAvatarName + ".jpg", requestAvatar);
 
             Call<UploadAvatarResponse> call = uploadAvatarService.uploadAvatar(avatarPart, requestPhone);

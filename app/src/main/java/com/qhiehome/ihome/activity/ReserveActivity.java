@@ -64,6 +64,7 @@ import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.NaviUtil;
 import com.qhiehome.ihome.util.NetworkUtils;
+import com.qhiehome.ihome.util.PersistenceUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 import com.qhiehome.ihome.view.QhAvatarSelectDialog;
@@ -314,7 +315,7 @@ public class ReserveActivity extends BaseActivity {
     private void orderRequest() {
         OrderService orderService = ServiceGenerator.createService(OrderService.class);
         String phoneNum = SharedPreferenceUtil.getString(this, Constant.PHONE_KEY, Constant.TEST_PHONE_NUM);
-        final OrderRequest orderRequest = new OrderRequest(EncryptUtil.encrypt(phoneNum, EncryptUtil.ALGO.RSA));
+        final OrderRequest orderRequest = new OrderRequest(EncryptUtil.rsaEncrypt(phoneNum));
         Call<OrderResponse> call = orderService.order(orderRequest);
         call.enqueue(new Callback<OrderResponse>() {
             @Override
@@ -595,7 +596,7 @@ public class ReserveActivity extends BaseActivity {
      */
     public void QueryParkingUsing() {
         ParkingUsingService parkingUsingService = ServiceGenerator.createService(ParkingUsingService.class);
-        ParkingUsingRequest parkingUsingRequest = new ParkingUsingRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.RSA));
+        ParkingUsingRequest parkingUsingRequest = new ParkingUsingRequest(EncryptUtil.rsaEncrypt(PersistenceUtil.getUserInfo(this).getPhoneNum()));
         Call<ParkingUsingResponse> call = parkingUsingService.parkingUsingQuery(parkingUsingRequest);
         call.enqueue(new Callback<ParkingUsingResponse>() {
             @Override
@@ -839,7 +840,7 @@ public class ReserveActivity extends BaseActivity {
             SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_PARKED);
             if (NetworkUtils.isConnected(mContext)) {
                 EnterParkingService enterParkingService = ServiceGenerator.createService(EnterParkingService.class);
-                EnterParkingRequest enterParkingRequest = new EnterParkingRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.RSA), currentTime);
+                EnterParkingRequest enterParkingRequest = new EnterParkingRequest(EncryptUtil.rsaEncrypt(PersistenceUtil.getUserInfo(this).getPhoneNum()), currentTime);
                 Call<EnterParkingResponse> call = enterParkingService.enterParking(enterParkingRequest);
                 call.enqueue(new Callback<EnterParkingResponse>() {
                     @Override
@@ -874,7 +875,7 @@ public class ReserveActivity extends BaseActivity {
             SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_NOT_PAID);
             if (NetworkUtils.isConnected(mContext)) {
                 ChargeService chargeService = ServiceGenerator.createService(ChargeService.class);
-                ChargeRequest chargeRequest = new ChargeRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.RSA), currentTime);
+                ChargeRequest chargeRequest = new ChargeRequest(EncryptUtil.rsaEncrypt(PersistenceUtil.getUserInfo(this).getPhoneNum()), currentTime);
                 Call<ChargeResponse> call = chargeService.charge(chargeRequest);
                 call.enqueue(new Callback<ChargeResponse>() {
                     @Override

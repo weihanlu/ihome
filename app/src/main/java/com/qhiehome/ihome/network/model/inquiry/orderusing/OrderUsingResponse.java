@@ -2,10 +2,6 @@ package com.qhiehome.ihome.network.model.inquiry.orderusing;
 
 import com.qhiehome.ihome.network.model.base.Response;
 
-/**
- * Created by YueMa on 2017/8/25.
- */
-
 public class OrderUsingResponse extends Response {
 
     /**

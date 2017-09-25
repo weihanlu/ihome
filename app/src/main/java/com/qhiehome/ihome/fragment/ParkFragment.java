@@ -1,5 +1,6 @@
 package com.qhiehome.ihome.fragment;
 
+import android.animation.ObjectAnimator;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -8,17 +9,19 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
@@ -125,7 +128,6 @@ public class ParkFragment extends Fragment {
     private boolean isGetCurrentCity;
 
     private MapView mMapView;
-    private Toolbar mTbMap;
     private BaiduMap mBaiduMap;
     private LatLng mCurrentPt;
     private LatLng mMyPt;
@@ -147,7 +149,8 @@ public class ParkFragment extends Fragment {
     public static final String ROUTE_PLAN_NODE = "routePlanNode";
     private CoordinateType mCoordinateType;
 
-    private static final float MAP_ZOOM_LEVEL = 15f;
+    private static final float MAP_ZOOM_LEVEL = 17f;
+    private static final int MAP_ZOOM_IN_DURATION = 600;
     private static final String LOCATE_RESULT_TYPE = "bd09ll";
     private static final int LOCATE_INTERVAL = 5000;
     private static final int RADIUS = 5000;
@@ -214,7 +217,10 @@ public class ParkFragment extends Fragment {
         mMapView.onResume();
         super.onResume();
         if (mHasInit) {
-            mIvMapRefresh.performClick();
+            if (mMyPt == null) {
+                mMyPt = mCurrentPt;
+            }
+            updateMapState(mMyPt);
         }
         if (SharedPreferenceUtil.getInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_CANCEL) == Constant.ORDER_STATE_RESERVED ||
                 SharedPreferenceUtil.getInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_CANCEL) == Constant.ORDER_STATE_PARKED) {
@@ -229,10 +235,6 @@ public class ParkFragment extends Fragment {
     public void onPause() {
         mMapView.onPause();
         super.onPause();
-//        if (mLocationClient.isStarted()) {
-//            mLocationClient.stop();
-//        }
-
     }
 
     @Override
@@ -279,6 +281,7 @@ public class ParkFragment extends Fragment {
         if (child != null && (child instanceof ImageView || child instanceof ZoomControls)) {
             child.setVisibility(View.INVISIBLE);
         }
+        mMapView.showZoomControls(false);
     }
 
     /**
@@ -551,6 +554,7 @@ public class ParkFragment extends Fragment {
         mBaiduMap.setMapStatus(mMapStatusUpdate);
         mTvCurrentCity.setText(mCurrentCity);
         updateMapState(mMyPt);
+        refreshAnim();
     }
 
 
@@ -560,6 +564,32 @@ public class ParkFragment extends Fragment {
             mMyPt = mCurrentPt;
         }
         updateMapState(mMyPt);
+        refreshAnim();
+    }
+
+    private void refreshAnim() {
+        rotate();
+        zoomInAndOut();
+    }
+
+    private void zoomInAndOut() {
+        MapStatusUpdate zoomIn = MapStatusUpdateFactory.zoomOut();
+        mBaiduMap.animateMapStatus(zoomIn, MAP_ZOOM_IN_DURATION);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                MapStatusUpdate zoomOut = MapStatusUpdateFactory.zoomTo(MAP_ZOOM_LEVEL);
+                mBaiduMap.animateMapStatus(zoomOut);
+            }
+        }, MAP_ZOOM_IN_DURATION);
+
+    }
+
+    private void rotate() {
+        ObjectAnimator rotateAnim = ObjectAnimator.ofFloat(mIvMapRefresh, "rotation", 0f, 720f);
+        rotateAnim.setInterpolator(new AccelerateInterpolator());
+        rotateAnim.setDuration(1000);
+        rotateAnim.start();
     }
 
     @OnClick(R.id.iv_map_marker)
@@ -618,14 +648,8 @@ public class ParkFragment extends Fragment {
             if (requestCode == REQUEST_CODE_CITY) {
                 mCity = data.getExtras().getString("city");
                 mTvCurrentCity.setText(mCity);
-                String URLString;
                 String output = "json";
                 String key = "iLf6t6ZTMfSxZ2T9WFbAalUOfi01GPA8";
-//                try {
-//                    cityName = URLEncoder.encode(data.getExtras().getString("city"), "UTF-8");
-//                }catch (Exception e){
-//                    e.printStackTrace();
-//                }
                 if (!TextUtils.isEmpty(mCity)) {
                     BaiduMapService baiduMapService = BaiduMapServiceGenerator.createService(BaiduMapService.class);
                     Map<String, String> option = new HashMap<String, String>();

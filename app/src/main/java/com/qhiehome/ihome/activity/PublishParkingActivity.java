@@ -166,7 +166,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
         mParkingItems.clear();
         mPublishList.clear();
         ParkingOwnedService parkingOwnedService = ServiceGenerator.createService(ParkingOwnedService.class);
-        ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.RSA));
+        ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(EncryptUtil.rsaEncrypt(mPhoneNum));
         Call<ParkingOwnedResponse> call = parkingOwnedService.parkingOwned(parkingOwnedRequest);
         call.enqueue(new Callback<ParkingOwnedResponse>() {
             @Override
@@ -451,7 +451,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
         PublishParkService publishParkService = ServiceGenerator.createService(PublishParkService.class);
         PublishparkRequest publishparkRequest = new PublishparkRequest();
         publishparkRequest.setParkingId(parkingId);
-        publishparkRequest.setPassword(EncryptUtil.encrypt(password, EncryptUtil.ALGO.RSA));
+        publishparkRequest.setPassword(EncryptUtil.rsaEncrypt(password));
         List<PublishparkRequest.ShareBean> share = new ArrayList<>();
         for (TimePeriod timePeriod : mTimePeriods) {
             PublishparkRequest.ShareBean shareBean = new PublishparkRequest.ShareBean();
