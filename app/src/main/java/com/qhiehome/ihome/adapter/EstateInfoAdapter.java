@@ -39,6 +39,8 @@ public class EstateInfoAdapter extends RecyclerView.Adapter<EstateInfoAdapter.Es
     @Override
     public void onBindViewHolder(EstateInfoViewHolder holder, int position) {
         // TODO: 2017/9/25 处理显示信息
+        holder.tv_data.setText(mData.get(position));
+        holder.tv_title.setText(mTitles[position]);
     }
 
     @Override

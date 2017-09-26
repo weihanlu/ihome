@@ -54,7 +54,7 @@ public class BasePopupWindow extends PopupWindow {
         setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
         setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
         setOutsideTouchable(false);  //默認設置outside點擊無響應
-        setFocusable(true);
+        setFocusable(false);
     }
 
 
