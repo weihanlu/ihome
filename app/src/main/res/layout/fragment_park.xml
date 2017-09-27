@@ -26,13 +26,25 @@
         android:layout_marginEnd="10dp"
         android:orientation="vertical">
 
-        <!--价格/车位-->
-        <ImageView
-            android:id="@+id/iv_map_marker"
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <!--价格/车位-->
+            <ImageView
+            android:id="@+id/iv_map_price"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
-            android:src="@drawable/ic_number" />
+            android:src="@drawable/ic_price" />
+
+            <ImageView
+                android:id="@+id/iv_map_number"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:src="@drawable/ic_number" />
+        </FrameLayout>
+
 
         <!--导航-->
         <ImageView
