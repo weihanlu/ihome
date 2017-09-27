@@ -27,6 +27,7 @@ import android.widget.TextView;
 
 import com.alipay.sdk.app.PayTask;
 import com.qhiehome.ihome.R;
+import com.qhiehome.ihome.bean.persistence.OrderInfoBean;
 import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.alipay.AliPayRequest;
 import com.qhiehome.ihome.network.model.alipay.AliPayResponse;
@@ -47,8 +48,7 @@ import com.qhiehome.ihome.network.service.pay.PayService;
 import com.qhiehome.ihome.pay.AliPay.PayResult;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
-import com.qhiehome.ihome.util.LogUtil;
-import com.qhiehome.ihome.util.OrderUtil;
+import com.qhiehome.ihome.util.PersistenceUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 import com.qhiehome.ihome.wxapi.WXPayEntryActivity;
@@ -256,8 +256,7 @@ public class PayActivity extends BaseActivity {
                 AccountService accountService = ServiceGenerator.createService(AccountService.class);
                 AccountRequest accountRequest =
                         new AccountRequest(EncryptUtil.
-                                encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""),
-                                        EncryptUtil.ALGO.RSA), Double.valueOf(mPriceList[mButtonClicked - 1]),
+                                rsaEncrypt(PersistenceUtil.getUserInfo(this).getPhoneNum()), Double.valueOf(mPriceList[mButtonClicked - 1]),
                                 mSelectedNum[0]?PayChannel.ALIPAY.ordinal():PayChannel.WXPAY.ordinal());
                 Call<AccountResponse> call = accountService.account(accountRequest);
                 call.enqueue(new Callback<AccountResponse>() {
@@ -529,10 +528,10 @@ public class PayActivity extends BaseActivity {
         AccountRequest accountRequest;
         if (channel > 0){
             accountRequest = new AccountRequest(
-                    EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.RSA),
+                    EncryptUtil.rsaEncrypt(PersistenceUtil.getUserInfo(this).getPhoneNum()),
                     change, channel);
         }else {
-            accountRequest = new AccountRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(mContext, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.RSA), change);
+            accountRequest = new AccountRequest(EncryptUtil.rsaEncrypt(PersistenceUtil.getUserInfo(this).getPhoneNum()), change);
         }
         Call<AccountResponse> call = accountService.account(accountRequest);
         call.enqueue(new Callback<AccountResponse>() {
@@ -659,16 +658,11 @@ public class PayActivity extends BaseActivity {
                     PayGuaranteeResponse.DataBean.EstateBean estate = response.body().getData().getEstate();
                     PayGuaranteeResponse.DataBean.EstateBean.ParkingBean parking = estate.getParking();
                     PayGuaranteeResponse.DataBean.EstateBean.ParkingBean.ShareBean share = parking.getShare();
-                    OrderUtil.getInstance().setOrderInfo(mContext, mOrderId, Constant.ORDER_STATE_RESERVED,
-                            share.getStartTime(),
-                            share.getEndTime(),
-                            parking.getName(),
-                            parking.getLockMac(),
-                            parking.getPassword(),
-                            parking.getGatewayId(),
-                            estate.getName(),
-                            estate.getX(),
-                            estate.getY());
+                    OrderInfoBean orderInfoBean
+                            = new OrderInfoBean(mOrderId, Constant.ORDER_STATE_RESERVED, share.getStartTime(), share.getEndTime(),
+                                                parking.getName(), parking.getLockMac(), parking.getPassword(), parking.getGatewayId(),
+                                                estate.getName(), (float)estate.getX(), (float)estate.getY());
+                    PersistenceUtil.setOrderInfo(mContext, orderInfoBean);
                     PayResultActivity.start(mContext, mCurrentAccount, mPayState, getPayMethod(), true);
                 }
             }

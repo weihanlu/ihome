@@ -19,6 +19,7 @@ import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.NetworkUtils;
+import com.qhiehome.ihome.util.PersistenceUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
 
@@ -40,7 +41,7 @@ public class NetworkStateReceiver extends BroadcastReceiver {
             if (SharedPreferenceUtil.getBoolean(context, Constant.NEED_POST_ENTER_TIME, false)){
                 LogUtil.e("NetworkChanged", "SendEnter");
                 EnterParkingService enterParkingService = ServiceGenerator.createService(EnterParkingService.class);
-                EnterParkingRequest enterParkingRequest = new EnterParkingRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(context, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.RSA), SharedPreferenceUtil.getLong(context, Constant.PARKING_ENTER_TIME, 0));
+                EnterParkingRequest enterParkingRequest = new EnterParkingRequest(EncryptUtil.rsaEncrypt(PersistenceUtil.getUserInfo(context).getPhoneNum()), SharedPreferenceUtil.getLong(context, Constant.PARKING_ENTER_TIME, 0));
                 Call<EnterParkingResponse> call = enterParkingService.enterParking(enterParkingRequest);
                 call.enqueue(new Callback<EnterParkingResponse>() {
                     @Override
@@ -62,7 +63,7 @@ public class NetworkStateReceiver extends BroadcastReceiver {
             }
             if (SharedPreferenceUtil.getBoolean(context, Constant.NEED_POST_LEAVE_TIME, false)){
                 ChargeService chargeService = ServiceGenerator.createService(ChargeService.class);
-                ChargeRequest chargeRequest = new ChargeRequest(EncryptUtil.encrypt(SharedPreferenceUtil.getString(context, Constant.PHONE_KEY, ""), EncryptUtil.ALGO.RSA), SharedPreferenceUtil.getLong(context, Constant.PARKING_LEAVE_TIME, 0));
+                ChargeRequest chargeRequest = new ChargeRequest(EncryptUtil.rsaEncrypt(PersistenceUtil.getUserInfo(context).getPhoneNum()), SharedPreferenceUtil.getLong(context, Constant.PARKING_LEAVE_TIME, 0));
                 Call<ChargeResponse> call = chargeService.charge(chargeRequest);
                 call.enqueue(new Callback<ChargeResponse>() {
                     @Override

@@ -48,4 +48,16 @@
         <item>100.00</item>
     </string-array>
 
+    <string-array name="join_title">
+        <item>联系人姓名</item>
+        <item>联系人手机号</item>
+        <item>小区名称</item>
+    </string-array>
+
+    <string-array name="join_hint">
+        <item>您的姓名</item>
+        <item>您的手机号</item>
+        <item>小区名</item>
+    </string-array>
+
 </resources>

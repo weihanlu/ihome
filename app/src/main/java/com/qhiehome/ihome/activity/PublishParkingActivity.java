@@ -3,9 +3,7 @@ package com.qhiehome.ihome.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.AppCompatSpinner;
@@ -29,6 +27,7 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.adapter.DialogParkAdapter;
+import com.qhiehome.ihome.adapter.JoinOwnerAdapter;
 import com.qhiehome.ihome.adapter.PublishParkingAdapter;
 import com.qhiehome.ihome.bean.ParkingItem;
 import com.qhiehome.ihome.bean.PublishBean;
@@ -36,7 +35,6 @@ import com.qhiehome.ihome.network.ServiceGenerator;
 import com.qhiehome.ihome.network.model.base.ParkingResponse;
 import com.qhiehome.ihome.network.model.configuration.city.CityConfigRequest;
 import com.qhiehome.ihome.network.model.configuration.city.CityConfigResponse;
-import com.qhiehome.ihome.network.model.inquiry.parkingempty.ParkingEmptyResponse;
 import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedRequest;
 import com.qhiehome.ihome.network.model.inquiry.parkingowned.ParkingOwnedResponse;
 import com.qhiehome.ihome.network.model.park.publish.PublishparkRequest;
@@ -47,7 +45,6 @@ import com.qhiehome.ihome.network.service.configuration.CityConfigService;
 import com.qhiehome.ihome.network.service.inquiry.ParkingOwnedService;
 import com.qhiehome.ihome.network.service.park.PublishCallbackService;
 import com.qhiehome.ihome.network.service.park.PublishParkService;
-import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.LogUtil;
@@ -62,10 +59,8 @@ import com.qhiehome.ihome.view.WeekPickView;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -89,6 +84,10 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
     TextView mTvTitleToolbar;
     @BindView(R.id.ll_publish_empty)
     LinearLayout mLlPublishEmpty;
+    @BindView(R.id.tv_publish_empty)
+    TextView mTvEmpty;
+    @BindView(R.id.tv_apply_for_lock)
+    TextView mTvApplyForLock;
 
     private ArrayList<ParkingItem> mParkingItems;
     private ArrayList<Boolean> mSelected;
@@ -119,6 +118,8 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
 
     private SparseBooleanArray mCheckedArray;
 
+    private int mUserType;
+
     QhPublishParkingDialog mQhPublishParkingDialog;
 
     @Override
@@ -140,6 +141,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
     }
 
     private void initData() {
+        mUserType = SharedPreferenceUtil.getInt(mContext, Constant.USER_TYPE, Constant.USER_TYPE_TEMP);
         mParkingItems = new ArrayList<>();
         mSelected = new ArrayList<>();
         mPublishList = new ArrayList<>();
@@ -166,7 +168,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
         mParkingItems.clear();
         mPublishList.clear();
         ParkingOwnedService parkingOwnedService = ServiceGenerator.createService(ParkingOwnedService.class);
-        ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.RSA));
+        ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(EncryptUtil.rsaEncrypt(mPhoneNum));
         Call<ParkingOwnedResponse> call = parkingOwnedService.parkingOwned(parkingOwnedRequest);
         call.enqueue(new Callback<ParkingOwnedResponse>() {
             @Override
@@ -217,6 +219,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
     private void initView() {
         initToolbar();
         initRecyclerView();
+        initEmptyView();
     }
 
     private void initRecyclerView() {
@@ -247,26 +250,26 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                     @Override
                     public void onSure(View view) {
                         PublishCallbackService publishCallbackService = ServiceGenerator.createService(PublishCallbackService.class);
-                                PublishCancelRequest publishCancelRequest = new PublishCancelRequest(shareId, "123456");
-                                Call<PublishCancelResponse> call = publishCallbackService.callback(publishCancelRequest);
-                                call.enqueue(new Callback<PublishCancelResponse>() {
-                                    @Override
-                                    public void onResponse(@NonNull Call<PublishCancelResponse> call, @NonNull Response<PublishCancelResponse> response) {
-                                        if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
-                                            mPublishAdapter.removeItem(position);
-                                            if (mPublishList.size() == 0) {
-                                                mPublishAdapter.notifyDataSetChanged();
-                                            }
-                                        } else {
-                                            ToastUtil.showToast(mContext, "取消失败");
-                                        }
+                        PublishCancelRequest publishCancelRequest = new PublishCancelRequest(shareId, "123456");
+                        Call<PublishCancelResponse> call = publishCallbackService.callback(publishCancelRequest);
+                        call.enqueue(new Callback<PublishCancelResponse>() {
+                            @Override
+                            public void onResponse(@NonNull Call<PublishCancelResponse> call, @NonNull Response<PublishCancelResponse> response) {
+                                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
+                                    mPublishAdapter.removeItem(position);
+                                    if (mPublishList.size() == 0) {
+                                        mPublishAdapter.notifyDataSetChanged();
                                     }
+                                } else {
+                                    ToastUtil.showToast(mContext, "取消失败");
+                                }
+                            }
 
-                                    @Override
-                                    public void onFailure(@NonNull Call<PublishCancelResponse> call, @NonNull Throwable t) {
+                            @Override
+                            public void onFailure(@NonNull Call<PublishCancelResponse> call, @NonNull Throwable t) {
 
-                                    }
-                                });
+                            }
+                        });
                     }
                 });
                 dialog.show();
@@ -309,6 +312,23 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
         });
     }
 
+    /**
+     * @author mayue 2017.9.26
+     * change text content when temp users login
+     */
+    private void initEmptyView(){
+        if (mUserType == Constant.USER_TYPE_TEMP){
+            mTvEmpty.setText("您还没有车位哟");
+            mTvApplyForLock.setVisibility(View.VISIBLE);
+            mTvApplyForLock.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    JoinOwnerActivity.start(mContext);
+                }
+            });
+        }
+    }
+
     private void initToolbar() {
         setSupportActionBar(mToolbar);
         ActionBar actionBar = getSupportActionBar();
@@ -328,7 +348,11 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
 
     @OnClick(R.id.iv_fab)
     public void addPublish() {
-        showPublishDialog();
+        if (mUserType == Constant.USER_TYPE_TEMP){
+            JoinOwnerActivity.start(mContext);
+        }else {
+            showPublishDialog();
+        }
     }
 
     private void showPublishDialog() {
@@ -408,7 +432,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
         call.enqueue(new Callback<CityConfigResponse>() {
             @Override
             public void onResponse(@NonNull Call<CityConfigResponse> call, @NonNull Response<CityConfigResponse> response) {
-                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
+                if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     int minSharingPeriod = response.body().getData().getMinSharingPeriod();
                     mStartData.clear();
                     mStartData.addAll(TimeUtil.getInstance().setTimeInterval(minSharingPeriod).getStartTime());
@@ -417,7 +441,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
                     mEndData.clear();
                     mEndData.addAll(TimeUtil.getInstance().setTimeInterval(minSharingPeriod).getEndTime());
                     mEndAdapter.notifyDataSetChanged();
-                }else {
+                } else {
                     ToastUtil.showToast(mContext, "服务器繁忙，请稍后再试");
                 }
             }
@@ -451,7 +475,7 @@ public class PublishParkingActivity extends BaseActivity implements SwipeRefresh
         PublishParkService publishParkService = ServiceGenerator.createService(PublishParkService.class);
         PublishparkRequest publishparkRequest = new PublishparkRequest();
         publishparkRequest.setParkingId(parkingId);
-        publishparkRequest.setPassword(EncryptUtil.encrypt(password, EncryptUtil.ALGO.RSA));
+        publishparkRequest.setPassword(EncryptUtil.rsaEncrypt(password));
         List<PublishparkRequest.ShareBean> share = new ArrayList<>();
         for (TimePeriod timePeriod : mTimePeriods) {
             PublishparkRequest.ShareBean shareBean = new PublishparkRequest.ShareBean();

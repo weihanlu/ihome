@@ -21,7 +21,8 @@ import android.widget.TextView;
 
 import com.qhiehome.ihome.R;
 import com.qhiehome.ihome.application.IhomeApplication;
-import com.qhiehome.ihome.bean.UserBean;
+import com.qhiehome.ihome.bean.persistence.OrderInfoBean;
+import com.qhiehome.ihome.bean.persistence.UserBean;
 import com.qhiehome.ihome.persistence.UserLockBean;
 import com.qhiehome.ihome.persistence.UserLockBeanDao;
 import com.qhiehome.ihome.network.ServiceGenerator;
@@ -44,7 +45,6 @@ import com.qhiehome.ihome.util.CommonUtil;
 import com.qhiehome.ihome.util.Constant;
 import com.qhiehome.ihome.util.EncryptUtil;
 import com.qhiehome.ihome.util.LogUtil;
-import com.qhiehome.ihome.util.OrderUtil;
 import com.qhiehome.ihome.util.PersistenceUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
@@ -64,7 +64,6 @@ import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-
 
 public class LoginActivity extends BaseActivity {
 
@@ -95,24 +94,15 @@ public class LoginActivity extends BaseActivity {
     @BindView(R.id.bt_login)
     Button mBtLogin;
 
-    private UserLockBeanDao mUserLockBeanDao;
-
     private static final int DEFAULT_PHONE_LEN = 11;
-
     private static final int UPPER_SECOND = 60;
-
     private static final int COUNT_DOWN_START = 0;
-
     public static final int GET_VERIFICATION = 3;
-
     private static final int SUCCESS_ERROR_CODE = 0;
-
+    private UserLockBeanDao mUserLockBeanDao;
     private Handler mHandler;
-
     private String mPhoneNum;
-
     private String mVerification;
-
     private boolean mHasSentSMS;
 
     @Override
@@ -214,14 +204,14 @@ public class LoginActivity extends BaseActivity {
 
     private void webLogin() {
         SigninService signinService = ServiceGenerator.createService(SigninService.class);
-        SigninRequest signinRequest = new SigninRequest(EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.RSA));
+        SigninRequest signinRequest = new SigninRequest(EncryptUtil.rsaEncrypt(mPhoneNum));
         Call<SigninResponse> call = signinService.signin(signinRequest);
         call.enqueue(new Callback<SigninResponse>() {
             @Override
             public void onResponse(@NonNull Call<SigninResponse> call, @NonNull Response<SigninResponse> response) {
                 if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                     UserBean userBean = new UserBean(mPhoneNum);
-                    PersistenceUtil.userInfo(LoginActivity.this, userBean);
+                    PersistenceUtil.setUserInfo(LoginActivity.this, userBean);
                     getOwnerParking();
                 }
             }
@@ -346,9 +336,9 @@ public class LoginActivity extends BaseActivity {
     }
 
     /********重新登录时恢复用户订单数据********/
-    private void getOrderInfo() {
+    private void orderInfoPersistent() {
         OrderUsingService orderUsingService = ServiceGenerator.createService(OrderUsingService.class);
-        OrderUsingRequest orderUsingRequest = new OrderUsingRequest(EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.RSA));
+        OrderUsingRequest orderUsingRequest = new OrderUsingRequest(EncryptUtil.rsaEncrypt(mPhoneNum));
         Call<OrderUsingResponse> call = orderUsingService.orderUsing(orderUsingRequest);
         call.enqueue(new Callback<OrderUsingResponse>() {
             @Override
@@ -361,19 +351,13 @@ public class LoginActivity extends BaseActivity {
                         } else {
                             OrderUsingResponse.DataBean.OrderBean orderBean = data.getOrder();
                             OrderUsingResponse.DataBean.EstateBean estateBean = data.getEstate();
-                            OrderUtil.getInstance().setOrderInfo(mContext, orderBean.getId(), orderBean.getState(), orderBean.getStartTime(), orderBean.getEndTime(),
-                                    orderBean.getParking().getName(), orderBean.getParking().getLockMac(), orderBean.getParking().getPassword(), orderBean.getParking().getGateWayId(),
-                                    estateBean.getName(), estateBean.getX(), estateBean.getY());
-//                            SharedPreferenceUtil.setInt(mContext, Constant.ORDER_ID, orderBean.getId());
-//                            SharedPreferenceUtil.setLong(mContext, Constant.PARKING_START_TIME, orderBean.getStartTime());
-//                            SharedPreferenceUtil.setLong(mContext, Constant.PARKING_END_TIME, orderBean.getEndTime());
-//                            SharedPreferenceUtil.setString(mContext, Constant.RESERVE_LOCK_MAC, orderBean.getParking().getLockMac());
-//                            SharedPreferenceUtil.setString(mContext, Constant.RESERVE_LOCK_PWD, orderBean.getParking().getPassword());
-//                            SharedPreferenceUtil.setString(mContext, Constant.RESERVE_GATEWAY_ID, orderBean.getParking().getGateWayId());
-//                            SharedPreferenceUtil.setInt(mContext, Constant.ORDER_STATE, orderBean.getState());
-//                            SharedPreferenceUtil.setString(mContext, Constant.ESTATE_NAME, estateBean.getName());
-//                            SharedPreferenceUtil.setFloat(mContext, Constant.ESTATE_LONGITUDE, (float) estateBean.getX());
-//                            SharedPreferenceUtil.setFloat(mContext, Constant.ESTATE_LATITUDE, (float) estateBean.getY());
+
+                            OrderInfoBean orderInfoBean = new OrderInfoBean(orderBean.getId(), orderBean.getState(), orderBean.getStartTime(),
+                                                                            orderBean.getEndTime(), orderBean.getParking().getName(),
+                                                                            orderBean.getParking().getLockMac(), orderBean.getParking().getPassword(),
+                                                                            orderBean.getParking().getGateWayId(), estateBean.getName(),
+                                                                            (float) estateBean.getX(), (float)estateBean.getY());
+                            PersistenceUtil.setOrderInfo(mContext, orderInfoBean);
                             MainActivity.start(mContext);
                         }
                     } else {
@@ -383,7 +367,6 @@ public class LoginActivity extends BaseActivity {
                     e.printStackTrace();
                     ToastUtil.showToast(LoginActivity.this, "服务器错误，请稍后再试");
                 }
-
             }
 
             @Override
@@ -397,7 +380,7 @@ public class LoginActivity extends BaseActivity {
     /********检查用户类型：临时/业主********/
     private void getOwnerParking() {
         ParkingOwnedService parkingOwnedService = ServiceGenerator.createService(ParkingOwnedService.class);
-        ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(EncryptUtil.encrypt(mPhoneNum, EncryptUtil.ALGO.RSA));
+        ParkingOwnedRequest parkingOwnedRequest = new ParkingOwnedRequest(EncryptUtil.rsaEncrypt(mPhoneNum));
         Call<ParkingOwnedResponse> call = parkingOwnedService.parkingOwned(parkingOwnedRequest);
         call.enqueue(new Callback<ParkingOwnedResponse>() {
             @Override
@@ -405,7 +388,7 @@ public class LoginActivity extends BaseActivity {
                 try {
                     if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                         locksPersistent(response);
-                        getOrderInfo();
+                        orderInfoPersistent();
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -438,7 +421,6 @@ public class LoginActivity extends BaseActivity {
                     for (ParkingResponse.DataBean.EstateBean.ParkingListBean parkingBean : estate.getParkingList()) {
                         userLockBean = new UserLockBean(null, estate.getName(), parkingBean.getName(), parkingBean.getId(), parkingBean.getGatewayId(),
                                 parkingBean.getLockMac(), parkingBean.getPassword(), false);
-                        LogUtil.d(TAG, userLockBean.toString());
                         mUserLockBeanDao.insertOrReplace(userLockBean);
                     }
                 }

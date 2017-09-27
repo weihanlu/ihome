@@ -189,6 +189,7 @@
 
         </LinearLayout>
 
+
         <LinearLayout
             android:layout_below="@id/ll_my_publish"
             android:id="@+id/ll_setting"
