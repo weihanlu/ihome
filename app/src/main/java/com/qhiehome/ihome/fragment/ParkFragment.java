@@ -1,5 +1,9 @@
 package com.qhiehome.ihome.fragment;
 
+import android.animation.Animator;
+import android.animation.AnimatorInflater;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -115,12 +119,16 @@ public class ParkFragment extends Fragment {
     Unbinder unbinder;
     @BindView(R.id.iv_map_refresh)
     ImageView mIvMapRefresh;
-    @BindView(R.id.iv_map_marker)
-    ImageView mIvMapMarker;
+//    @BindView(R.id.iv_map_marker)
+//    ImageView mIvMapMarker;
     @BindView((R.id.tv_current_city))
     TextView mTvCurrentCity;
     @BindView(R.id.iv_map_navi)
     ImageView mIvMapNavi;
+    @BindView(R.id.iv_map_price)
+    ImageView mPrice;
+    @BindView(R.id.iv_map_number)
+    ImageView mNumber;
     @BindView(R.id.map_info_view)
     MapInfoView mMapInfoView;
 
@@ -142,6 +150,9 @@ public class ParkFragment extends Fragment {
     private BDLocationListener mBDLocationListener;
     private boolean mHasInit = false;
     private boolean mHasRemindLeave = false;
+
+    AnimatorSet mRightOutSet;
+    AnimatorSet mLeftInSet;
 
     /******百度地图导航******/
 
@@ -602,15 +613,35 @@ public class ParkFragment extends Fragment {
         rotateAnim.start();
     }
 
-    @OnClick(R.id.iv_map_marker)
+    @OnClick(R.id.iv_map_number)
     public void onChangeMarkerClicked() {
-        mMapStateParkingNum = !mMapStateParkingNum;
-        if (mMapStateParkingNum) {
-            mIvMapMarker.setImageResource(R.drawable.ic_number);
-        } else {
-            mIvMapMarker.setImageResource(R.drawable.ic_price);
+        mMapStateParkingNum = ! mMapStateParkingNum;
+        setAnimators();
+        setCameraDistance();
+        if(!mMapStateParkingNum) {
+            mRightOutSet.setTarget(mNumber);
+            mLeftInSet.setTarget(mPrice);
+            mRightOutSet.start();
+            mLeftInSet.start();
+        }else {
+            mRightOutSet.setTarget(mPrice);
+            mLeftInSet.setTarget(mNumber);
+            mRightOutSet.start();
+            mLeftInSet.start();
         }
         addMarkers();
+    }
+
+    private void setAnimators() {
+        mRightOutSet = (AnimatorSet) AnimatorInflater.loadAnimator(mContext, R.animator.card_flip_anim_out);
+        mLeftInSet = (AnimatorSet) AnimatorInflater.loadAnimator(mContext, R.animator.card_flip_anim_in);
+    }
+
+    private void setCameraDistance() {
+        int distance = 16000;
+        float scale = getResources().getDisplayMetrics().density * distance;
+        mNumber.setCameraDistance(scale);
+        mPrice.setCameraDistance(scale);
     }
 
     @OnClick(R.id.rl_input_location)
