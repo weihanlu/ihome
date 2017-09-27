@@ -108,8 +108,7 @@ public class MainActivity extends BaseActivity {
     LinearLayout mLlMyLock;
     @BindView(R.id.ll_my_publish)
     LinearLayout mLlMyPublish;
-    @BindView(R.id.ll_join_owner)
-    LinearLayout mLlJoinOwner;
+
 
     private Context mContext;
 
@@ -412,7 +411,7 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    @OnClick({R.id.ll_my_lock, R.id.ll_my_reserve, R.id.ll_my_publish,R.id.ll_join_owner,
+    @OnClick({R.id.ll_my_lock, R.id.ll_my_reserve, R.id.ll_my_publish,
             R.id.ll_setting, R.id.iv_avatar, R.id.bt_login, R.id.tv_add_balance})
     public void onViewClicked(View view) {
         switch (view.getId()) {
@@ -434,13 +433,6 @@ public class MainActivity extends BaseActivity {
                 if (isLogin) {
                     PublishParkingActivity.start(mContext);
                 } else {
-                    LoginActivity.start(mContext);
-                }
-                break;
-            case R.id.ll_join_owner:
-                if (isLogin) {
-                    JoinOwnerActivity.start(mContext);
-                }else {
                     LoginActivity.start(mContext);
                 }
                 break;
@@ -746,8 +738,7 @@ public class MainActivity extends BaseActivity {
     private void checkUserType() {
         int userType = SharedPreferenceUtil.getInt(mContext, Constant.USER_TYPE, Constant.USER_TYPE_TEMP);
         mLlMyLock.setVisibility(userType == Constant.USER_TYPE_TEMP? View.GONE: View.VISIBLE);
-        mLlMyPublish.setVisibility(userType == Constant.USER_TYPE_TEMP? View.GONE: View.VISIBLE);
-        mLlJoinOwner.setVisibility(userType == Constant.USER_TYPE_TEMP? View.VISIBLE: View.GONE);
+        //mLlMyPublish.setVisibility(userType == Constant.USER_TYPE_TEMP? View.GONE: View.VISIBLE);
     }
 
     private void subcribeToKlm() {

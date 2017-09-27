@@ -61,6 +61,16 @@
                     android:layout_gravity="center_horizontal"
                     />
 
+                <TextView
+                    android:id="@+id/tv_apply_for_lock"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:text="申请车位"
+                    android:textSize="16sp"
+                    android:textColor="@color/theme_start_color"
+                    android:layout_marginTop="10dp"
+                    android:layout_gravity="center_horizontal"/>
             </LinearLayout>
 
         </FrameLayout>

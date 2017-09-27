@@ -14,16 +14,13 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.view.animation.AccelerateInterpolator;
-import android.view.animation.AnimationUtils;
+import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.ZoomControls;
 
@@ -34,6 +31,7 @@ import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
+import com.baidu.mapapi.map.MapPoi;
 import com.baidu.mapapi.map.MapStatus;
 import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
@@ -80,11 +78,12 @@ import com.qhiehome.ihome.util.LogUtil;
 import com.qhiehome.ihome.util.NaviUtil;
 import com.qhiehome.ihome.util.SharedPreferenceUtil;
 import com.qhiehome.ihome.util.ToastUtil;
-import com.qhiehome.ihome.view.BasePopupWindow;
+import com.qhiehome.ihome.view.MapInfoView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import butterknife.BindView;
@@ -122,6 +121,8 @@ public class ParkFragment extends Fragment {
     TextView mTvCurrentCity;
     @BindView(R.id.iv_map_navi)
     ImageView mIvMapNavi;
+    @BindView(R.id.map_info_view)
+    MapInfoView mMapInfoView;
 
     private Context mContext;
 
@@ -225,7 +226,7 @@ public class ParkFragment extends Fragment {
         if (SharedPreferenceUtil.getInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_CANCEL) == Constant.ORDER_STATE_RESERVED ||
                 SharedPreferenceUtil.getInt(mContext, Constant.ORDER_STATE, Constant.ORDER_STATE_CANCEL) == Constant.ORDER_STATE_PARKED) {
             mIvMapNavi.setVisibility(View.VISIBLE);
-        }else {
+        } else {
             mIvMapNavi.setVisibility(View.GONE);
         }
 
@@ -282,6 +283,20 @@ public class ParkFragment extends Fragment {
             child.setVisibility(View.INVISIBLE);
         }
         mMapView.showZoomControls(false);
+        mBaiduMap.setOnMapClickListener(new BaiduMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                if (mMapInfoView.getVisibility() == View.VISIBLE){
+                    mMapInfoView.setVisibility(View.GONE);
+                    updateMapState(mCurrentPt);
+                }
+            }
+
+            @Override
+            public boolean onMapPoiClick(MapPoi mapPoi) {
+                return false;
+            }
+        });
     }
 
     /**
@@ -348,15 +363,15 @@ public class ParkFragment extends Fragment {
                         mRefreshEstate = true;
                     }
                 }
-                if (!mHasRemindLeave && SharedPreferenceUtil.getInt(mContext, Constant.ORDER_STATE, 0) == Constant.ORDER_STATE_PARKED){  //提醒用户确认离开
+                if (!mHasRemindLeave && SharedPreferenceUtil.getInt(mContext, Constant.ORDER_STATE, 0) == Constant.ORDER_STATE_PARKED) {  //提醒用户确认离开
                     double distance = DistanceUtil.getDistance(xy, new LatLng((double) SharedPreferenceUtil.getFloat(mContext, Constant.ESTATE_LATITUDE, 0), (double) SharedPreferenceUtil.getFloat(mContext, Constant.ESTATE_LONGITUDE, 0)));
                     if (distance >= REMIND_DISTANCE) {
                         mHasRemindLeave = true;
                         sendNotification();
                     }
-                }else {
+                } else {
                     double distance = DistanceUtil.getDistance(xy, new LatLng((double) SharedPreferenceUtil.getFloat(mContext, Constant.ESTATE_LATITUDE, 0), (double) SharedPreferenceUtil.getFloat(mContext, Constant.ESTATE_LONGITUDE, 0)));
-                    if (distance < REMIND_DISTANCE){
+                    if (distance < REMIND_DISTANCE) {
                         mHasRemindLeave = false;
                     }
                 }
@@ -449,21 +464,13 @@ public class ParkFragment extends Fragment {
         mOnMarkerClickListener = new BaiduMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker1) {
-                if (isFastClick(2000)){
+                if (isFastClick(2000)) {
                     return false;
                 }
                 // TODO: 2017/9/25 更换为显示小区详细信息
                 mClickedMarker = marker1;
-                getCityConfig(marker1);
-//                BasePopupWindow popupWindow;
-//                View view = LayoutInflater.from(mContext).inflate(R.layout.layout_estate_info,null);//PopupWindow对象
-//                popupWindow= new BasePopupWindow(mContext, getActivity(), 1000);//初始化PopupWindow对象
-//                popupWindow.setContentView(view);//设置PopupWindow布局文件
-//                View rootView =LayoutInflater.from(mContext).inflate(R.layout.fragment_park, null);//父布局
-//                popupWindow.showAtLocation(rootView, Gravity.BOTTOM,0,0);
-//
-//                initPopupWindow(view);
-
+//                getCityConfig(marker1);
+                routeSearch(marker1.getPosition());
                 return false;
             }
         };
@@ -563,6 +570,9 @@ public class ParkFragment extends Fragment {
         if (mMyPt == null) {
             mMyPt = mCurrentPt;
         }
+        if (mMapInfoView.getVisibility() == View.VISIBLE){
+            mMapInfoView.setVisibility(View.GONE);
+        }
         updateMapState(mMyPt);
         refreshAnim();
     }
@@ -621,6 +631,7 @@ public class ParkFragment extends Fragment {
 
     /**
      * 从搜索、城市选择Activity返回时调用
+     *
      * @param requestCode
      * @param resultCode
      * @param data
@@ -727,10 +738,11 @@ public class ParkFragment extends Fragment {
 
     /**
      * 获取城市配置参数
+     *
      * @param marker1 地图上点击的marker
      */
-    private void getCityConfig(final Marker marker1){
-        ParkingEmptyResponse.DataBean.EstateBean estateBean =(ParkingEmptyResponse.DataBean.EstateBean) marker1.getExtraInfo().getSerializable("estate");
+    private void getCityConfig(final Marker marker1) {
+        ParkingEmptyResponse.DataBean.EstateBean estateBean = (ParkingEmptyResponse.DataBean.EstateBean) marker1.getExtraInfo().getSerializable("estate");
         CityConfigService cityConfigService = ServiceGenerator.createService(CityConfigService.class);
         CityConfigRequest cityConfigRequest = new CityConfigRequest(estateBean.getId());
         Call<CityConfigResponse> call = cityConfigService.queryCityConfig(cityConfigRequest);
@@ -738,7 +750,7 @@ public class ParkFragment extends Fragment {
             @Override
             public void onResponse(Call<CityConfigResponse> call, Response<CityConfigResponse> response) {
                 try {
-                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE){
+                    if (response.code() == Constant.RESPONSE_SUCCESS_CODE && response.body().getErrcode() == Constant.ERROR_SUCCESS_CODE) {
                         Intent intent = new Intent(getActivity(), ParkingListActivity.class);
                         Bundle bundle = marker1.getExtraInfo();
                         bundle.putInt(Constant.MIN_SHARING_PERIOD, response.body().getData().getMinSharingPeriod());
@@ -746,10 +758,10 @@ public class ParkFragment extends Fragment {
                         bundle.putInt(Constant.FREE_CANCELLATION_TIME, response.body().getData().getFreeCancellationTime());
                         intent.putExtras(bundle);
                         startActivity(intent);
-                    }else {
+                    } else {
                         ToastUtil.showToast(mContext, "服务器繁忙，请稍后再试");
                     }
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                     ToastUtil.showToast(mContext, "服务器错误，请稍后再试");
                 }
@@ -763,7 +775,7 @@ public class ParkFragment extends Fragment {
         });
     }
 
-    private void sendNotification(){
+    private void sendNotification() {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext);
 
         // 设置通知的基本信息：icon、标题、内容
@@ -794,16 +806,17 @@ public class ParkFragment extends Fragment {
 
 
     private static long lastClickTime;
+
     public static boolean isFastClick(long ClickIntervalTime) {
         long ClickingTime = System.currentTimeMillis();
-        if ( ClickingTime - lastClickTime < ClickIntervalTime) {
+        if (ClickingTime - lastClickTime < ClickIntervalTime) {
             return true;
         }
         lastClickTime = ClickingTime;
         return false;
     }
 
-    private void initPopupWindow(View contentView){
+    private void initPopupWindow(View contentView) {
         TextView tvLocation = (TextView) contentView.findViewById(R.id.tv_estate_location);
         RecyclerView rvEstateDetail = (RecyclerView) contentView.findViewById(R.id.rv_estate_detail);
         Button btnReserve = (Button) contentView.findViewById(R.id.btn_to_reserve);
@@ -814,13 +827,8 @@ public class ParkFragment extends Fragment {
         tvLocation.setText("北京邮电大学新科研楼");
     }
 
-    private void routeSearch(LatLng targetPt){
+    private void routeSearch(LatLng targetPt) {
         RoutePlanSearch routePlanSearch = RoutePlanSearch.newInstance();
-        PlanNode stNode = PlanNode.withLocation(mCurrentPt);
-        PlanNode enNode = PlanNode.withLocation(targetPt);
-        routePlanSearch.drivingSearch((new DrivingRoutePlanOption())
-                .from(stNode)//起点
-                .to(enNode));//终点
         routePlanSearch.setOnGetRoutePlanResultListener(new OnGetRoutePlanResultListener() {
             @Override
             public void onGetWalkingRouteResult(WalkingRouteResult walkingRouteResult) {
@@ -839,10 +847,65 @@ public class ParkFragment extends Fragment {
 
             @Override
             public void onGetDrivingRouteResult(DrivingRouteResult drivingRouteResult) {
+
+                int distance = drivingRouteResult.getRouteLines().get(0).getDistance(); //距离-->单位米
+                int duration = drivingRouteResult.getRouteLines().get(0).getDuration(); //时间-->单位秒
+                int congestionDistance = drivingRouteResult.getRouteLines().get(0).getCongestionDistance(); //拥堵路段-->单位米
+                LogUtil.e("Overlay", "distance:" + distance);
+                LogUtil.e("Overlay", "duration:" + duration);
+                LogUtil.e("Overlay", "congestionDistance:" + congestionDistance);
+
+                // TODO: 2017/9/26 增加自定义view
                 DrivingRouteOverlay overlay = new DrivingRouteOverlay(mBaiduMap);
+                LogUtil.e("Overlay", "add overlay");
                 overlay.setData(drivingRouteResult.getRouteLines().get(0));
                 overlay.addToMap();
-                overlay.zoomToSpan();
+                mMapInfoView.setOverlay(overlay);
+
+                mMapInfoView.setVisibility(View.VISIBLE);
+                View view = mMapInfoView.getmView();
+                TextView tvLocation = (TextView) view.findViewById(R.id.tv_estate_location);
+                Bundle bundle = mClickedMarker.getExtraInfo();
+                ParkingEmptyResponse.DataBean.EstateBean estateBean = (ParkingEmptyResponse.DataBean.EstateBean) bundle.getSerializable("estate");
+
+                try {
+                    tvLocation.setText(estateBean.getName());
+
+                    RecyclerView rvEstateDetail = (RecyclerView) view.findViewById(R.id.rv_estate_detail);
+                    Button btnReserve = (Button) view.findViewById(R.id.btn_to_reserve);
+
+                    btnReserve.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            getCityConfig(mClickedMarker);
+                        }
+                    });
+
+                    ArrayList<String> data = new ArrayList<String>();
+                    data.add(String.format(Locale.CHINA, "%.2f", (float)estateBean.getUnitPrice()) + "元");
+                    data.add(distance + "米" + "(" + congestionDistance + " 米)");
+                    data.add(duration + "米");
+
+                    String[] title = {"停车费/小时", "距离(拥堵路段)", "预计到达时间"};
+                    EstateInfoAdapter adapter = new EstateInfoAdapter(mContext, data, title);
+                    rvEstateDetail.setLayoutManager(new GridLayoutManager(mContext, 3));
+                    rvEstateDetail.setAdapter(adapter);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+
+
+
+
+
+//                BasePopupWindow popupWindow;
+//                View view = LayoutInflater.from(mContext).inflate(R.layout.layout_estate_info,null);//PopupWindow对象
+//                popupWindow= new BasePopupWindow(mContext, getActivity(), 1000);//初始化PopupWindow对象
+//                popupWindow.setContentView(view);//设置PopupWindow布局文件
+//                View rootView =LayoutInflater.from(mContext).inflate(R.layout.fragment_park, null);//父布局
+//                popupWindow.showAtLocation(rootView, Gravity.BOTTOM,0,0);
+//
+//                initPopupWindow(view);
             }
 
             @Override
@@ -855,9 +918,14 @@ public class ParkFragment extends Fragment {
 
             }
         });
+        PlanNode stNode = PlanNode.withLocation(mCurrentPt);
+        PlanNode enNode = PlanNode.withLocation(targetPt);
+        routePlanSearch.drivingSearch((new DrivingRoutePlanOption())
+                .from(stNode)//起点
+                .to(enNode));//终点
+
 
     }
-
 
 
 }
