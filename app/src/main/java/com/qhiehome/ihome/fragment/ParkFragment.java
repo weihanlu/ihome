@@ -613,7 +613,7 @@ public class ParkFragment extends Fragment {
         rotateAnim.start();
     }
 
-    @OnClick(R.id.iv_map_number)
+    @OnClick(R.id.iv_map_marker)
     public void onChangeMarkerClicked() {
         mMapStateParkingNum = ! mMapStateParkingNum;
         setAnimators();
@@ -621,14 +621,12 @@ public class ParkFragment extends Fragment {
         if(!mMapStateParkingNum) {
             mRightOutSet.setTarget(mNumber);
             mLeftInSet.setTarget(mPrice);
-            mRightOutSet.start();
-            mLeftInSet.start();
         }else {
             mRightOutSet.setTarget(mPrice);
             mLeftInSet.setTarget(mNumber);
-            mRightOutSet.start();
-            mLeftInSet.start();
         }
+        mRightOutSet.start();
+        mLeftInSet.start();
         addMarkers();
     }
 
